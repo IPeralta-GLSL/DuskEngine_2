@@ -1,0 +1,27 @@
+{
+  "O3DE": {
+    "Gems": {
+      "QtForPython": {
+        "Targets": {
+          "QtForPython.Editor": {
+            "AutoLoad": false
+          }
+        }
+      },
+      "EditorPythonBindings": {
+        "Targets": {
+          "EditorPythonBindings.Editor": {
+            "AutoLoad": false
+          }
+        }
+      },
+      "PythonAssetBuilder": {
+        "Targets": {
+          "PythonAssetBuilder.Editor": {
+            "AutoLoad": false
+          }
+        }
+      }
+    }
+  }
+}
