@@ -1081,7 +1081,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         state.viewPanes.push_back(LyViewPane::EntityOutliner);
         state.viewPanes.push_back(LyViewPane::Inspector);
         state.viewPanes.push_back(LyViewPane::AssetBrowser);
-        state.viewPanes.push_back(LyViewPane::Console);
 
         state.mainWindowState = m_defaultMainWindowState;
 
@@ -1105,14 +1104,13 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     const QtViewPane* entityOutlinerViewPane = OpenPane(LyViewPane::EntityOutliner, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* InspectorViewPane = OpenPane(LyViewPane::Inspector, QtViewPane::OpenMode::UseDefaultState);
-    const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
 
     const QtViewPane* levelInspectorPane = nullptr;
 
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen
     // after all of the other events have been processed.
-    QTimer::singleShot(0, [this, consoleViewPane, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
+    QTimer::singleShot(0, [this, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
     {
         // If we are using the new docking, set the right dock area to be absolute
         // so that the inspector will be to the right of the viewport and console
@@ -1127,10 +1125,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         int screenWidth = QApplication::desktop()->screenGeometry(m_mainWindow).width();
         int screenHeight = QApplication::desktop()->screenGeometry(m_mainWindow).height();
 
-        // Add the console view pane first
-        m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
-        consoleViewPane->m_dockWidget->setFloating(false);
-
         if (assetBrowserViewPane)
         {
             m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
@@ -1138,19 +1132,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 
             static const float bottomTabWidgetPercentage = 0.25f;
             int newHeight = static_cast<int>((float)screenHeight * bottomTabWidgetPercentage);
-
-            AzQtComponents::DockTabWidget* bottomTabWidget = m_advancedDockManager->tabifyDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, m_mainWindow);
-            if (bottomTabWidget)
-            {
-                bottomTabWidget->setCurrentWidget(assetBrowserViewPane->m_dockWidget);
-
-                QDockWidget* bottomTabWidgetParent = qobject_cast<QDockWidget*>(bottomTabWidget->parentWidget());
-                m_mainWindow->resizeDocks({ bottomTabWidgetParent }, { newHeight }, Qt::Vertical);
-            }
-            else
-            {
-                m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { newHeight }, Qt::Vertical);
-            }
+            m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { newHeight }, Qt::Vertical);
         }
 
         if (InspectorViewPane)

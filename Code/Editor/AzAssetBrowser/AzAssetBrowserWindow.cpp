@@ -303,6 +303,18 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
     m_ui->m_tableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
+    QTimer::singleShot(0, this, [this]()
+    {
+        m_ui->m_treeViewButton->setChecked(true);
+        m_ui->m_thumbnailViewButton->setChecked(false);
+        m_ui->m_tableViewButton->setChecked(false);
+        SetCurrentMode(AssetBrowserMode::ListView);
+        // Hide favorites widget and minimize its splitter area.
+        // Cannot just collapse() because LoadFavorites() re-expands it asynchronously.
+        m_ui->m_assetBrowserFavoritesWidget->hide();
+        SetFavoritesWindowHeight(0);
+    });
+
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
 
@@ -751,9 +763,12 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         m_ui->m_middleStackWidget->hide();
         m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
         m_ui->m_searchWidget->RemoveFolderFilter();
-        if (!m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows().isEmpty())
+        if (auto* selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel())
         {
-            m_ui->m_assetBrowserTreeViewWidget->expand(m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows()[0]);
+            if (!selectionModel->selectedRows().isEmpty())
+            {
+                m_ui->m_assetBrowserTreeViewWidget->expand(selectionModel->selectedRows()[0]);
+            }
         }
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(false);
