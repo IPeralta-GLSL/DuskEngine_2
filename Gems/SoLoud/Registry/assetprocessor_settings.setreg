@@ -1,0 +1,18 @@
+{
+    "O3DE": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder SoLoud/Assets": {
+                    "watch": "@GEMROOT:SoLoud@/Assets",
+                    "recursive": 1,
+                    "order": 102
+                },
+                "ScanFolder SoLoud/Registry": {
+                    "watch": "@GEMROOT:SoLoud@/Registry",
+                    "recursive": 1,
+                    "order": 103
+                }
+            }
+        }
+    }
+}

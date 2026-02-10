@@ -1,0 +1,10 @@
+set(FILES
+    Source/Tools/EditorSoLoudPlaybackComponent.cpp
+    Source/Tools/EditorSoLoudPlaybackComponent.h
+    Source/Tools/EditorSoLoudListenerComponent.cpp
+    Source/Tools/EditorSoLoudListenerComponent.h
+    Source/Tools/SoLoudEditorSystemComponent.cpp
+    Source/Tools/SoLoudEditorSystemComponent.h
+    Source/Tools/SoLoudSoundAssetBuilder.cpp
+    Source/Tools/SoLoudSoundAssetBuilder.h
+)
