@@ -481,7 +481,7 @@ namespace AtomToolsFramework
 
     uint32_t RenderViewportWidget::GetSyncInterval() const
     {
-        uint32_t vsyncInterval = 1;
+        uint32_t vsyncInterval = 0;
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
             console->GetCvarValue("vsync_interval", vsyncInterval);
