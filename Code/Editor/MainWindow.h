@@ -43,6 +43,7 @@ class MainStatusBar;
 class UndoStackStateAdapter;
 
 class QComboBox;
+class QLabel;
 class QToolButton;
 class QtViewport;
 class QtViewPaneManager;
@@ -236,6 +237,13 @@ private:
     QTimer* m_autoSaveTimer;
     QTimer* m_autoRemindTimer;
     QTimer* m_backgroundUpdateTimer;
+
+    QLabel* m_gpuInfoLabel = nullptr;
+    QTimer* m_gpuInfoTimer = nullptr;
+    QString m_gpuApiName;
+    QString m_gpuDeviceName;
+    QString m_baseTitleStr;
+    double m_currentFps = 0.0;
 
     bool m_connectedToAssetProcessor = false;
     bool m_showAPDisconnectDialog = false;

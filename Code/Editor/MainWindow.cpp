@@ -93,6 +93,12 @@
 
 #include <ImGuiBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/Device.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <AzCore/Time/ITime.h>
+#include <QLabel>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <Editor/EditorViewportCamera.h>
 
@@ -443,6 +449,55 @@ void MainWindow::Initialize()
 
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
     m_sourceControlNotifHandler->Init();
+
+    {
+        try
+        {
+            if (AZ::RHI::Factory::IsReady())
+            {
+                AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+                m_gpuApiName = QString::fromUtf8(apiName.GetCStr());
+            }
+            AZ::RHI::RHISystemInterface* rhi = AZ::RHI::RHISystemInterface::Get();
+            if (rhi)
+            {
+                if (AZ::RHI::Device* device = rhi->GetDevice())
+                {
+                    const AZ::RHI::PhysicalDeviceDescriptor& desc = device->GetPhysicalDevice().GetDescriptor();
+                    m_gpuDeviceName = QString::fromUtf8(desc.m_description.c_str());
+                }
+            }
+        }
+        catch (...)
+        {
+        }
+        if (m_gpuApiName.isEmpty()) m_gpuApiName = QStringLiteral("Unknown");
+        if (m_gpuDeviceName.isEmpty()) m_gpuDeviceName = QStringLiteral("Unknown");
+
+        m_gpuInfoTimer = new QTimer(this);
+        m_gpuInfoTimer->setInterval(250);
+        connect(m_gpuInfoTimer, &QTimer::timeout, this, [this]() {
+            const AZ::TimeUs deltaUs = AZ::GetSimulationTickDeltaTimeUs();
+            if (deltaUs > AZ::TimeUs{ 0 })
+            {
+                double deltaSeconds = AZ::TimeUsToSeconds(deltaUs);
+                if (deltaSeconds > 0.0001)
+                {
+                    m_currentFps = 1.0 / deltaSeconds;
+                }
+            }
+            QString currentTitle = windowTitle();
+            int sepIdx = currentTitle.indexOf(QStringLiteral("  |  "));
+            if (sepIdx >= 0)
+            {
+                currentTitle = currentTitle.left(sepIdx);
+            }
+            QString gpuInfo = QString("%1 FPS | %2 | %3")
+                .arg(QString::number(m_currentFps, 'f', 1), m_gpuApiName, m_gpuDeviceName);
+            setWindowTitle(currentTitle + QStringLiteral("  |  ") + gpuInfo);
+        });
+        m_gpuInfoTimer->start();
+    }
 
     if (!IsPreview())
     {
