@@ -20,7 +20,7 @@ namespace O3DE::ProjectManager
     GemDependenciesDialog::GemDependenciesDialog(GemModel* gemModel, QWidget *parent)
         : QDialog(parent)
     {
-        setWindowTitle(tr("Dependent Gems"));
+        setWindowTitle(tr("Dependent Plugins"));
         setObjectName("GemDependenciesDialog");
         setAttribute(Qt::WA_DeleteOnClose);
         setModal(true);
@@ -33,8 +33,8 @@ namespace O3DE::ProjectManager
 
         // message
         QLabel* instructionLabel = new QLabel(
-            tr("The following gem dependencies are no longer needed and will be deactivated.<br><br>"
-                "To keep these Gems enabled, select the checkbox next to it."));
+            tr("The following plugin dependencies are no longer needed and will be deactivated.<br><br>"
+                "To keep these Plugins enabled, select the checkbox next to it."));
         layout->addWidget(instructionLabel);
 
         // checkboxes

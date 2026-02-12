@@ -71,7 +71,7 @@ namespace O3DE::ProjectManager
                     // In case the user enabled or disabled any gem and the current selection does not match the default from the
                     // // project template anymore, we need to ask the user if they want to proceed as their modifications will be lost.
                     const QString title = tr("Modifications will be lost");
-                    const QString text = tr("You selected a new project template after modifying the enabled gems.\n\n"
+                    const QString text = tr("You selected a new project template after modifying the enabled plugins.\n\n"
                         "All modifications will be lost and the default from the new project template will be used.\n\n"
                         "Do you want to proceed?");
                     if (QMessageBox::warning(this, title, text, QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
@@ -127,7 +127,7 @@ namespace O3DE::ProjectManager
             currentScreen->NotifyCurrentScreen();
         }
 
-        // Gather the enabled gems from the default project template when starting the create new project workflow.
+        // Gather the enabled plugins from the default project template when starting the create new project workflow.
         ReinitGemCatalogForSelectedTemplate();
 
         // make sure the gem repo has the latest details
@@ -164,7 +164,7 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentWidget() == m_projectGemCatalogScreen)
         {
-            m_header->setSubTitle(tr("Configure project with Gems"));
+            m_header->setSubTitle(tr("Configure project with Plugins"));
             m_secondaryButton->setVisible(false);
             m_primaryButton->setVisible(true);
         }
@@ -179,7 +179,7 @@ namespace O3DE::ProjectManager
         {
             m_header->setSubTitle(tr("Enter Project Details"));
             m_secondaryButton->setVisible(true);
-            m_secondaryButton->setText(tr("Configure Gems"));
+            m_secondaryButton->setText(tr("Configure Plugins"));
             m_primaryButton->setVisible(true);
         }
     }
@@ -215,7 +215,7 @@ namespace O3DE::ProjectManager
                 }
                 else if (m_newProjectSettingsScreen->IsDownloadingTemplate())
                 {
-                    QMessageBox::warning(this, tr("Cannot configure gems"), tr("Cannot configure gems until the template has finished downloading."));
+                    QMessageBox::warning(this, tr("Cannot configure plugins"), tr("Cannot configure plugins until the template has finished downloading."));
                     return;
                 }
             }
@@ -278,7 +278,7 @@ namespace O3DE::ProjectManager
         {
             if (!m_projectGemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
             {
-                QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
+                QMessageBox::critical(this, tr("Plugins downloading"), tr("You must wait for plugins to finish downloading before continuing."));
                 return;
             }
 
@@ -308,7 +308,7 @@ namespace O3DE::ProjectManager
             const ProjectGemCatalogScreen::ConfiguredGemsResult gemResult = m_projectGemCatalogScreen->ConfigureGemsForProject(projectInfo.m_path);
             if (gemResult == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
             {
-                QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+                QMessageBox::critical(this, tr("Failed to configure plugins"), tr("Failed to configure plugins for template."));
             }
             if (gemResult != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
             {

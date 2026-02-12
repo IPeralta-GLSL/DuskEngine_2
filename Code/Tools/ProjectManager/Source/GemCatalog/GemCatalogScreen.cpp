@@ -129,7 +129,7 @@ namespace O3DE::ProjectManager
         constexpr int minHeaderSectionWidth = AZStd::min(previewWidth, AZStd::min(versionWidth, statusWidth));
 
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
-            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Latest Version"), tr("Status") },
+            QStringList{ tr("Plugin Image"), tr("Plugin Name"), tr("Plugin Summary"), tr("Latest Version"), tr("Status") },
             QVector<int>{ previewWidth,
                           GemItemDelegate::s_defaultSummaryStartX - previewWidth,
                           0, // Section is set to stretch to fit
@@ -273,7 +273,7 @@ namespace O3DE::ProjectManager
             auto registerResult = PythonBindingsInterface::Get()->RegisterGem(directory);
             if(!registerResult)
             {
-                QMessageBox::critical(this, tr("Failed to add gem"), registerResult.GetError().c_str());
+                QMessageBox::critical(this, tr("Failed to add plugin"), registerResult.GetError().c_str());
             }
             else
             {
@@ -345,9 +345,9 @@ namespace O3DE::ProjectManager
                 if (!gemFound && (m_gemModel->IsAdded(index) || m_gemModel->IsAddedDependency(index)))
                 {
                     QString gemName = m_gemModel->GetName(index);
-                    const QString error = tr("Gem %1 was removed or unregistered, but is still used by the project.").arg(gemName);
+                    const QString error = tr("Plugin %1 was removed or unregistered, but is still used by the project.").arg(gemName);
                     AZ_Warning("Project Manager", false, error.toUtf8().constData());
-                    QMessageBox::warning(this, tr("Gem not found"), error.toUtf8().constData());
+                    QMessageBox::warning(this, tr("Plugin not found"), error.toUtf8().constData());
                 }
 
                 i++;
@@ -434,11 +434,11 @@ namespace O3DE::ProjectManager
 
             if (numChangedDependencies == 1)
             {
-                notification += tr("1 Gem dependency");
+                notification += tr("1 Plugin dependency");
             }
             else if (numChangedDependencies > 1)
             {
-                notification += tr("%1 Gem %2").arg(numChangedDependencies).arg(tr("dependencies"));
+                notification += tr("%1 Plugin %2").arg(numChangedDependencies).arg(tr("dependencies"));
             }
             notification += (added ? tr(" activated") : tr(" deactivated"));
 
@@ -501,16 +501,16 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(
                     this, tr("Operation failed"),
-                    tr("Failed to refresh gem repository %1<br>Error:<br>%2").arg(gemInfo.m_repoUri, refreshResult.GetError().c_str()));
+                    tr("Failed to refresh plugin repository %1<br>Error:<br>%2").arg(gemInfo.m_repoUri, refreshResult.GetError().c_str()));
             }
         }
         // If repo uri isn't specified warn user that repo might not be refreshed
         else
         {
             int result = QMessageBox::warning(
-                this, tr("Gem Repository Unspecified"),
+                this, tr("Plugin Repository Unspecified"),
                 tr("The repo for %1 is unspecfied. Repository cannot be automatically refreshed. "
-                   "Please ensure this gem's repo is refreshed before attempting to update.")
+                   "Please ensure this plugin's repo is refreshed before attempting to update.")
                     .arg(gemInfo.m_displayName),
                 QMessageBox::Cancel, QMessageBox::Ok);
 
@@ -560,8 +560,8 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            confirmed = QMessageBox::warning(this, tr("Remove Gem"),
-                tr("Do you want to remove %1?<br>The gem will only be unregistered, and can be re-added.  The files will not be removed from disk.").arg(gemDisplayName),
+            confirmed = QMessageBox::warning(this, tr("Remove Plugin"),
+                tr("Do you want to remove %1?<br>The plugin will only be unregistered, and can be re-added.  The files will not be removed from disk.").arg(gemDisplayName),
                 QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok;
         }
 
@@ -593,7 +593,7 @@ namespace O3DE::ProjectManager
                     if (!filesDeleted)
                     {
                         QMessageBox::critical(
-                            this, tr("Failed to remove gem directory"), tr("Could not delete gem directory at:<br>%1").arg(path));
+                            this, tr("Failed to remove plugin directory"), tr("Could not delete plugin directory at:<br>%1").arg(path));
                     }
                     else
                     {
@@ -680,7 +680,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems from repos.<br><br>Error:<br>%1").arg(allRepoGemInfosResult.GetError().c_str()));
+                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve plugins from repos.<br><br>Error:<br>%1").arg(allRepoGemInfosResult.GetError().c_str()));
             }
 
             // we need to update all gem dependencies before activating all the gems for this project
@@ -696,7 +696,7 @@ namespace O3DE::ProjectManager
                 }
                 else
                 {
-                    QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.<br><br>Error:<br>%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
+                    QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled plugins for project %1.<br><br>Error:<br>%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
                 }
             }
 
@@ -705,7 +705,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems for %1.<br><br>Error:<br>%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
+            QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve plugins for %1.<br><br>Error:<br>%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
         }
     }
 
@@ -815,7 +815,7 @@ namespace O3DE::ProjectManager
 
     QString GemCatalogScreen::GetTabText()
     {
-        return "Gems";
+        return "Plugins";
     }
 
     bool GemCatalogScreen::IsTab()

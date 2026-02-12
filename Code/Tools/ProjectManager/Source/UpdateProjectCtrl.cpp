@@ -66,7 +66,7 @@ namespace O3DE::ProjectManager
         tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
         tabWidget->addTab(m_updateSettingsScreen, tr("General"));
 
-        QPushButton* gemsButton = new QPushButton(tr("Configure Gems"), this);
+        QPushButton* gemsButton = new QPushButton(tr("Configure Plugins"), this);
         gemsButton->setProperty("secondary", true);
         topBarHLayout->addWidget(gemsButton);
         tabWidget->setCornerWidget(gemsButton);
@@ -191,7 +191,7 @@ namespace O3DE::ProjectManager
         {
             if (!m_projectGemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
             {
-                QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
+                QMessageBox::critical(this, tr("Plugins downloading"), tr("You must wait for plugins to finish downloading before continuing."));
                 return;
             }
 
@@ -199,7 +199,7 @@ namespace O3DE::ProjectManager
             const ProjectGemCatalogScreen::ConfiguredGemsResult result = m_projectGemCatalogScreen->ConfigureGemsForProject(m_projectInfo.m_path);
             if (result == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
             {
-                QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for project."));
+                QMessageBox::critical(this, tr("Failed to configure plugins"), tr("Failed to configure plugins for project."));
             }
             if (result != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
             {
@@ -241,7 +241,7 @@ namespace O3DE::ProjectManager
         {
 
             m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
-            m_header->setSubTitle(QString(tr("Configure Gems")));
+            m_header->setSubTitle(QString(tr("Configure Plugins")));
             m_nextButton->setText(tr("Save"));
             m_nextButton->setVisible(true);
         }

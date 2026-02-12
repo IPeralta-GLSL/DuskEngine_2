@@ -40,7 +40,7 @@ namespace O3DE::ProjectManager
 
         instructionLayout->addSpacing(10);
 
-        QLabel* instructionLabel = new QLabel(tr("The following Gem(s) require manual setup before the project can be built successfully."));
+        QLabel* instructionLabel = new QLabel(tr("The following Plugin(s) require manual setup before the project can be built successfully."));
         instructionLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         instructionLayout->addWidget(instructionLabel);
 

@@ -44,7 +44,7 @@ namespace O3DE::ProjectManager
         screenLayout->setContentsMargins(0, 0, 0, 0);
 
         m_header = new ScreenHeader();
-        m_header->setSubTitle(tr("Create a new gem"));
+        m_header->setSubTitle(tr("Create a new plugin"));
         screenLayout->addWidget(m_header);
         
         QHBoxLayout* hLayout = new QHBoxLayout();
@@ -108,8 +108,8 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
 
-        m_gemTemplateSelectionTab = new QRadioButton(tr("1.  Gem Setup"));
-        m_gemDetailsTab =           new QRadioButton(tr("2.  Gem Details"));
+        m_gemTemplateSelectionTab = new QRadioButton(tr("1.  Plugin Setup"));
+        m_gemDetailsTab =           new QRadioButton(tr("2.  Plugin Details"));
         m_gemCreatorDetailsTab =    new QRadioButton(tr("3.  Creator Details"));
 
         m_gemTemplateSelectionTab->setChecked(true);
@@ -218,9 +218,9 @@ namespace O3DE::ProjectManager
         gemSetupLayout->setAlignment(Qt::AlignTop);
         gemSetupLayout->addWidget(gemSetupFrame);
         gemSetupScrollWidget->setLayout(gemSetupLayout);
-        QLabel* rightPaneHeader = new QLabel(tr("Please Choose a Gem Template"));
+        QLabel* rightPaneHeader = new QLabel(tr("Please Choose a Plugin Template"));
         rightPaneHeader->setObjectName("rightPaneHeader");
-        QLabel* rightPaneSubheader = new QLabel(tr("Gems can contain assets new functionality and such as scripts, animations, meshes, textures, and more."));
+        QLabel* rightPaneSubheader = new QLabel(tr("Plugins can contain assets new functionality and such as scripts, animations, meshes, textures, and more."));
         rightPaneSubheader->setObjectName("rightPaneSubheader");
         gemSetupLayout->addWidget(rightPaneHeader);
         gemSetupLayout->addWidget(rightPaneSubheader);
@@ -231,7 +231,7 @@ namespace O3DE::ProjectManager
         m_formFolderRadioButton->setObjectName("createAGem");
         m_radioButtonGroup->addButton(m_formFolderRadioButton);
 
-        m_gemTemplateLocation = new FormFolderBrowseEditWidget(tr("Gem Template Location*"), "", "", tr("A path must be provided."));
+        m_gemTemplateLocation = new FormFolderBrowseEditWidget(tr("Plugin Template Location*"), "", "", tr("A path must be provided."));
         m_gemTemplateLocation->setObjectName("createAGemRadioButtonSubFormField");
         gemSetupLayout->addWidget(m_formFolderRadioButton);
         gemSetupLayout->addWidget(m_gemTemplateLocation);
@@ -259,27 +259,27 @@ namespace O3DE::ProjectManager
         gemDetailsLayout->addWidget(gemDetailsFrame);
         gemDetailsScrollWidget->setLayout(gemDetailsLayout);
 
-        QLabel* secondRightPaneHeader = new QLabel(tr("Enter Gem Details"));
+        QLabel* secondRightPaneHeader = new QLabel(tr("Enter Plugin Details"));
         secondRightPaneHeader->setObjectName("rightPaneDetailsHeader");
         gemDetailsLayout->addWidget(secondRightPaneHeader);
 
         m_gemName = new FormLineEditWidget(
-            tr("Gem name*"),
+            tr("Plugin name*"),
             "",
-            tr("The unique name for your gem consisting of only alphanumeric characters, '-' and '_'."),
-            tr("A gem system name is required."));
+            tr("The unique name for your plugin consisting of only alphanumeric characters, '-' and '_'."),
+            tr("A plugin system name is required."));
         m_gemName->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("[a-zA-Z]+[a-zA-Z0-9\\-\\_]*"), this));
         gemDetailsLayout->addWidget(m_gemName);
 
         m_gemDisplayName = new FormLineEditWidget(
-            tr("Gem Display name*"), "", tr("The name displayed in the Gem Catalog"), tr("A gem display name is required."));
+            tr("Plugin Display name*"), "", tr("The name displayed in the Plugin Catalog"), tr("A plugin display name is required."));
         m_gemDisplayName->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("( |\\w)+"), this));
         gemDetailsLayout->addWidget(m_gemDisplayName);
 
-        m_gemSummary = new FormLineEditWidget(tr("Gem Summary"), "", tr("A short description of your Gem"), "");
+        m_gemSummary = new FormLineEditWidget(tr("Plugin Summary"), "", tr("A short description of your Plugin"), "");
         gemDetailsLayout->addWidget(m_gemSummary);
 
-        m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Gem. i.e. This requires X other gem"), "");
+        m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Plugin. i.e. This requires X other plugin"), "");
         gemDetailsLayout->addWidget(m_requirements);
 
         QStringList platformOptions;
@@ -305,18 +305,18 @@ namespace O3DE::ProjectManager
         gemDetailsLayout->addWidget(m_licenseURL);
 
         m_userDefinedGemTags = new FormLineEditTagsWidget(
-            tr("User-defined Gem Tags <i>&nbsp;&nbsp;&nbsp;(Press enter to create Gem Tag)</i>"), "", tr("Tags without spaces: i.e. SampleGame"), "");
+            tr("User-defined Plugin Tags <i>&nbsp;&nbsp;&nbsp;(Press enter to create Plugin Tag)</i>"), "", tr("Tags without spaces: i.e. SampleGame"), "");
         m_userDefinedGemTags->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("(^$|((\\w+)(\\w*)*))"), this));
         gemDetailsLayout->addWidget(m_userDefinedGemTags);
 
-        m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", tr("The path that the gem will be created at."), tr("The chosen directory must either not exist or be empty."));
+        m_gemLocation = new FormFolderBrowseEditWidget(tr("Plugin Location"), "", tr("The path that the plugin will be created at."), tr("The chosen directory must either not exist or be empty."));
         gemDetailsLayout->addWidget(m_gemLocation);
         
-        m_gemIconPath = new FormLineEditWidget(tr("Gem Icon Path"), "default.png", tr("Select Gem icon path"), "");
+        m_gemIconPath = new FormLineEditWidget(tr("Plugin Icon Path"), "default.png", tr("Select Plugin icon path"), "");
         gemDetailsLayout->addWidget(m_gemIconPath);
 
         m_documentationURL = new FormLineEditWidget(
-            tr("Documentation URL"), "", tr("Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/..."), "");
+            tr("Documentation URL"), "", tr("Link to any documentation of your Plugin i.e. https://o3de.org/docs/user-guide/gems/..."), "");
         gemDetailsLayout->addWidget(m_documentationURL);
 
         return gemDetailsScrollArea;
@@ -342,13 +342,13 @@ namespace O3DE::ProjectManager
         gemCreatorLayout->addWidget(thirdRightPaneHeader);
 
         m_origin =
-            new FormLineEditWidget(tr("Creator Name*"), "", tr("The name of the gem creator or originator goes here. i.e. O3DE"), tr("You must provide a creator name."));
+            new FormLineEditWidget(tr("Creator Name*"), "", tr("The name of the plugin creator or originator goes here. i.e. O3DE"), tr("You must provide a creator name."));
         gemCreatorLayout->addWidget(m_origin);
 
-        m_originURL = new FormLineEditWidget(tr("Origin URL"), "", tr("The primary website for your Gem. i.e. http://o3de.org"), "");
+        m_originURL = new FormLineEditWidget(tr("Origin URL"), "", tr("The primary website for your Plugin. i.e. http://o3de.org"), "");
         gemCreatorLayout->addWidget(m_originURL);
 
-        m_repositoryURL = new FormLineEditWidget(tr("Repository URL"), "", tr("Optional URL of the repository for this gem."), "");
+        m_repositoryURL = new FormLineEditWidget(tr("Repository URL"), "", tr("Optional URL of the repository for this plugin."), "");
         gemCreatorLayout->addWidget(m_repositoryURL);
 
         return gemCreatorScrollArea;
@@ -521,8 +521,8 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::critical(
                 this,
-                tr("Failed to create gem"),
-                tr("The gem failed to be created"));
+                tr("Failed to create plugin"),
+                tr("The plugin failed to be created"));
         }
     }
 

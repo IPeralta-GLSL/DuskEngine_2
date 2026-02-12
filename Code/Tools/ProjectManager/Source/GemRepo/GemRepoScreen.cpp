@@ -145,7 +145,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
+                QString failureMessage = tr("Failed to add plugin repo: %1.").arg(repoUri);
                 ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
                 AZ_Error("Project Manager", false, failureMessage.toUtf8());
             }
@@ -157,7 +157,7 @@ namespace O3DE::ProjectManager
         QString repoName = m_gemRepoModel->GetName(modelIndex);
 
         QMessageBox::StandardButton warningResult = QMessageBox::warning(
-            this, tr("Remove Repo"), tr("Are you sure you would like to remove gem repo: %1?").arg(repoName),
+            this, tr("Remove Repo"), tr("Are you sure you would like to remove plugin repo: %1?").arg(repoName),
             QMessageBox::No | QMessageBox::Yes);
 
         if (warningResult == QMessageBox::Yes)
@@ -173,7 +173,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QString failureMessage = tr("Failed to remove gem repo: %1.").arg(repoUri);
+                QString failureMessage = tr("Failed to remove plugin repo: %1.").arg(repoUri);
                 QMessageBox::critical(this, tr("Operation failed"), failureMessage);
                 AZ_Error("Project Manger", false, failureMessage.toUtf8());
             }
@@ -218,7 +218,7 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::critical(
                 this, tr("Operation failed"),
-                QString("Failed to refresh gem repo %1<br>Error:<br>%2")
+                QString("Failed to refresh plugin repo %1<br>Error:<br>%2")
                     .arg(m_gemRepoModel->GetName(modelIndex), refreshResult.GetError().c_str()));
         }
     }
@@ -267,7 +267,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve gem repos for engine.<br>Error:<br>%2").arg(allGemRepoInfosResult.GetError().c_str()));
+            QMessageBox::critical(this, tr("Operation failed"), QString("Cannot retrieve plugin repos for engine.<br>Error:<br>%2").arg(allGemRepoInfosResult.GetError().c_str()));
         }
     }
 

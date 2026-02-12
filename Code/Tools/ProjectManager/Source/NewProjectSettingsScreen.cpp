@@ -64,7 +64,7 @@ namespace O3DE::ProjectManager
             projectTemplateLabel->setObjectName("projectTemplateLabel");
             containerLayout->addWidget(projectTemplateLabel);
 
-            QLabel* projectTemplateDetailsLabel = new QLabel(tr("Project templates are pre-configured with relevant Gems that provide "
+            QLabel* projectTemplateDetailsLabel = new QLabel(tr("Project templates are pre-configured with relevant Plugins that provide "
                                                                 "additional functionality and content to the project."));
             projectTemplateDetailsLabel->setWordWrap(true);
             projectTemplateDetailsLabel->setObjectName("projectTemplateDetailsLabel");
@@ -364,7 +364,7 @@ namespace O3DE::ProjectManager
             m_templateSummary->setWordWrap(true);
             templateDetailsLayout->addWidget(m_templateSummary);
 
-            QLabel* includedGemsTitle = new QLabel(tr("Included Gems"), this);
+            QLabel* includedGemsTitle = new QLabel(tr("Included Plugins"), this);
             includedGemsTitle->setObjectName("includedGemsTitle");
             templateDetailsLayout->addWidget(includedGemsTitle);
 
@@ -372,11 +372,11 @@ namespace O3DE::ProjectManager
             m_templateIncludedGems->setObjectName("includedGems");
             templateDetailsLayout->addWidget(m_templateIncludedGems);
 
-            QLabel* moreGemsLabel = new QLabel(tr("Looking for more Gems?"), this);
+            QLabel* moreGemsLabel = new QLabel(tr("Looking for more Plugins?"), this);
             moreGemsLabel->setObjectName("moreGems");
             templateDetailsLayout->addWidget(moreGemsLabel);
 
-            QLabel* browseCatalogLabel = new QLabel(tr("Browse the Gems Catalog to further customize your project."), this);
+            QLabel* browseCatalogLabel = new QLabel(tr("Browse the Plugins Catalog to further customize your project."), this);
             browseCatalogLabel->setObjectName("browseCatalog");
             browseCatalogLabel->setWordWrap(true);
             templateDetailsLayout->addWidget(browseCatalogLabel);
@@ -385,7 +385,7 @@ namespace O3DE::ProjectManager
             m_downloadTemplateButton->setVisible(false);
             templateDetailsLayout->addWidget(m_downloadTemplateButton);
 
-            QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
+            QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Plugins"), this);
             connect(configureGemsButton, &QPushButton::clicked, this, [this]()
                 {
                     emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
@@ -481,7 +481,7 @@ namespace O3DE::ProjectManager
     {
         if (m_selectedTemplateIndex != -1 && m_templates[m_selectedTemplateIndex].m_isRemote)
         {
-            return AZ::Failure<QString>(tr("You cannot create a new project or configure gems with a template that has not been downloaded. Please download it before proceeding."));
+            return AZ::Failure<QString>(tr("You cannot create a new project or configure plugins with a template that has not been downloaded. Please download it before proceeding."));
         }
 
         return ProjectSettingsScreen::Validate();

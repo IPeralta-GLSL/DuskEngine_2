@@ -83,7 +83,7 @@ namespace O3DE::ProjectManager
         case Remote:
             return QObject::tr("Remote");
         default:
-            return QObject::tr("<Unknown Gem Origin>");
+            return QObject::tr("<Unknown Plugin Origin>");
         }
     }
 

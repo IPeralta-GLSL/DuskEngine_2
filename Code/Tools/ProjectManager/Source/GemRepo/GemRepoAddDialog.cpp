@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
         vLayout->addSpacing(10);
 
         QLabel* warningLabel = new QLabel(tr("Online repositories may contain files that could potentially harm your computer,"
-            " please ensure you understand the risks before downloading Gems from third-party sources."));
+            " please ensure you understand the risks before downloading Plugins from third-party sources."));
         warningLabel->setObjectName("gemRepoAddDialogWarningLabel");
         warningLabel->setWordWrap(true);
         warningLabel->setAlignment(Qt::AlignLeft);

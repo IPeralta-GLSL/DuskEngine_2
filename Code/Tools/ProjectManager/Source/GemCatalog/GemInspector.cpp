@@ -175,7 +175,7 @@ namespace O3DE::ProjectManager
         {
             m_dependingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_dependingGems->show();
-            m_dependingGems->Update(tr("Gem Dependencies"), tr("Enabling this Gem will automatically enable the following Gems."), dependingGemTags);
+            m_dependingGems->Update(tr("Plugin Dependencies"), tr("Enabling this Plugin will automatically enable the following Plugins."), dependingGemTags);
         }
         else
         {
@@ -254,7 +254,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                m_compatibilityTextLabel->setText(tr("This version has missing or incompatible gem dependencies"));
+                m_compatibilityTextLabel->setText(tr("This version has missing or incompatible plugin dependencies"));
             }
         }
 
@@ -294,7 +294,7 @@ namespace O3DE::ProjectManager
                                   gemInfo.m_downloadStatus == GemInfo::DownloadSuccessful;
 
         m_updateGemButton->setVisible(isRemote && isDownloaded && !isMissing);
-        m_uninstallGemButton->setText(isRemote ? tr("Uninstall Gem") : tr("Remove Gem"));
+        m_uninstallGemButton->setText(isRemote ? tr("Uninstall Plugin") : tr("Remove Plugin"));
         m_uninstallGemButton->setVisible(!isMissing && ((isRemote && isDownloaded) || isLocal));
         m_editGemButton->setVisible(!isMissing && (!isRemote || (isRemote && isDownloaded)));
         m_downloadGemButton->setVisible(isRemote && !isDownloaded);
@@ -509,26 +509,26 @@ namespace O3DE::ProjectManager
 
 
         // Update and Uninstall buttons
-        m_updateGemButton = new QPushButton(tr("Update Gem"));
+        m_updateGemButton = new QPushButton(tr("Update Plugin"));
         m_updateGemButton->setProperty("secondary", true);
         m_mainLayout->addWidget(m_updateGemButton);
         connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex, GetVersion(), GetVersionPath()); });
 
         m_mainLayout->addSpacing(10);
 
-        m_editGemButton = new QPushButton(tr("Edit Gem"));
+        m_editGemButton = new QPushButton(tr("Edit Plugin"));
         m_editGemButton->setProperty("secondary", true);
         m_mainLayout->addWidget(m_editGemButton);
         connect(m_editGemButton, &QPushButton::clicked, this , [this]{ emit EditGem(m_curModelIndex, GetVersionPath()); });
 
         m_mainLayout->addSpacing(10);
 
-        m_uninstallGemButton = new QPushButton(tr("Uninstall Gem"));
+        m_uninstallGemButton = new QPushButton(tr("Uninstall Plugin"));
         m_uninstallGemButton->setProperty("danger", true);
         m_mainLayout->addWidget(m_uninstallGemButton);
         connect(m_uninstallGemButton, &QPushButton::clicked, this , [this]{ emit UninstallGem(m_curModelIndex, GetVersionPath()); });
 
-        m_downloadGemButton = new QPushButton(tr("Download Gem"));
+        m_downloadGemButton = new QPushButton(tr("Download Plugin"));
         m_downloadGemButton->setProperty("primary", true);
         m_mainLayout->addWidget(m_downloadGemButton);
         connect(m_downloadGemButton, &QPushButton::clicked, this , [this]{ emit DownloadGem(m_curModelIndex, GetVersion(), GetVersionPath()); });

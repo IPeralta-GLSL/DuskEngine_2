@@ -100,12 +100,12 @@ namespace O3DE::ProjectManager
             m_addInfoSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
-        // Included Gems
+        // Included Plugins
         const QVector<Tag>& gemTags = m_model->GetIncludedGemTags(modelIndex);
         m_includedGems->setVisible(!gemTags.isEmpty());
         if (!gemTags.empty())
         {
-            m_includedGems->Update(tr("Included Gems"), "", gemTags);
+            m_includedGems->Update(tr("Included Plugins"), "", gemTags);
         }
 
         const QVector<Tag>& projectTags = m_model->GetIncludedProjectTags(modelIndex);
@@ -174,7 +174,7 @@ namespace O3DE::ProjectManager
         m_addInfoSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed);
         m_mainLayout->addSpacerItem(m_addInfoSpacer);
 
-        // Included Gems
+        // Included Plugins
         m_includedGems = new GemsSubWidget();
         m_mainLayout->addWidget(m_includedGems);
 

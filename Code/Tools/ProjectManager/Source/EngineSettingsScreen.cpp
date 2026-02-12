@@ -80,7 +80,7 @@ namespace O3DE::ProjectManager
         connect(m_defaultProjects->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
         layout->addWidget(m_defaultProjects);
 
-        m_defaultGems = new FormFolderBrowseEditWidget(tr("Default Gems Folder"), engineInfo.m_defaultGemsFolder, this);
+        m_defaultGems = new FormFolderBrowseEditWidget(tr("Default Plugins Folder"), engineInfo.m_defaultGemsFolder, this);
         m_defaultGems->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
         m_defaultGems->lineEdit()->setReadOnly(true);
         m_defaultGems->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));

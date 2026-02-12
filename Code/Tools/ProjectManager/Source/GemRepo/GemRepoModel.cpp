@@ -72,7 +72,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(nullptr, tr("Gems not found"), tr("Cannot find info for gems from repo %1").arg(gemRepoInfo.m_name));
+                QMessageBox::critical(nullptr, tr("Plugins not found"), tr("Cannot find info for plugins from repo %1").arg(gemRepoInfo.m_name));
             }
 
             // projects - including projects from deactivated repos

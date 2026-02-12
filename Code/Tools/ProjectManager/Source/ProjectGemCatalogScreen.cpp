@@ -75,8 +75,8 @@ namespace O3DE::ProjectManager
                 {
                     QMessageBox::critical(
                         nullptr,
-                        "Cannot add gem that isn't downloaded",
-                        tr("Cannot add gem %1 to project because it isn't downloaded yet or failed to download.")
+                        "Cannot add plugin that isn't downloaded",
+                        tr("Cannot add plugin %1 to project because it isn't downloaded yet or failed to download.")
                             .arg(GemModel::GetDisplayName(modelIndex)));
 
                     return ConfiguredGemsResult::Failed;
@@ -99,9 +99,9 @@ namespace O3DE::ProjectManager
             {
                 const auto& incompatibleGems = incompatibleResult.GetValue();
                 QString messageBoxQuestion =
-                    gemNames.length() == 1 ? tr("Do you still want to add this gem?") : tr("Do you still want to add these gems?");
+                    gemNames.length() == 1 ? tr("Do you still want to add this plugin?") : tr("Do you still want to add these plugins?");
                 QString messageBoxText = QString(tr("%1\n\n%2")).arg(incompatibleGems.join("\n")).arg(messageBoxQuestion);
-                QMessageBox::StandardButton forceAddGems = QMessageBox::warning(this, tr("Gem compatibility issues found"), messageBoxText,
+                QMessageBox::StandardButton forceAddGems = QMessageBox::warning(this, tr("Plugin compatibility issues found"), messageBoxText,
                     QMessageBox::Yes | QMessageBox::No);
                 if (forceAddGems != QMessageBox::StandardButton::Yes)
                 {
@@ -114,7 +114,7 @@ namespace O3DE::ProjectManager
             auto addGemsResult = pythonBindings->AddGemsToProject(gemPaths, gemNames, projectPath, force);
             if (!addGemsResult.IsSuccess())
             {
-                QString failureMessage = gemNames.length() == 1 ? tr("Failed to activate gem") : tr("Failed to activate gems");
+                QString failureMessage = gemNames.length() == 1 ? tr("Failed to activate plugin") : tr("Failed to activate plugins");
                 ProjectUtils::DisplayDetailedError(failureMessage, addGemsResult, this);
                 AZ_Error("Project Manager", false, failureMessage.toUtf8().constData());
 
@@ -150,8 +150,8 @@ namespace O3DE::ProjectManager
             if (!result.IsSuccess())
             {
                 QMessageBox::critical(
-                    nullptr, "Failed to remove gem from project",
-                    tr("Cannot remove gem %1 from project.<br><br>Error:<br>%2")
+                    nullptr, "Failed to remove plugin from project",
+                    tr("Cannot remove plugin %1 from project.<br><br>Error:<br>%2")
                         .arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
                 return ConfiguredGemsResult::Failed;

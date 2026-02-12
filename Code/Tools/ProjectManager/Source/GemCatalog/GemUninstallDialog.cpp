@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     GemUninstallDialog::GemUninstallDialog(const QString& gemName, QWidget* parent)
         : QDialog(parent)
     {
-        setWindowTitle(tr("Uninstall Remote Gem"));
+        setWindowTitle(tr("Uninstall Remote Plugin"));
         setObjectName("GemUninstallDialog");
         setAttribute(Qt::WA_DeleteOnClose);
         setModal(true);
@@ -36,8 +36,8 @@ namespace O3DE::ProjectManager
 
         layout->addSpacing(10);
 
-        QLabel* bodyLabel = new QLabel(tr("The Gem and its related files will be uninstalled. This does not affect the Gem's repository. "
-                                          "You can re-install this Gem from the Catalog, but its contents may be subject to change."));
+        QLabel* bodyLabel = new QLabel(tr("The Plugin and its related files will be uninstalled. This does not affect the Plugin's repository. "
+                                          "You can re-install this Plugin from the Catalog, but its contents may be subject to change."));
         bodyLabel->setWordWrap(true);
         bodyLabel->setFixedSize(QSize(440, 80));
         layout->addWidget(bodyLabel);
@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
 
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
-        QPushButton* uninstallButton = dialogButtons->addButton(tr("Uninstall Gem"), QDialogButtonBox::ApplyRole);
+        QPushButton* uninstallButton = dialogButtons->addButton(tr("Uninstall Plugin"), QDialogButtonBox::ApplyRole);
         uninstallButton->setProperty("danger", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);

@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
     EditGem::EditGem(QWidget* parent)
         : CreateGem(parent)
     {
-        m_header->setSubTitle(tr("Edit gem"));
+        m_header->setSubTitle(tr("Edit plugin"));
            
         //we will only have two pages: details page and creator details page
         m_gemTemplateSelectionTab->setChecked(false);
@@ -40,7 +40,7 @@ namespace O3DE::ProjectManager
 
         m_gemCreatorDetailsTab->setEnabled(true);
 
-        m_gemDetailsTab->setText(tr("1.  Gem Details"));
+        m_gemDetailsTab->setText(tr("1.  Plugin Details"));
         m_gemCreatorDetailsTab->setText(tr("2.  Creator Details"));
 
         m_stackWidget->setCurrentIndex(GemDetailsScreen);
@@ -152,8 +152,8 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::critical(
                 this,
-                tr("Failed to edit gem"),
-                tr("The gem failed to be edited"));
+                tr("Failed to edit plugin"),
+                tr("The plugin failed to be edited"));
         }
     }
 

@@ -59,7 +59,7 @@ namespace O3DE::ProjectManager
         CreateDownloadSection();
 
         // added
-        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [this]
+        CreateGemSection( tr("Plugin to be activated"), tr("Plugins to be activated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/false);
@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed
-        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [this]
+        CreateGemSection( tr("Plugin to be deactivated"), tr("Plugins to be deactivated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/false);
@@ -182,7 +182,7 @@ namespace O3DE::ProjectManager
         titleLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
         layout->addWidget(titleLabel);
 
-        titleLabel->setText(tr("Gems to be installed"));
+        titleLabel->setText(tr("Plugins to be installed"));
 
         // Create header section
         QWidget* downloadingGemsWidget = new QWidget();
@@ -491,7 +491,7 @@ namespace O3DE::ProjectManager
         setObjectName("GemCatalogHeaderWidget");
         setFixedHeight(s_height);
 
-        QLabel* titleLabel = new QLabel(tr("Gem Catalog"));
+        QLabel* titleLabel = new QLabel(tr("Plugin Catalog"));
         titleLabel->setObjectName("GemCatalogTitle");
         hLayout->addWidget(titleLabel);
 
@@ -538,10 +538,10 @@ namespace O3DE::ProjectManager
 
         QMenu* gemMenu = new QMenu(this);
         gemMenu->addAction(tr("Refresh"), [this]() { emit RefreshGems(/*refreshRemoteRepos*/true); });
-        gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
+        gemMenu->addAction( tr("Show Plugin Repos"), [this]() { emit OpenGemsRepo(); });
         gemMenu->addSeparator();
-        gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });
-        gemMenu->addAction( tr("Create New Gem"), [this]() { emit CreateGem(); });
+        gemMenu->addAction( tr("Add Existing Plugin"), [this]() { emit AddGem(); });
+        gemMenu->addAction( tr("Create New Plugin"), [this]() { emit CreateGem(); });
 
         QPushButton* gemMenuButton = new QPushButton(this);
         gemMenuButton->setObjectName("gemCatalogMenuButton");

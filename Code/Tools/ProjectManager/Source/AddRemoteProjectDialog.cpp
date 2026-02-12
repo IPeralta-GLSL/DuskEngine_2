@@ -235,7 +235,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
+            QString failureMessage = tr("Failed to add plugin repo: %1.").arg(repoUri);
             ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
             AZ_Error("Project Manager", false, failureMessage.toUtf8().constData());
         }

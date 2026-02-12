@@ -68,7 +68,7 @@ namespace O3DE::ProjectManager
 
         auto refreshGemCountUI = [=]() {
                 const int numGemsShown = proxyModel->rowCount();
-                showCountLabel->setText(QString(tr("showing %1 Gems")).arg(numGemsShown));
+                showCountLabel->setText(QString(tr("showing %1 Plugins")).arg(numGemsShown));
             };
 
         connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, refreshGemCountUI);

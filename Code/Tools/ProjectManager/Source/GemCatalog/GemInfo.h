@@ -79,7 +79,7 @@ namespace O3DE::ProjectManager
         QStringList GetPlatformsAsStringList() const;
 
         QString m_path;
-        QString m_name = "Unknown Gem Name";
+        QString m_name = "Unknown Plugin Name";
         QString m_displayName;
         QString m_origin = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
