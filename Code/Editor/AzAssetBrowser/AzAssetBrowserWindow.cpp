@@ -305,10 +305,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     QTimer::singleShot(0, this, [this]()
     {
-        m_ui->m_treeViewButton->setChecked(true);
-        m_ui->m_thumbnailViewButton->setChecked(false);
+        m_ui->m_treeViewButton->setChecked(false);
+        m_ui->m_thumbnailViewButton->setChecked(true);
         m_ui->m_tableViewButton->setChecked(false);
-        SetCurrentMode(AssetBrowserMode::ListView);
+        SetCurrentMode(AssetBrowserMode::ThumbnailView);
         // Hide favorites widget and minimize its splitter area.
         // Cannot just collapse() because LoadFavorites() re-expands it asynchronously.
         m_ui->m_assetBrowserFavoritesWidget->hide();
