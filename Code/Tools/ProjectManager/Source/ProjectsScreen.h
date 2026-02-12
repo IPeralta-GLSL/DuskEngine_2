@@ -1,10 +1,3 @@
-/*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
- */
 #pragma once
 
 #include <AzCore/IO/Path/Path.h>
@@ -14,7 +7,6 @@
 #include <ScreenWidget.h>
 #include <EngineInfo.h>
 #include <ProjectInfo.h>
-
 #include <DownloadController.h>
 
 #include <QQueue>
@@ -35,10 +27,8 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(ProjectButton);
     QT_FORWARD_DECLARE_CLASS(DownloadController);
 
-    class ProjectsScreen
-        : public ScreenWidget
+    class ProjectsScreen : public ScreenWidget
     {
-
     public:
         explicit ProjectsScreen(DownloadController* downloadController, QWidget* parent = nullptr);
         ~ProjectsScreen();
@@ -49,6 +39,7 @@ namespace O3DE::ProjectManager
 
     protected:
         void NotifyCurrentScreen() override;
+        void paintEvent(QPaintEvent* event) override;
         void SuggestBuildProjectMsg(const ProjectInfo& projectInfo, bool showMessage);
 
     protected slots:
@@ -63,8 +54,7 @@ namespace O3DE::ProjectManager
         void HandleDeleteProject(const QString& projectPath);
         void HandleOpenAndroidProjectGenerator(const QString& projectPath);
         void HandleOpenProjectExportSettings(const QString& projectPath);
-
-
+        void HandleProjectFilePathChanged(const QString& path);
 
         void SuggestBuildProject(const ProjectInfo& projectInfo);
         void QueueBuildProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
@@ -80,10 +70,6 @@ namespace O3DE::ProjectManager
         void ProjectBuildDone(bool success = true);
         void ProjectExportDone(bool success = false);
 
-        void paintEvent(QPaintEvent* event) override;
-
-        void HandleProjectFilePathChanged(const QString& path);
-
     private:
         QFrame* CreateFirstTimeContent();
         QFrame* CreateProjectsContent();
@@ -95,33 +81,34 @@ namespace O3DE::ProjectManager
         void RemoveProjectButtonsFromFlowLayout(const QVector<ProjectInfo>& projectsToKeep);
 
         bool StartProjectBuild(const ProjectInfo& projectInfo, bool skipDialogBox = false);
+        bool StartProjectExport(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);
         bool BuildQueueContainsProject(const QString& projectPath);
-        bool WarnIfInBuildQueue(const QString& projectPath);
-
-        bool StartProjectExport(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         bool ExportQueueContainsProject(const QString& projectPath);
+        bool WarnIfInBuildQueue(const QString& projectPath);
         bool WarnIfInExportQueue(const QString& projectPath);
 
-        QAction* m_createNewProjectAction = nullptr;
-        QAction* m_addExistingProjectAction = nullptr;
-        QAction* m_addRemoteProjectAction = nullptr;
         QPixmap m_background;
+        QStackedWidget* m_stack = nullptr;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
         FlowLayout* m_projectsFlowLayout = nullptr;
         QFileSystemWatcher* m_fileSystemWatcher = nullptr;
-        QStackedWidget* m_stack = nullptr;
+
+        QAction* m_createNewProjectAction = nullptr;
+        QAction* m_addExistingProjectAction = nullptr;
+        QAction* m_addRemoteProjectAction = nullptr;
+
         AZStd::unordered_map<AZ::IO::Path, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
         QQueue<ProjectInfo> m_exportQueue;
+
         ProjectBuilderController* m_currentBuilder = nullptr;
         AZStd::unique_ptr<ProjectExportController> m_currentExporter;
         DownloadController* m_downloadController = nullptr;
 
-        inline constexpr static int s_contentMargins = 80;
-        inline constexpr static int s_spacerSize = 20;
+        inline constexpr static int s_contentMargins = 60;
+        inline constexpr static int s_spacerSize = 24;
     };
-
-} // namespace O3DE::ProjectManager
+}

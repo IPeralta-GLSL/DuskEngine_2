@@ -1,21 +1,51 @@
-/*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
- */
-
 #include <ScreensCtrl.h>
 #include <ScreenFactory.h>
 #include <ScreenWidget.h>
 #include <UpdateProjectCtrl.h>
 
+#include <QPainter>
+#include <QProxyStyle>
+#include <QStyleOptionTab>
+#include <QTabBar>
 #include <QTabWidget>
 #include <QVBoxLayout>
 
 namespace O3DE::ProjectManager
 {
+    class HorizontalTabStyle : public QProxyStyle
+    {
+    public:
+        using QProxyStyle::QProxyStyle;
+
+        QSize sizeFromContents(ContentsType type, const QStyleOption* option,
+            const QSize& size, const QWidget* widget) const override
+        {
+            QSize s = QProxyStyle::sizeFromContents(type, option, size, widget);
+            if (type == QStyle::CT_TabBarTab)
+            {
+                s.transpose();
+                s.rwidth() = 160;
+                s.rheight() = 44;
+            }
+            return s;
+        }
+
+        void drawControl(ControlElement element, const QStyleOption* option,
+            QPainter* painter, const QWidget* widget) const override
+        {
+            if (element == CE_TabBarTabLabel)
+            {
+                if (const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>(option))
+                {
+                    QStyleOptionTab adjustedTab = *tab;
+                    adjustedTab.shape = QTabBar::RoundedNorth;
+                    QProxyStyle::drawControl(element, &adjustedTab, painter, widget);
+                    return;
+                }
+            }
+            QProxyStyle::drawControl(element, option, painter, widget);
+        }
+    };
     ScreensCtrl::ScreensCtrl(QWidget* parent, DownloadController* downloadController)
         : QWidget(parent)
         , m_downloadController(downloadController)
@@ -29,8 +59,9 @@ namespace O3DE::ProjectManager
         m_screenStack = new QStackedWidget();
         vLayout->addWidget(m_screenStack);
 
-        // add a tab widget at the bottom of the stack
         m_tabWidget = new QTabWidget();
+        m_tabWidget->setTabPosition(QTabWidget::West);
+        m_tabWidget->tabBar()->setStyle(new HorizontalTabStyle(m_tabWidget->tabBar()->style()));
         m_tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
         m_screenStack->addWidget(m_tabWidget);
         connect(m_tabWidget, &QTabWidget::currentChanged, this, &ScreensCtrl::TabChanged);
@@ -51,10 +82,7 @@ namespace O3DE::ProjectManager
         {
             return iterator.value();
         }
-        else
-        {
-            return nullptr;
-        }
+        return nullptr;
     }
 
     ScreenWidget* ScreensCtrl::GetCurrentScreen()
@@ -63,10 +91,7 @@ namespace O3DE::ProjectManager
         {
             return static_cast<ScreenWidget*>(m_tabWidget->currentWidget());
         }
-        else
-        {
-            return static_cast<ScreenWidget*>(m_screenStack->currentWidget());
-        }
+        return static_cast<ScreenWidget*>(m_screenStack->currentWidget());
     }
 
     bool ScreensCtrl::ChangeToScreen(ProjectManagerScreen screen)
@@ -93,7 +118,6 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            // Check if screen is contained by another screen
             for (ScreenWidget* checkingScreen : m_screenMap)
             {
                 if (checkingScreen->ContainsScreen(screen))
@@ -103,44 +127,42 @@ namespace O3DE::ProjectManager
                 }
             }
         }
-        if (newScreen)
+
+        if (!newScreen)
         {
-            ScreenWidget* currentScreen = GetCurrentScreen();
+            return false;
+        }
 
-            if (currentScreen != newScreen)
+        ScreenWidget* currentScreen = GetCurrentScreen();
+
+        if (currentScreen != newScreen)
+        {
+            if (addVisit)
             {
-                if (addVisit)
-                {
-                    ProjectManagerScreen oldScreen = currentScreen->GetScreenEnum();
-                    m_screenVisitOrder.push(oldScreen);
-                }
+                m_screenVisitOrder.push(currentScreen->GetScreenEnum());
+            }
 
-                if (newScreen->IsTab())
-                {
-                    m_tabWidget->setCurrentWidget(newScreen);
-                    m_screenStack->setCurrentWidget(m_tabWidget);
-                }
-                else
-                {
-                    m_screenStack->setCurrentWidget(newScreen);
-                }
-
-                newScreen->NotifyCurrentScreen();
-
-                if (iterator == m_screenMap.end())
-                {
-                    newScreen->GoToScreen(screen);
-                }
-
-                return true;
+            if (newScreen->IsTab())
+            {
+                m_tabWidget->setCurrentWidget(newScreen);
+                m_screenStack->setCurrentWidget(m_tabWidget);
             }
             else
             {
-                // If we are already on this screen still notify we are on this screen to refresh it
-                newScreen->NotifyCurrentScreen();
+                m_screenStack->setCurrentWidget(newScreen);
             }
+
+            newScreen->NotifyCurrentScreen();
+
+            if (iterator == m_screenMap.end())
+            {
+                newScreen->GoToScreen(screen);
+            }
+
+            return true;
         }
 
+        newScreen->NotifyCurrentScreen();
         return false;
     }
 
@@ -148,7 +170,6 @@ namespace O3DE::ProjectManager
     {
         if (!m_screenVisitOrder.isEmpty())
         {
-            // We do not check with screen if we can go back, we should always be able to go back
             ProjectManagerScreen previousScreen = m_screenVisitOrder.pop();
             return ForceChangeToScreen(previousScreen, false);
         }
@@ -157,17 +178,11 @@ namespace O3DE::ProjectManager
 
     void ScreensCtrl::ResetScreen(ProjectManagerScreen screen)
     {
-        bool shouldRestoreCurrentScreen = false;
-        if (GetCurrentScreen() && GetCurrentScreen()->GetScreenEnum() == screen)
-        {
-            shouldRestoreCurrentScreen = true;
-        }
+        bool shouldRestoreCurrentScreen = GetCurrentScreen() && GetCurrentScreen()->GetScreenEnum() == screen;
         int tabIndex = GetScreenTabIndex(screen);
 
-        // Delete old screen if it exists to start fresh
         DeleteScreen(screen);
 
-        // Add new screen
         ScreenWidget* newScreen = BuildScreen(this, screen, m_downloadController);
         if (newScreen->IsTab())
         {
@@ -216,29 +231,27 @@ namespace O3DE::ProjectManager
 
     void ScreensCtrl::DeleteScreen(ProjectManagerScreen screen)
     {
-        // Find the old screen if it exists and get rid of it
         const auto iter = m_screenMap.find(screen);
-        if (iter != m_screenMap.end())
+        if (iter == m_screenMap.end())
         {
-            ScreenWidget* screenToDelete = iter.value();
-            if (screenToDelete->IsTab())
-            {
-                int tabIndex = m_tabWidget->indexOf(screenToDelete);
-                if (tabIndex > -1)
-                {
-                    m_tabWidget->removeTab(tabIndex);
-                }
-            }
-            else
-            {
-                // if the screen we delete is the current widget, a new one will
-                // be selected automatically (randomly?)
-                m_screenStack->removeWidget(screenToDelete);
-            }
-
-            // Erase does not cause a rehash so interators remain valid
-            m_screenMap.erase(iter);
+            return;
         }
+
+        ScreenWidget* screenToDelete = iter.value();
+        if (screenToDelete->IsTab())
+        {
+            int tabIndex = m_tabWidget->indexOf(screenToDelete);
+            if (tabIndex > -1)
+            {
+                m_tabWidget->removeTab(tabIndex);
+            }
+        }
+        else
+        {
+            m_screenStack->removeWidget(screenToDelete);
+        }
+
+        m_screenMap.erase(iter);
     }
 
     void ScreensCtrl::DeleteAllScreens()
@@ -269,7 +282,6 @@ namespace O3DE::ProjectManager
                 return m_tabWidget->indexOf(screenWidget);
             }
         }
-        
         return -1;
     }
-} // namespace O3DE::ProjectManager
+}

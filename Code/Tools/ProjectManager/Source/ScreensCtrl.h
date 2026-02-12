@@ -1,18 +1,11 @@
-/*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
- */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
 
-#include <QStackedWidget>
 #include <QStack>
+#include <QStackedWidget>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QTabWidget)
@@ -22,8 +15,7 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(ScreenWidget);
     QT_FORWARD_DECLARE_CLASS(DownloadController);
 
-    class ScreensCtrl
-        : public QWidget
+    class ScreensCtrl : public QWidget
     {
         Q_OBJECT
 
@@ -55,10 +47,9 @@ namespace O3DE::ProjectManager
         int GetScreenTabIndex(ProjectManagerScreen screen);
 
         QStackedWidget* m_screenStack;
+        QTabWidget* m_tabWidget;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
-        QTabWidget* m_tabWidget;
         DownloadController* m_downloadController;
     };
-
-} // namespace O3DE::ProjectManager
+}

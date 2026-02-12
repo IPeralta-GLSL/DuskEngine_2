@@ -12,9 +12,9 @@
 namespace O3DE::ProjectManager
 {
     inline constexpr static int MinWindowWidth = 1200;
-    inline constexpr static int ProjectPreviewImageWidth = 210;
-    inline constexpr static int ProjectPreviewImageHeight = 280;
-    inline constexpr static int ProjectTemplateImageWidth = 92;
+    inline constexpr static int ProjectPreviewImageWidth = 260;
+    inline constexpr static int ProjectPreviewImageHeight = 260;
+    inline constexpr static int ProjectTemplateImageWidth = 110;
     inline constexpr static int GemPreviewImageWidth = 70;
     inline constexpr static int GemPreviewImageHeight = 40;
     inline constexpr static int ProjectCommandLineTimeoutSeconds = 30;
