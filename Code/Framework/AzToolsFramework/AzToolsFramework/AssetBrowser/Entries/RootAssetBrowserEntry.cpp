@@ -65,6 +65,18 @@ namespace AzToolsFramework
             SetFullPath(m_enginePath);
             m_gemNames.clear();
 
+            m_engineDisplayName.clear();
+            auto engineJsonPath = (m_enginePath / "engine.json").Native();
+            auto engineJsonResult = AZ::JsonSerializationUtils::ReadJsonFile(engineJsonPath.c_str());
+            if (engineJsonResult.IsSuccess())
+            {
+                auto& doc = engineJsonResult.GetValue();
+                if (doc.IsObject() && doc.HasMember("engine_name") && doc["engine_name"].IsString())
+                {
+                    m_engineDisplayName = QString::fromUtf8(doc["engine_name"].GetString());
+                }
+            }
+
             AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry != nullptr)
             {
@@ -441,6 +453,11 @@ namespace AzToolsFramework
             folder->m_isScanFolder = isScanFolder;
             parent->AddChild(folder);
             folder->m_isGemFolder = m_gemNames.contains(folder->GetFullPath());
+
+            if (!m_engineDisplayName.isEmpty() && AZ::IO::PathView(folder->GetFullPath()) == AZ::IO::PathView(m_enginePath))
+            {
+                folder->m_displayName = m_engineDisplayName;
+            }
             return folder;
         }
 

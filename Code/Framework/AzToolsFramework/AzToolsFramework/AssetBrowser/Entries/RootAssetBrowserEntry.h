@@ -83,6 +83,7 @@ namespace AzToolsFramework
             AZ::IO::Path m_enginePath;
             AZ::IO::Path m_projectPath;
             AZStd::unordered_set<AZ::IO::Path> m_gemNames;
+            QString m_engineDisplayName;
 
             //! Create folder entry child
             FolderAssetBrowserEntry* CreateFolder(AZStd::string_view folderName, AssetBrowserEntry* parent, bool isScanFolder);
