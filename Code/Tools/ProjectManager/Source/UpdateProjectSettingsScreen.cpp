@@ -20,6 +20,8 @@
 #include <QFileInfo>
 #include <QPushButton>
 #include <QComboBox>
+#include <QFileDialog>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -31,6 +33,57 @@ namespace O3DE::ProjectManager
         m_projectEngine = new FormComboBoxWidget(tr("Engine"), {}, this);
         connect(m_projectEngine->comboBox(), QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &UpdateProjectSettingsScreen::OnProjectEngineUpdated);
+
+        QPushButton* browseEngineButton = new QPushButton(this);
+        browseEngineButton->setObjectName("browseButton");
+        browseEngineButton->setIcon(QIcon(":/Folder.svg"));
+        browseEngineButton->setToolTip(tr("Browse for engine folder"));
+        browseEngineButton->setFlat(true);
+        if (QFrame* frame = m_projectEngine->findChild<QFrame*>("formFrame"))
+        {
+            frame->layout()->addWidget(browseEngineButton);
+        }
+
+        connect(browseEngineButton, &QPushButton::clicked, this, [this]()
+        {
+            QString engineDir = QFileDialog::getExistingDirectory(this, tr("Select Engine Folder"));
+            if (engineDir.isEmpty())
+            {
+                return;
+            }
+
+            QFileInfo engineJson(QDir(engineDir).filePath("engine.json"));
+            if (!engineJson.exists() || !engineJson.isFile())
+            {
+                QMessageBox::warning(this, tr("Invalid Engine Folder"),
+                    tr("The selected folder does not contain an engine.json file."));
+                return;
+            }
+
+            QComboBox* combobox = m_projectEngine->comboBox();
+            int existingIndex = -1;
+            for (int i = 0; i < combobox->count(); ++i)
+            {
+                auto data = combobox->itemData(i).value<QStringList>();
+                if (data.count() >= 1 && QDir(data[0]) == QDir(engineDir))
+                {
+                    existingIndex = i;
+                    break;
+                }
+            }
+
+            if (existingIndex != -1)
+            {
+                combobox->setCurrentIndex(existingIndex);
+            }
+            else
+            {
+                QString label = QString("Custom (%1)").arg(engineDir);
+                combobox->addItem(label, QStringList{ engineDir, "" });
+                combobox->setCurrentIndex(combobox->count() - 1);
+            }
+        });
+
         m_verticalLayout->addWidget(m_projectEngine);
 
         // Project preview browse edit 
