@@ -22,6 +22,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 
+#include <QComboBox>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
@@ -30,6 +31,7 @@
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
+#include <QLineEdit>
 #include <QListView>
 #include <QListWidget>
 #include <QListWidgetItem>
@@ -99,6 +101,16 @@ namespace O3DE::ProjectManager
         layout->setAlignment(Qt::AlignTop);
         frame->setLayout(layout);
 
+        layout->addSpacing(40);
+
+        QLabel* welcomeIcon = new QLabel(this);
+        welcomeIcon->setObjectName("welcomeIcon");
+        welcomeIcon->setPixmap(QIcon(":/ProjectManager-Icon.svg").pixmap(64, 64));
+        welcomeIcon->setAlignment(Qt::AlignLeft);
+        layout->addWidget(welcomeIcon);
+
+        layout->addSpacing(16);
+
         QLabel* titleLabel = new QLabel(tr("Ready? Set. Create!"), this);
         titleLabel->setObjectName("titleLabel");
         layout->addWidget(titleLabel);
@@ -108,20 +120,78 @@ namespace O3DE::ProjectManager
         introLabel->setText(tr("Welcome to Dusk Engine! Start something new by creating a project."));
         layout->addWidget(introLabel);
 
+        QLabel* subtitleLabel = new QLabel(tr("Choose an option below to get started:"), this);
+        subtitleLabel->setObjectName("ftueSubtitleLabel");
+        layout->addWidget(subtitleLabel);
+
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setAlignment(Qt::AlignLeft);
         buttonLayout->setSpacing(s_spacerSize);
 
-        QPushButton* createProjectButton = new QPushButton(tr("Create a project\n"), this);
+        QPushButton* createProjectButton = new QPushButton(this);
         createProjectButton->setObjectName("createProjectButton");
+        QVBoxLayout* createBtnLayout = new QVBoxLayout(createProjectButton);
+        createBtnLayout->setAlignment(Qt::AlignCenter);
+        createBtnLayout->setSpacing(8);
+        QLabel* createIcon = new QLabel(createProjectButton);
+        createIcon->setPixmap(QIcon(":/AddOffset.svg").pixmap(48, 48));
+        createIcon->setAlignment(Qt::AlignCenter);
+        createIcon->setAttribute(Qt::WA_TransparentForMouseEvents);
+        createBtnLayout->addWidget(createIcon);
+        QLabel* createText = new QLabel(tr("Create a project"), createProjectButton);
+        createText->setObjectName("ftueButtonTitle");
+        createText->setAlignment(Qt::AlignCenter);
+        createText->setAttribute(Qt::WA_TransparentForMouseEvents);
+        createBtnLayout->addWidget(createText);
+        QLabel* createDesc = new QLabel(tr("Start from scratch or\nuse a template"), createProjectButton);
+        createDesc->setObjectName("ftueButtonDesc");
+        createDesc->setAlignment(Qt::AlignCenter);
+        createDesc->setAttribute(Qt::WA_TransparentForMouseEvents);
+        createBtnLayout->addWidget(createDesc);
         buttonLayout->addWidget(createProjectButton);
 
-        QPushButton* addProjectButton = new QPushButton(tr("Open a project\n"), this);
+        QPushButton* addProjectButton = new QPushButton(this);
         addProjectButton->setObjectName("addProjectButton");
+        QVBoxLayout* addBtnLayout = new QVBoxLayout(addProjectButton);
+        addBtnLayout->setAlignment(Qt::AlignCenter);
+        addBtnLayout->setSpacing(8);
+        QLabel* addIcon = new QLabel(addProjectButton);
+        addIcon->setPixmap(QIcon(":/FolderOffset.svg").pixmap(48, 48));
+        addIcon->setAlignment(Qt::AlignCenter);
+        addIcon->setAttribute(Qt::WA_TransparentForMouseEvents);
+        addBtnLayout->addWidget(addIcon);
+        QLabel* addText = new QLabel(tr("Open a project"), addProjectButton);
+        addText->setObjectName("ftueButtonTitle");
+        addText->setAlignment(Qt::AlignCenter);
+        addText->setAttribute(Qt::WA_TransparentForMouseEvents);
+        addBtnLayout->addWidget(addText);
+        QLabel* addDesc = new QLabel(tr("Open an existing\nproject from disk"), addProjectButton);
+        addDesc->setObjectName("ftueButtonDesc");
+        addDesc->setAlignment(Qt::AlignCenter);
+        addDesc->setAttribute(Qt::WA_TransparentForMouseEvents);
+        addBtnLayout->addWidget(addDesc);
         buttonLayout->addWidget(addProjectButton);
 
-        QPushButton* addRemoteProjectButton = new QPushButton(tr("Add a remote project\n"), this);
+        QPushButton* addRemoteProjectButton = new QPushButton(this);
         addRemoteProjectButton->setObjectName("addRemoteProjectButton");
+        QVBoxLayout* remoteBtnLayout = new QVBoxLayout(addRemoteProjectButton);
+        remoteBtnLayout->setAlignment(Qt::AlignCenter);
+        remoteBtnLayout->setSpacing(8);
+        QLabel* remoteIcon = new QLabel(addRemoteProjectButton);
+        remoteIcon->setPixmap(QIcon(":/Cloud.svg").pixmap(48, 48));
+        remoteIcon->setAlignment(Qt::AlignCenter);
+        remoteIcon->setAttribute(Qt::WA_TransparentForMouseEvents);
+        remoteBtnLayout->addWidget(remoteIcon);
+        QLabel* remoteText = new QLabel(tr("Add a remote project"), addRemoteProjectButton);
+        remoteText->setObjectName("ftueButtonTitle");
+        remoteText->setAlignment(Qt::AlignCenter);
+        remoteText->setAttribute(Qt::WA_TransparentForMouseEvents);
+        remoteBtnLayout->addWidget(remoteText);
+        QLabel* remoteDesc = new QLabel(tr("Download a project\nfrom a repository"), addRemoteProjectButton);
+        remoteDesc->setObjectName("ftueButtonDesc");
+        remoteDesc->setAlignment(Qt::AlignCenter);
+        remoteDesc->setAttribute(Qt::WA_TransparentForMouseEvents);
+        remoteBtnLayout->addWidget(remoteDesc);
         buttonLayout->addWidget(addRemoteProjectButton);
 
         connect(createProjectButton, &QPushButton::clicked, this, &ProjectsScreen::HandleNewProjectButton);
@@ -131,6 +201,55 @@ namespace O3DE::ProjectManager
         layout->addLayout(buttonLayout);
 
         return frame;
+    }
+
+    QFrame* ProjectsScreen::CreateToolbar()
+    {
+        QFrame* toolbar = new QFrame(this);
+        toolbar->setObjectName("projectsToolbar");
+        QHBoxLayout* toolbarLayout = new QHBoxLayout();
+        toolbarLayout->setContentsMargins(0, 8, 0, 8);
+        toolbarLayout->setSpacing(12);
+        toolbar->setLayout(toolbarLayout);
+
+        m_searchField = new QLineEdit(this);
+        m_searchField->setObjectName("projectSearchField");
+        m_searchField->setPlaceholderText(tr("Search projects..."));
+        m_searchField->setClearButtonEnabled(true);
+        m_searchField->setMaximumWidth(300);
+        m_searchField->setMinimumHeight(32);
+        connect(m_searchField, &QLineEdit::textChanged, this, &ProjectsScreen::HandleSearchTextChanged);
+        toolbarLayout->addWidget(m_searchField);
+
+        m_projectCountLabel = new QLabel(this);
+        m_projectCountLabel->setObjectName("projectCountLabel");
+        m_projectCountLabel->setText(tr("0 projects"));
+        toolbarLayout->addWidget(m_projectCountLabel);
+
+        toolbarLayout->addStretch();
+
+        QLabel* sortLabel = new QLabel(tr("Sort by:"), this);
+        sortLabel->setObjectName("projectSortLabel");
+        toolbarLayout->addWidget(sortLabel);
+
+        m_sortCombo = new QComboBox(this);
+        m_sortCombo->setObjectName("projectSortCombo");
+        m_sortCombo->addItem(tr("Name (A-Z)"));
+        m_sortCombo->addItem(tr("Name (Z-A)"));
+        m_sortCombo->addItem(tr("Build Priority"));
+        m_sortCombo->setMinimumHeight(32);
+        m_sortCombo->setMinimumWidth(140);
+        connect(m_sortCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ProjectsScreen::HandleSortOrderChanged);
+        toolbarLayout->addWidget(m_sortCombo);
+
+        m_refreshButton = new QPushButton(this);
+        m_refreshButton->setObjectName("projectRefreshButton");
+        m_refreshButton->setToolTip(tr("Refresh project list"));
+        m_refreshButton->setFixedSize(32, 32);
+        connect(m_refreshButton, &QPushButton::clicked, this, &ProjectsScreen::HandleRefreshProjects);
+        toolbarLayout->addWidget(m_refreshButton);
+
+        return toolbar;
     }
 
     QFrame* ProjectsScreen::CreateProjectsContent()
@@ -167,6 +286,9 @@ namespace O3DE::ProjectManager
 
         header->setLayout(headerLayout);
         layout->addWidget(header);
+
+        QFrame* toolbar = CreateToolbar();
+        layout->addWidget(toolbar);
 
         QScrollArea* projectsScrollArea = new QScrollArea(this);
         QWidget* scrollWidget = new QWidget();
@@ -210,8 +332,8 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::NotifyCurrentScreen()
     {
-        const QVector<ProjectInfo>& projects = GetAllProjects();
-        const bool projectsFound = !projects.isEmpty();
+        m_allProjects = GetAllProjects();
+        const bool projectsFound = !m_allProjects.isEmpty();
 
         if (ShouldDisplayFirstTimeContent(projectsFound))
         {
@@ -221,7 +343,7 @@ namespace O3DE::ProjectManager
         else
         {
             m_background.load(":/Backgrounds/DefaultBackground.jpg");
-            UpdateWithProjects(projects);
+            UpdateWithProjects(m_allProjects);
         }
     }
 
@@ -269,53 +391,93 @@ namespace O3DE::ProjectManager
             }
         }
 
+        SortProjects(projects);
+
+        return projects;
+    }
+
+    void ProjectsScreen::SortProjects(QVector<ProjectInfo>& projects)
+    {
         AZ::IO::Path buildProjectPath;
         if (m_currentBuilder)
         {
             buildProjectPath = AZ::IO::Path(m_currentBuilder->GetProjectInfo().m_path.toUtf8().constData());
         }
 
-        AZStd::sort(projects.begin(), projects.end(),
-            [buildProjectPath, this](const ProjectInfo& arg1, const ProjectInfo& arg2)
-            {
-                if (!buildProjectPath.empty())
+        switch (m_currentSortOrder)
+        {
+        case 0:
+            AZStd::sort(projects.begin(), projects.end(),
+                [buildProjectPath, this](const ProjectInfo& arg1, const ProjectInfo& arg2)
                 {
-                    if (AZ::IO::Path(arg1.m_path.toUtf8().constData()) == buildProjectPath)
+                    if (!buildProjectPath.empty())
                     {
+                        if (AZ::IO::Path(arg1.m_path.toUtf8().constData()) == buildProjectPath)
+                            return true;
+                        if (AZ::IO::Path(arg2.m_path.toUtf8().constData()) == buildProjectPath)
+                            return false;
+                    }
+
+                    bool arg1InBuildQueue = BuildQueueContainsProject(arg1.m_path);
+                    bool arg2InBuildQueue = BuildQueueContainsProject(arg2.m_path);
+
+                    if (arg1InBuildQueue && !arg2InBuildQueue)
                         return true;
-                    }
-                    if (AZ::IO::Path(arg2.m_path.toUtf8().constData()) == buildProjectPath)
-                    {
+                    if (!arg1InBuildQueue && arg2InBuildQueue)
                         return false;
+
+                    if (arg1.m_displayName.compare(arg2.m_displayName, Qt::CaseInsensitive) == 0)
+                        return arg1.m_path.toLower() < arg2.m_path.toLower();
+
+                    return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                });
+            break;
+
+        case 1:
+            AZStd::sort(projects.begin(), projects.end(),
+                [](const ProjectInfo& arg1, const ProjectInfo& arg2)
+                {
+                    if (arg1.m_displayName.compare(arg2.m_displayName, Qt::CaseInsensitive) == 0)
+                        return arg1.m_path.toLower() > arg2.m_path.toLower();
+                    return arg1.m_displayName.toLower() > arg2.m_displayName.toLower();
+                });
+            break;
+
+        case 2:
+            AZStd::sort(projects.begin(), projects.end(),
+                [buildProjectPath, this](const ProjectInfo& arg1, const ProjectInfo& arg2)
+                {
+                    if (!buildProjectPath.empty())
+                    {
+                        if (AZ::IO::Path(arg1.m_path.toUtf8().constData()) == buildProjectPath)
+                            return true;
+                        if (AZ::IO::Path(arg2.m_path.toUtf8().constData()) == buildProjectPath)
+                            return false;
                     }
-                }
 
-                bool arg1InBuildQueue = BuildQueueContainsProject(arg1.m_path);
-                bool arg2InBuildQueue = BuildQueueContainsProject(arg2.m_path);
+                    bool arg1InBuildQueue = BuildQueueContainsProject(arg1.m_path);
+                    bool arg2InBuildQueue = BuildQueueContainsProject(arg2.m_path);
 
-                if (arg1InBuildQueue && !arg2InBuildQueue)
-                {
-                    return true;
-                }
-                if (!arg1InBuildQueue && arg2InBuildQueue)
-                {
-                    return false;
-                }
-                if (arg1.m_displayName.compare(arg2.m_displayName, Qt::CaseInsensitive) == 0)
-                {
-                    return arg1.m_path.toLower() < arg2.m_path.toLower();
-                }
-                return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
-            });
+                    if (arg1InBuildQueue && !arg2InBuildQueue)
+                        return true;
+                    if (!arg1InBuildQueue && arg2InBuildQueue)
+                        return false;
 
-        return projects;
+                    return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                });
+            break;
+
+        default:
+            break;
+        }
     }
 
     void ProjectsScreen::UpdateIfCurrentScreen()
     {
         if (IsCurrentScreen())
         {
-            UpdateWithProjects(GetAllProjects());
+            m_allProjects = GetAllProjects();
+            UpdateWithProjects(m_allProjects);
         }
     }
 
@@ -344,6 +506,66 @@ namespace O3DE::ProjectManager
                 ++projectButtonsIter;
             }
         }
+    }
+
+    void ProjectsScreen::ApplySearchFilter()
+    {
+        if (m_currentSearchText.isEmpty())
+        {
+            for (auto& [path, button] : m_projectButtons)
+            {
+                button->setVisible(true);
+            }
+            UpdateProjectCount();
+            return;
+        }
+
+        int visibleCount = 0;
+        for (auto& [path, button] : m_projectButtons)
+        {
+            const ProjectInfo& info = button->GetProjectInfo();
+            bool match = info.m_displayName.contains(m_currentSearchText, Qt::CaseInsensitive) ||
+                         info.m_projectName.contains(m_currentSearchText, Qt::CaseInsensitive) ||
+                         info.m_path.contains(m_currentSearchText, Qt::CaseInsensitive);
+            button->setVisible(match);
+            if (match)
+            {
+                visibleCount++;
+            }
+        }
+
+        if (m_projectCountLabel)
+        {
+            m_projectCountLabel->setText(tr("%1 of %2 projects").arg(visibleCount).arg(m_projectButtons.size()));
+        }
+    }
+
+    void ProjectsScreen::UpdateProjectCount()
+    {
+        if (m_projectCountLabel)
+        {
+            int total = static_cast<int>(m_projectButtons.size());
+            m_projectCountLabel->setText(tr("%1 %2").arg(total).arg(total == 1 ? tr("project") : tr("projects")));
+        }
+    }
+
+    void ProjectsScreen::HandleSearchTextChanged(const QString& text)
+    {
+        m_currentSearchText = text;
+        ApplySearchFilter();
+    }
+
+    void ProjectsScreen::HandleSortOrderChanged(int index)
+    {
+        m_currentSortOrder = index;
+        m_allProjects = GetAllProjects();
+        UpdateWithProjects(m_allProjects);
+    }
+
+    void ProjectsScreen::HandleRefreshProjects()
+    {
+        m_allProjects = GetAllProjects();
+        UpdateWithProjects(m_allProjects);
     }
 
     void ProjectsScreen::UpdateWithProjects(const QVector<ProjectInfo>& projects)
@@ -499,6 +721,9 @@ namespace O3DE::ProjectManager
         {
             m_stack->setCurrentWidget(m_projectsContent);
         }
+
+        UpdateProjectCount();
+        ApplySearchFilter();
 
         m_projectsFlowLayout->update();
 
