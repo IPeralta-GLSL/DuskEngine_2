@@ -8,6 +8,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <EngineInfo.h>
 #include <ProjectInfo.h>
 #include <AzCore/Outcome/Outcome.h>
 
@@ -46,8 +47,8 @@ namespace O3DE::ProjectManager
         void QStringToAZTracePrint(const QString& error);
 
         // Command line argument builders
-        AZ::Outcome<QStringList, QString> ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const;
-        AZ::Outcome<QStringList, QString> ConstructCmakeBuildCommandArguments() const;
+        AZ::Outcome<QStringList, QString> ConstructCmakeGenerateProjectArguments(const EngineInfo& engineInfo) const;
+        AZ::Outcome<QStringList, QString> ConstructCmakeBuildCommandArguments(const EngineInfo& engineInfo) const;
         AZ::Outcome<QStringList, QString> ConstructKillProcessCommandArguments(const QString& pidToKill) const;
 
 

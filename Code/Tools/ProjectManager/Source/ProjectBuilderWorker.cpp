@@ -113,9 +113,9 @@ namespace O3DE::ProjectManager
 
         m_configProjectProcess = new QProcess(this);
         m_configProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
-        m_configProjectProcess->setWorkingDirectory(m_projectInfo.m_path);
+        m_configProjectProcess->setWorkingDirectory(engineInfo.m_path);
 
-        auto cmakeGenerateArgumentsResult = ConstructCmakeGenerateProjectArguments(engineInfo.m_thirdPartyPath);
+        auto cmakeGenerateArgumentsResult = ConstructCmakeGenerateProjectArguments(engineInfo);
         if (!cmakeGenerateArgumentsResult.IsSuccess())
         {
             QStringToAZTracePrint(cmakeGenerateArgumentsResult.GetError());
@@ -171,9 +171,9 @@ namespace O3DE::ProjectManager
 
         m_buildProjectProcess = new QProcess(this);
         m_buildProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
-        m_buildProjectProcess->setWorkingDirectory(m_projectInfo.m_path);
+        m_buildProjectProcess->setWorkingDirectory(engineInfo.m_path);
 
-        auto cmakeBuildArgumentsResult = ConstructCmakeBuildCommandArguments();
+        auto cmakeBuildArgumentsResult = ConstructCmakeBuildCommandArguments(engineInfo);
         if (!cmakeBuildArgumentsResult.IsSuccess())
         {
             QStringToAZTracePrint(cmakeBuildArgumentsResult.GetError());

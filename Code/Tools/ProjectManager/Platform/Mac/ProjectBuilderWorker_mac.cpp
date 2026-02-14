@@ -36,32 +36,25 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(const EngineInfo& engineInfo) const
     {
-        // For Mac, we need to resolve the full path of cmake and use that in the process request. For
-        // some reason, 'which' will resolve the full path, but when you just specify cmake with the same
-        // environment, it is unable to resolve. To work around this, we will use 'which' to resolve the 
-        // full path and then use it as the command argument
         auto cmakeInstalledPathQuery = Internal::QueryInstalledCmakeFullPath();
         if (!cmakeInstalledPathQuery.IsSuccess())
         {
             return AZ::Failure(cmakeInstalledPathQuery.GetError());
         }
         QString cmakeInstalledPath = cmakeInstalledPathQuery.GetValue();
-        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+        QString engineBuildPath = QDir(engineInfo.m_path).filePath(ProjectBuildPathPostfix);
 
         return AZ::Success(QStringList{cmakeInstalledPath,
-                                       "-B", targetBuildPath,
-                                       "-S", m_projectInfo.m_path,
-                                       "-GXcode"});
+                                       "-B", engineBuildPath,
+                                       "-S", engineInfo.m_path,
+                                       "-GXcode",
+                                       QString("-DLY_PROJECTS=").append(m_projectInfo.m_path)});
     }
 
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments(const EngineInfo& engineInfo) const
     {
-        // For Mac, we need to resolve the full path of cmake and use that in the process request. For
-        // some reason, 'which' will resolve the full path, but when you just specify cmake with the same
-        // environment, it is unable to resolve. To work around this, we will use 'which' to resolve the
-        // full path and then use it as the command argument
         auto cmakeInstalledPathQuery = Internal::QueryInstalledCmakeFullPath();
         if (!cmakeInstalledPathQuery.IsSuccess())
         {
@@ -69,11 +62,11 @@ namespace O3DE::ProjectManager
         }
 
         QString cmakeInstalledPath = cmakeInstalledPathQuery.GetValue();
-        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+        QString engineBuildPath = QDir(engineInfo.m_path).filePath(ProjectBuildPathPostfix);
         QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
 
         return AZ::Success(QStringList{cmakeInstalledPath,
-                                        "--build", targetBuildPath,
+                                        "--build", engineBuildPath,
                                         "--config", "profile",
                                         "--target", launcherTargetName, ProjectCMakeBuildTargetEditor});
     }

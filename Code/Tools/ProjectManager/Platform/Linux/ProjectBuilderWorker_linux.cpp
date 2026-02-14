@@ -1,57 +1,48 @@
-/*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
- */
-
 #include <ProjectBuilderWorker.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
 
 #include <QDir>
+#include <QFileInfo>
 #include <QString>
 
 namespace O3DE::ProjectManager
 {
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeGenerateProjectArguments(const EngineInfo& engineInfo) const
     {
-        // Attempt to use the Ninja build system if it is installed (described in the o3de documentation) if possible,
-        // otherwise default to the the default for Linux (Unix Makefiles)
-        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
-        QString cmakeGenerator = (whichNinjaResult.IsSuccess()) ? "Ninja Multi-Config" : "Unix Makefiles";
-        bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
+        QString engineBuildPath = QDir(engineInfo.m_path).filePath(ProjectBuildPathPostfix);
+        bool    existingBuild = QFileInfo::exists(QDir(engineBuildPath).filePath("CMakeCache.txt"));
 
-        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
         QStringList generateProjectArgs = QStringList{ProjectCMakeCommand,
-                                                      "-B", ProjectBuildPathPostfix,
-                                                      "-S", ".",
-                                                      QString("-G%1").arg(cmakeGenerator),
-                                                      QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath)};
-        if (!compileProfileOnBuild)
+                                                      "-B", engineBuildPath,
+                                                      "-S", engineInfo.m_path,
+                                                      QString("-DLY_3RDPARTY_PATH=").append(engineInfo.m_thirdPartyPath),
+                                                      QString("-DLY_PROJECTS=").append(m_projectInfo.m_path)};
+
+        if (!existingBuild)
         {
+            auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
+            if (whichNinjaResult.IsSuccess())
+            {
+                generateProjectArgs.append("-GNinja");
+            }
             generateProjectArgs.append("-DCMAKE_BUILD_TYPE=profile");
         }
+
         return AZ::Success(generateProjectArgs);
     }
 
-    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
+    AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments(const EngineInfo& engineInfo) const
     {
-        auto    whichNinjaResult = ProjectUtils::ExecuteCommandResult("which", QStringList{"ninja"});
-        bool    compileProfileOnBuild = (whichNinjaResult.IsSuccess());
+        QString engineBuildPath = QDir(engineInfo.m_path).filePath(ProjectBuildPathPostfix);
         const QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
         const QString headlessServerLauncherTargetName = m_projectInfo.m_projectName + ".HeadlessServerLauncher";
         const QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
         const QString unifiedLauncherTargetName = m_projectInfo.m_projectName + ".UnifiedLauncher";
 
         QStringList buildProjectArgs = QStringList{ProjectCMakeCommand,
-                                                   "--build", ProjectBuildPathPostfix,
+                                                   "--build", engineBuildPath,
                                                    "--target", gameLauncherTargetName, headlessServerLauncherTargetName, serverLauncherTargetName, unifiedLauncherTargetName, ProjectCMakeBuildTargetEditor};
-        if (compileProfileOnBuild)
-        {
-            buildProjectArgs.append(QStringList{"--config","profile"});
-        }
         return AZ::Success(buildProjectArgs);
     }
 
