@@ -1,4 +1,8 @@
 /************** General (MainWindow) **************/
+* {
+    font-family: "Manrope";
+}
+
 QMainWindow {
     background:#131313;
     background-origin:content;
@@ -14,13 +18,13 @@ QMainWindow {
 QScrollBar:vertical {
     background: #1a1a1a;
     width: 8px;
-    border-radius: 4px;
+    border-radius: 0;
     margin: 0;
 }
 
 QScrollBar::handle:vertical {
     background: #444444;
-    border-radius: 4px;
+    border-radius: 0;
     min-height: 30px;
 }
 
@@ -36,12 +40,12 @@ QScrollBar::sub-line:vertical {
 QScrollBar:horizontal {
     background: #1a1a1a;
     height: 8px;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 QScrollBar::handle:horizontal {
     background: #444444;
-    border-radius: 4px;
+    border-radius: 0;
     min-width: 30px;
 }
 
@@ -61,50 +65,40 @@ QPushButton:focus {
 
 QPushButton[primary="true"] {
     qproperty-flat: true;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 6px 18px;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #4CAF50, stop: 1.0 #388E3C);
+    background: #4CAF50;
 }
 QPushButton[primary="true"]:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #66BB6A, stop: 1.0 #43A047);
+    background: #66BB6A;
 }
 QPushButton[primary="true"]:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #388E3C, stop: 1.0 #2E7D32);
+    background: #388E3C;
 }
 QPushButton[primary="true"]:disabled {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #777777, stop: 1.0 #444444);
+    background: #777777;
 }
 
 QPushButton[secondary="true"] {
     qproperty-flat: true;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
+    background: #888888;
 }
 QPushButton[secondary="true"]:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
+    background: #999999;
 }
 QPushButton[secondary="true"]:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
+    background: #555555;
 }
 
 QPushButton[danger="true"] {
     qproperty-flat: true;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #E32C27, stop: 1.0 #951D21);
+    background: #E32C27;
 }
 QPushButton[danger="true"]:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+    background: #FD3129;
 }
 QPushButton[danger="true"]:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #951D1F, stop: 1.0 #C92724);
+    background: #951D1F;
 }
 
 QTabBar {
@@ -234,13 +228,13 @@ QTabBar::tab:focus {
 
 #ToastNotification {
     background-color: black;
-    border-radius: 14px;
+    border-radius: 0;
     border:1px solid #dddddd;
     qproperty-minimumSize: 100px 50px;
 }
 
 #ToastNotification #icon_frame {
-    border-radius: 4px;
+    border-radius: 0;
     qproperty-minimumSize: 44px 20px;
 }
 
@@ -263,7 +257,7 @@ QTabBar::tab:focus {
     max-width: 840px;
     background-color: #444444;
     border:1px solid #dddddd;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 2px 12px 4px 8px;
     margin-top:10px;
     margin-left:50px;
@@ -518,7 +512,7 @@ QTabBar::tab:focus {
 }
 
 #footer > QPushButton {
-    border-radius: 6px;
+    border-radius: 0;
     min-height: 32px;
     max-height: 32px;
     min-width: 150px;
@@ -605,14 +599,14 @@ QTabBar::tab:focus {
     max-width: 114px;
     min-height: 180px;
     max-height: 180px;
-    border-radius: 8px;
+    border-radius: 0;
 }
 #projectTemplate #templateLabel {
     qproperty-alignment: AlignCenter;
 }
 #projectTemplate QPushButton #templateImage {
     border:3px solid transparent;
-    border-radius: 8px;
+    border-radius: 0;
 }
 #projectTemplate QPushButton[Checked="true"] #templateImage {
     border:3px solid #4CAF50;
@@ -654,7 +648,7 @@ QTabBar::tab:focus {
     max-width:170px;
     min-height:28px;
     max-height:28px;
-    border-radius: 6px;
+    border-radius: 0;
     text-align:center;
     font-size:13px;
 }
@@ -710,7 +704,7 @@ QTabBar::tab:focus {
     font-size:15px;
     font-weight: 500;
     border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 12px;
+    border-radius: 0;
 }
 
 #firstTimeContent > QPushButton:hover {
@@ -758,7 +752,7 @@ QTabBar::tab:focus {
 
 #projectsToolbar {
     background: rgba(0,0,0,0.25);
-    border-radius: 8px;
+    border-radius: 0;
     padding: 4px 12px;
     margin-top: 4px;
 }
@@ -766,7 +760,7 @@ QTabBar::tab:focus {
 #projectSearchField {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
+    border-radius: 0;
     padding: 4px 10px;
     font-size: 13px;
     color: #fff;
@@ -784,7 +778,7 @@ QTabBar::tab:focus {
     color: #81C784;
     padding: 4px 10px;
     background: rgba(76,175,80,0.12);
-    border-radius: 10px;
+    border-radius: 0;
 }
 
 #projectSortLabel {
@@ -795,7 +789,7 @@ QTabBar::tab:focus {
 #projectSortCombo {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 6px;
+    border-radius: 0;
     padding: 4px 10px;
     font-size: 12px;
     color: #ddd;
@@ -823,7 +817,7 @@ QTabBar::tab:focus {
 #projectSortCombo QAbstractItemView {
     background: #1a1a1a;
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 4px;
+    border-radius: 0;
     selection-background-color: rgba(76,175,80,0.25);
     color: #ddd;
     padding: 4px;
@@ -837,7 +831,7 @@ QTabBar::tab:focus {
     max-height: 28px;
     min-height: 28px;
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 #projectRefreshButton:hover {
@@ -851,7 +845,7 @@ QTabBar::tab:focus {
 
 #projectButton > #labelButton  {
     border:1px solid white;
-    border-radius: 10px;
+    border-radius: 0;
 }
 
 #projectButton > #labelButton:hover,
@@ -894,19 +888,19 @@ QTabBar::tab:focus {
     max-width:160px;
     min-height:28px;
     max-height:28px;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 12px;
     font-weight: 600;
 }
 
 #labelButton #projectActionCancelButton{
-    border-radius: 6px;
+    border-radius: 0;
     margin-left: 1px;
 }
 
 #labelButtonOverlay {
     background-color: rgba(0,0,0,0.75);
-    border-radius: 10px;
+    border-radius: 0;
 }
 
 #projectMessageOverlay, #projectSubMessageOverlay {
@@ -938,7 +932,7 @@ QTabBar::tab:focus {
     max-width:160px;
     min-height:30px;
     max-height:30px;
-    border-radius: 6px;
+    border-radius: 0;
     font-weight: 600;
     font-size: 13px;
 }
@@ -947,13 +941,13 @@ QProgressBar {
     border: none;
     background-color: rgba(255,255,255,0.08);
     padding: 0px;
-    border-radius: 3px;
+    border-radius: 0;
     max-height: 6px;
 }
 
 QProgressBar::chunk {
     background-color: #4CAF50;
-    border-radius: 3px;
+    border-radius: 0;
 }
 
 /************** Remote Projects **************/
@@ -991,7 +985,7 @@ QProgressBar::chunk {
 #GemCatalogCartCountLabel {
     font-size: 12px;
     background-color: #4CAF50;
-    border-radius: 3px;
+    border-radius: 0;
 }
 
 #GemCatalogCartOverlaySectionLabel {
@@ -1066,7 +1060,7 @@ QProgressBar::chunk {
 
 #GemDependenciesDialog QCheckBox {
     background-color: #333333;
-    border-radius: 3px;
+    border-radius: 0;
     spacing:3px;
     margin-right:5px;
     padding:4px;
@@ -1079,7 +1073,7 @@ QProgressBar::chunk {
     qproperty-flat: true;
     min-height:26px;
     max-height:26px;
-    border-radius: 6px;
+    border-radius: 0;
     text-align:center;
     font-size:12px;
     font-weight:600;
@@ -1098,7 +1092,7 @@ QProgressBar::chunk {
     padding: 4px 8px;
     font-size:12px;
     text-align:center;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 /************** Gems SubWidget **************/
@@ -1174,7 +1168,7 @@ QProgressBar::chunk {
 #GemCatalogFilterWidget #CountLabel {
     font-size: 12px; 
     background-color: #333333; 
-    border-radius: 3px; 
+    border-radius: 0; 
     color: #81C784;
 }
 
@@ -1235,7 +1229,7 @@ QProgressBar::chunk {
     max-width:120px;
     min-height:28px;
     max-height:28px;
-    border-radius: 6px;
+    border-radius: 0;
     text-align:center;
     font-size:12px;
     font-weight:600;
@@ -1296,7 +1290,7 @@ QProgressBar::chunk {
     qproperty-flat: true;
     min-height:26px;
     max-height:26px;
-    border-radius: 6px;
+    border-radius: 0;
     text-align:center;
     font-size:12px;
     font-weight:600;

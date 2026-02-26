@@ -169,7 +169,7 @@ namespace AzQtComponents
         initializeSearchPaths(application, engineRootPath);
         initializeFonts();
 
-        QFont defaultFont("Open Sans");
+        QFont defaultFont("Manrope");
         defaultFont.setPixelSize(12);
         QApplication::setFont(defaultFont);
 
@@ -273,7 +273,7 @@ namespace AzQtComponents
         // QMessageBox uses "QMdiSubWindowTitleBar" class to query the titlebar font
         // through QApplication::font() and (buggily) calculate required width of itself
         // to fit the title. It bypassess stylesheets. See QMessageBoxPrivate::updateSize().
-        QFont titleBarFont("Open Sans");
+        QFont titleBarFont("Manrope");
         titleBarFont.setPixelSize(18);
         QApplication::setFont(titleBarFont, "QMdiSubWindowTitleBar");
     }

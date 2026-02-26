@@ -16,7 +16,7 @@
 {
     background-color: transparent;
     color: white;
-    font-family: "Open Sans";
+    font-family: "Manrope";
     font-weight: 400;
 }
 
@@ -75,8 +75,8 @@ QComboBox
 {
     background-color: #CCCCCC;
     color: black;
-    font-family: "Open Sans";
-    border-radius: 2px;
+    font-family: "Manrope";
+    border-radius: 0;
     border-width: 0px;
     border-color: #e9e9e9;
     font-size: 12px;
