@@ -54,7 +54,6 @@
         "Gems/Meshlets",
         "Gems/MessagePopup",
         "Gems/Microphone",
-        "Gems/MiniAudio",
         "Gems/MotionMatching",
         "Gems/SoLoud",
         "Gems/Multiplayer",
@@ -99,7 +98,8 @@
         "Gems/Vegetation",
         "Gems/VideoPlaybackFramework",
         "Gems/VirtualGamepad",
-        "Gems/WhiteBox"
+        "Gems/WhiteBox",
+        "/mnt/sda/DuskEngine/O3DE-FirstPersonInteractionToolkit/Gems/FirstPersonController/0.0.0"
     ],
     "gem_names": [
         "Atom_Bootstrap",

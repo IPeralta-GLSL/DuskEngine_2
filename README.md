@@ -1,4 +1,5 @@
 cd /mnt/sda/DuskEngine/o3de/build/linux/bin/profile && QT_QPA_PLATFORM=xcb DRI_PRIME=1 ./Editor 
+cmake --build /mnt/sda/DuskEngine/o3de/build/linux --config profile --target Editor -- -j$(nproc)
 
 # O3DE (Open 3D Engine)
 
