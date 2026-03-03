@@ -372,6 +372,8 @@ namespace O3DE::ProjectManager
         menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
         menu->addAction(tr("Open Android Project Generator..."), this, [this]() { emit OpenAndroidProjectGenerator(m_projectInfo.m_path); });
         menu->addSeparator();
+        menu->addAction(tr("Launch Asset Processor"), this, [this]() { emit LaunchAssetProcessor(m_projectInfo); });
+        menu->addSeparator();
         menu->addAction(tr("Open Project folder..."), this, [this]()
         { 
             AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);

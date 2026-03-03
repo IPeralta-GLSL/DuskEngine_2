@@ -147,6 +147,7 @@ namespace O3DE::ProjectManager
         void OpenProjectExportSettings(const QString& projectPath);
         void OpenCMakeGUI(const ProjectInfo& projectInfo);
         void OpenAndroidProjectGenerator(const QString& projectPath);
+        void LaunchAssetProcessor(const ProjectInfo& projectInfo);
 
     private:
         void enterEvent(QEvent* event) override;

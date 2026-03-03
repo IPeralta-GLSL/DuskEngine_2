@@ -326,6 +326,7 @@ namespace O3DE::ProjectManager
             });
         connect(projectButton, &ProjectButton::OpenAndroidProjectGenerator, this, &ProjectsScreen::HandleOpenAndroidProjectGenerator);
         connect(projectButton, &ProjectButton::OpenProjectExportSettings, this, &ProjectsScreen::HandleOpenProjectExportSettings);
+        connect(projectButton, &ProjectButton::LaunchAssetProcessor, this, &ProjectsScreen::HandleLaunchAssetProcessor);
 
         return projectButton;
     }
@@ -1022,6 +1023,35 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::critical(this, tr("Tool Error"),
                 tr("Failed to start o3de.py from path %1").arg(o3dePath), QMessageBox::Ok);
+        }
+    }
+
+    void ProjectsScreen::HandleLaunchAssetProcessor(const ProjectInfo& projectInfo)
+    {
+        if (projectInfo.m_path.isEmpty())
+        {
+            QMessageBox::critical(this, tr("Error"), tr("Cannot launch Asset Processor because the project path is invalid."));
+            return;
+        }
+
+        AZ::IO::FixedMaxPath fixedProjectPath = projectInfo.m_path.toUtf8().constData();
+        AZ::IO::FixedMaxPath assetProcessorPath = ProjectUtils::GetAssetProcessorExecutablePath(fixedProjectPath);
+
+        if (assetProcessorPath.empty())
+        {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to locate the Asset Processor, please verify that it is built."));
+            return;
+        }
+
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>{
+            assetProcessorPath.String(),
+            AZStd::string::format(R"(--regset="/Amazon/AzCore/Bootstrap/project_path=%s")", fixedProjectPath.c_str())
+        };
+
+        if (!AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo))
+        {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to launch the Asset Processor."));
         }
     }
 

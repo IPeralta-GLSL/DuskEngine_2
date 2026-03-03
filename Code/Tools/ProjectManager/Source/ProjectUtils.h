@@ -122,6 +122,7 @@ namespace O3DE::ProjectManager
          * @return path of the Editor Executable if found or an empty path if not
          */
         AZ::IO::FixedMaxPath GetEditorExecutablePath(const AZ::IO::PathView& projectPath);
+        AZ::IO::FixedMaxPath GetAssetProcessorExecutablePath(const AZ::IO::PathView& projectPath);
 
         /**
          * Compare two version strings.  Invalid version strings will be treated as 0.0.0

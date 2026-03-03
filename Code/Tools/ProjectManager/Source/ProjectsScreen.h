@@ -57,6 +57,7 @@ namespace O3DE::ProjectManager
         void HandleDeleteProject(const QString& projectPath);
         void HandleOpenAndroidProjectGenerator(const QString& projectPath);
         void HandleOpenProjectExportSettings(const QString& projectPath);
+        void HandleLaunchAssetProcessor(const ProjectInfo& projectInfo);
         void HandleProjectFilePathChanged(const QString& path);
 
         void SuggestBuildProject(const ProjectInfo& projectInfo);

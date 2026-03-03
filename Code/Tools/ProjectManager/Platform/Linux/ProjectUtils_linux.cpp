@@ -204,6 +204,67 @@ namespace O3DE::ProjectManager
             return {};
         }
 
+        AZ::IO::FixedMaxPath GetAssetProcessorExecutablePath(const AZ::IO::PathView& projectPath)
+        {
+            AZ::IO::FixedMaxPath apPath;
+            AZ::IO::FixedMaxPath fixedProjectPath{ projectPath };
+            AZ::IO::FixedMaxPath buildPathSetregPath = fixedProjectPath
+                / AZ::SettingsRegistryConstants::DevUserRegistryFolder
+                / "Platform" / AZ_TRAIT_OS_PLATFORM_CODENAME / "build_path.setreg";
+            if (AZ::IO::SystemFile::Exists(buildPathSetregPath.c_str()))
+            {
+                AZ::SettingsRegistryImpl settingsRegistry;
+                if (AZ::IO::FixedMaxPath projectBuildPath;
+                    settingsRegistry.MergeSettingsFile(buildPathSetregPath.Native(),
+                        AZ::SettingsRegistryInterface::Format::JsonMergePatch)
+                    && settingsRegistry.Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
+                {
+                    AZ::IO::FixedMaxPath buildConfigurationPath = (fixedProjectPath / projectBuildPath).LexicallyNormal();
+                    buildConfigurationPath /= "bin";
+                    AZStd::fixed_vector<AZ::IO::FixedMaxPath, 4> paths = {
+                        buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE / "AssetProcessor",
+                        buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE / "AssetProcessor"
+                    };
+                    if (strcmp(AZ_BUILD_CONFIGURATION_TYPE, "profile") != 0)
+                    {
+                        paths.emplace_back(buildConfigurationPath / "profile" / "AssetProcessor");
+                        paths.emplace_back(buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "AssetProcessor");
+                    }
+                    for (auto& path : paths)
+                    {
+                        if (AZ::IO::SystemFile::Exists(path.ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION).c_str()))
+                        {
+                            return path;
+                        }
+                    }
+                }
+            }
+
+            if (auto engineResult = PythonBindingsInterface::Get()->GetProjectEngine(projectPath.Native().data()); engineResult)
+            {
+                auto engineInfo = engineResult.GetValue<EngineInfo>();
+                if (!engineInfo.m_thisEngine)
+                {
+                    AZ::IO::FixedMaxPath fixedEnginePath{ engineInfo.m_path.toUtf8().constData() };
+                    if (apPath = (fixedEnginePath / "bin" / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Default" / "AssetProcessor").
+                        ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                        AZ::IO::SystemFile::Exists(apPath.c_str()))
+                    {
+                        return apPath;
+                    }
+                    return {};
+                }
+            }
+
+            apPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "AssetProcessor";
+            apPath.ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+            if (AZ::IO::SystemFile::Exists(apPath.c_str()))
+            {
+                return apPath;
+            }
+            return {};
+        }
+
         AZ::Outcome<QString, QString> CreateDesktopShortcut([[maybe_unused]] const QString& filename, [[maybe_unused]] const QString& targetPath, [[maybe_unused]] const QStringList& arguments)
         {
             return AZ::Failure(QObject::tr("Creating desktop shortcuts functionality not implemented for this platform yet."));

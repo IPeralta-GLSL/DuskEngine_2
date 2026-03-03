@@ -206,6 +206,67 @@ namespace O3DE::ProjectManager
             return editorPath;
         }
 
+        AZ::IO::FixedMaxPath GetAssetProcessorExecutablePath(const AZ::IO::PathView& projectPath)
+        {
+            AZ::IO::FixedMaxPath apPath;
+            AZ::IO::FixedMaxPath fixedProjectPath{ projectPath };
+            AZ::IO::FixedMaxPath buildPathSetregPath = fixedProjectPath
+                / AZ::SettingsRegistryConstants::DevUserRegistryFolder
+                / "Platform" / AZ_TRAIT_OS_PLATFORM_CODENAME / "build_path.setreg";
+            if (AZ::IO::SystemFile::Exists(buildPathSetregPath.c_str()))
+            {
+                AZ::SettingsRegistryImpl localRegistry;
+                if (AZ::IO::FixedMaxPath projectBuildPath;
+                    localRegistry.MergeSettingsFile(buildPathSetregPath.Native(),
+                        AZ::SettingsRegistryInterface::Format::JsonMergePatch)
+                    && localRegistry.Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
+                {
+                    AZ::IO::FixedMaxPath buildConfigurationPath = (fixedProjectPath / projectBuildPath).LexicallyNormal();
+                    buildConfigurationPath /= "bin";
+                    if (apPath = (buildConfigurationPath
+                        / AZ_BUILD_CONFIGURATION_TYPE / "AssetProcessor.app/Contents/MacOS/AssetProcessor");
+                        AZ::IO::SystemFile::Exists(apPath.c_str()))
+                    {
+                        return apPath;
+                    }
+                    else if (apPath = (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME
+                        / AZ_BUILD_CONFIGURATION_TYPE / "AssetProcessor.app/Contents/MacOS/AssetProcessor");
+                        AZ::IO::SystemFile::Exists(apPath.c_str()))
+                    {
+                        return apPath;
+                    }
+                }
+            }
+
+            apPath = (AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) /
+                "../../../AssetProcessor.app/Contents/MacOS/AssetProcessor").LexicallyNormal();
+
+            if (!AZ::IO::SystemFile::Exists(apPath.c_str()))
+            {
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    if (AZ::IO::FixedMaxPath installedBinariesPath;
+                        settingsRegistry->Get(installedBinariesPath.Native(),
+                        AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
+                    {
+                        if (AZ::IO::FixedMaxPath engineRootFolder;
+                            settingsRegistry->Get(engineRootFolder.Native(),
+                            AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+                        {
+                            apPath = engineRootFolder / installedBinariesPath / "AssetProcessor.app/Contents/MacOS/AssetProcessor";
+                        }
+                    }
+                }
+
+                if (!AZ::IO::SystemFile::Exists(apPath.c_str()))
+                {
+                    return {};
+                }
+            }
+
+            return apPath;
+        }
+
         AZ::Outcome<QString, QString> CreateDesktopShortcut([[maybe_unused]] const QString& filename, [[maybe_unused]] const QString& targetPath, [[maybe_unused]] const QStringList& arguments)
         {
             return AZ::Failure(QObject::tr("Creating desktop shortcuts functionality not implemented for this platform yet."));
