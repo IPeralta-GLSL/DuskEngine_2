@@ -9,6 +9,7 @@
 #include <Atom/RHI.Interface/Vulkan/RHIVulkanInterface.h>
 
 #include <RHI/Buffer.h>
+#include <RHI/CommandList.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Image.h>
@@ -135,6 +136,18 @@ namespace AZ
             AZ_Assert(azrtti_cast<Image*>(&image), "%s can only be called with a Vulkan RHI object", __FUNCTION__);
             auto& vulkanImage = static_cast<Image&>(image);
             return vulkanImage.GetMemoryView().GetAllocation()->GetOffset() + vulkanImage.GetMemoryView().GetOffset();
+        }
+
+        VkCommandBuffer GetNativeCommandBuffer(RHI::CommandList* commandList)
+        {
+            auto* vkCommandList = static_cast<CommandList*>(commandList);
+            return vkCommandList->GetNativeCommandBuffer();
+        }
+
+        PFN_vkGetDeviceProcAddr GetDeviceProcAddr(RHI::Device& device)
+        {
+            AZ_Assert(azrtti_cast<Device*>(&device), "%s can only be called with a Vulkan RHI object", __FUNCTION__);
+            return static_cast<Device&>(device).GetContext().GetDeviceProcAddr;
         }
     } // namespace Vulkan
 } // namespace AZ

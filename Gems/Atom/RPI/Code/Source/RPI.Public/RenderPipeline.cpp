@@ -981,7 +981,7 @@ namespace AZ
         {
             const AZStd::unordered_map<AZStd::string, AntiAliasingMode> AAMethodsLookup = {
                 {"MSAA", AntiAliasingMode::MSAA}, {"SMAA", AntiAliasingMode::SMAA}, 
-                {"TAA", AntiAliasingMode::TAA}
+                {"TAA", AntiAliasingMode::TAA}, {"FSR2", AntiAliasingMode::FSR2}
             };
  
             auto findIt = AAMethodsLookup.find(aaMethodName);
@@ -996,7 +996,7 @@ namespace AZ
         {
             const AZStd::unordered_map<AntiAliasingMode, AZStd::string> AAMethodNameLookup = {
                 {AntiAliasingMode::MSAA, "MSAA"}, {AntiAliasingMode::SMAA, "SMAA"}, 
-                {AntiAliasingMode::TAA, "TAA"}
+                {AntiAliasingMode::TAA, "TAA"}, {AntiAliasingMode::FSR2, "FSR2"}
             };
  
             auto findIt = AAMethodNameLookup.find(aaMethodIndex);
@@ -1037,7 +1037,8 @@ namespace AZ
 
             const AZStd::unordered_map<AntiAliasingMode, AZStd::vector<Name>> AAPassNamesLookup = {
                 {AntiAliasingMode::SMAA, {Name("SMAA1xApplyLinearHDRColorPass")}}, 
-                {AntiAliasingMode::TAA, {Name("TaaPass"), Name("ContrastAdaptiveSharpeningPass")}}
+                {AntiAliasingMode::TAA, {Name("TaaPass"), Name("ContrastAdaptiveSharpeningPass")}},
+                {AntiAliasingMode::FSR2, {Name("Fsr3Pass")}}
             };
 
             for (auto& aaPassMap : AAPassNamesLookup)

@@ -25,6 +25,7 @@ namespace AZ
             MSAA,
             SMAA,
             TAA,
+            FSR2,
             Default = -1
         };
 

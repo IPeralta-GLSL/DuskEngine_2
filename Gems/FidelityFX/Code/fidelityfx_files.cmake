@@ -1,0 +1,10 @@
+set(FILES
+    Source/FidelityFXModule.cpp
+    Source/FidelityFXModule.h
+    Source/FidelityFXSystemComponent.cpp
+    Source/FidelityFXSystemComponent.h
+    Source/Fsr3FeatureProcessor.cpp
+    Source/Fsr3FeatureProcessor.h
+    Source/Fsr3Pass.cpp
+    Source/Fsr3Pass.h
+)

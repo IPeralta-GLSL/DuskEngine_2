@@ -12,6 +12,7 @@
 #include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/DeviceImage.h>
 #include <Atom/RHI/PhysicalDevice.h>
+#include <Atom/RHI/CommandList.h>
 
 #include <vulkan/vulkan.h>
 
@@ -47,5 +48,9 @@ namespace AZ
         size_t GetImageMemoryViewSize(RHI::DeviceImage& image);
         size_t GetImageAllocationSize(RHI::DeviceImage& image);
         size_t GetImageAllocationOffset(RHI::DeviceImage& image);
+
+        VkCommandBuffer GetNativeCommandBuffer(RHI::CommandList* commandList);
+
+        PFN_vkGetDeviceProcAddr GetDeviceProcAddr(RHI::Device& device);
     } // namespace Vulkan
 } // namespace AZ
