@@ -292,7 +292,6 @@ namespace AzToolsFramework
         auto entityUiHandler = m_editorEntityUiInterface->GetHandler(id);
         QIcon icon;
 
-        // Retrieve the icon from the handler
         if (entityUiHandler != nullptr)
         {
             icon = entityUiHandler->GenerateItemIcon(id);
@@ -303,7 +302,36 @@ namespace AzToolsFramework
             return icon;
         }
 
-        // If no icon was returned by the handler, use the default one.
+        AZ::Entity* entity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
+
+        if (entity)
+        {
+            for (auto* component : entity->GetComponents())
+            {
+                if (!component)
+                {
+                    continue;
+                }
+                AZ::Uuid componentType = AzToolsFramework::GetUnderlyingComponentType(*component);
+                if (componentType == azrtti_typeid<AzToolsFramework::Components::TransformComponent>())
+                {
+                    continue;
+                }
+                AZStd::string iconPath;
+                AzToolsFramework::EditorRequestBus::BroadcastResult(
+                    iconPath, &AzToolsFramework::EditorRequests::GetComponentEditorIcon, componentType, component);
+                if (!iconPath.empty())
+                {
+                    QIcon componentIcon(QString::fromUtf8(iconPath.c_str(), static_cast<int>(iconPath.size())));
+                    if (!componentIcon.isNull())
+                    {
+                        return componentIcon;
+                    }
+                }
+            }
+        }
+
         bool isEditorOnly = false;
         EditorOnlyEntityComponentRequestBus::EventResult(isEditorOnly, id, &EditorOnlyEntityComponentRequests::IsEditorOnlyEntity);
 
@@ -312,8 +340,6 @@ namespace AzToolsFramework
             return QIcon(QString(":/Entity/entity_editoronly.svg"));
         }
 
-        AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
         const bool isInitiallyActive = entity ? entity->IsRuntimeActiveByDefault() : true;
 
         if (!isInitiallyActive)
@@ -1775,8 +1801,13 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityOutlinerListModel::OnEntityCompositionChanged(const EntityIdList& /*entityIds*/)
+    void EntityOutlinerListModel::OnEntityCompositionChanged(const EntityIdList& entityIds)
     {
+        for (const auto& entityId : entityIds)
+        {
+            QueueEntityUpdate(entityId);
+        }
+
         if (m_componentFilters.size() > 0)
         {
             m_isFilterDirty = true;
@@ -2105,7 +2136,6 @@ namespace AzToolsFramework
     void EntityOutlinerItemDelegate::PaintEntityNameAsRichText(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         EntityOutlinerListModel::s_paintingName = true;
-        // standard painter can't handle rich text so we have to handle it
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
 
@@ -2113,31 +2143,65 @@ namespace AzToolsFramework
         initStyleOption(&optionV4, index);
         optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
 
-        // get the info string for this entity
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
         QString infoString;
 
-        // Retrieve the tooltip from the handler
         if (entityUiHandler != nullptr)
         {
             infoString = entityUiHandler->GenerateItemInfoString(entityId);
+        }
+
+        static constexpr int componentIconSize = 14;
+        static constexpr int componentIconPadding = 1;
+        QVector<QIcon> componentIcons;
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            if (entity)
+            {
+                for (auto* component : entity->GetComponents())
+                {
+                    if (!component)
+                    {
+                        continue;
+                    }
+                    AZ::Uuid componentType = AzToolsFramework::GetUnderlyingComponentType(*component);
+                    if (componentType == azrtti_typeid<AzToolsFramework::Components::TransformComponent>())
+                    {
+                        continue;
+                    }
+                    AZStd::string iconPath;
+                    AzToolsFramework::EditorRequestBus::BroadcastResult(
+                        iconPath, &AzToolsFramework::EditorRequests::GetComponentEditorIcon, componentType, component);
+                    if (!iconPath.empty())
+                    {
+                        QIcon icon(QString::fromUtf8(iconPath.c_str(), static_cast<int>(iconPath.size())));
+                        if (!icon.isNull())
+                        {
+                            componentIcons.append(icon);
+                        }
+                    }
+                }
+            }
+        }
+
+        int iconsStripWidth = 0;
+        if (!componentIcons.isEmpty())
+        {
+            iconsStripWidth = componentIcons.size() * (componentIconSize + componentIconPadding) + 4;
         }
 
         QRect textRect = optionV4.widget->style()->proxy()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
 
         QRegularExpression htmlMarkupRegex("<[^>]*>");
 
-        // Start with the raw rich text for the entity name.
         QString entityNameRichText = optionV4.text;
 
-        // If there is any HTML markup in the entity name, don't elide.
         if (!htmlMarkupRegex.match(entityNameRichText).hasMatch())
         {
             QFontMetrics fontMetrics(optionV4.font);
-            int textWidthAvailable = textRect.width();
-            // Qt uses "..." for elide, but there doesn't seem to be a way to retrieve this exact string from Qt.
-            // Subtract the elide string from the width available, so it can actually appear.
+            int textWidthAvailable = textRect.width() - iconsStripWidth;
             textWidthAvailable -= fontMetrics.horizontalAdvance(QObject::tr("..."));
             if (!infoString.isEmpty())
             {
@@ -2159,11 +2223,32 @@ namespace AzToolsFramework
                 + QString("</td></tr></table>");
         }
 
-        // delete the text from the item so we can use the standard painter to draw the icon
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
+        QRect nameTextRect = textRect;
+        if (!componentIcons.isEmpty())
+        {
+            nameTextRect.setRight(textRect.right() - iconsStripWidth);
+        }
+
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, nameTextRect);
+
+        if (!componentIcons.isEmpty())
+        {
+            int iconX = textRect.right() - iconsStripWidth + 4;
+            int iconY = textRect.top() + (textRect.height() - componentIconSize) / 2;
+            for (const QIcon& icon : componentIcons)
+            {
+                QRect iconRect(iconX, iconY, componentIconSize, componentIconSize);
+                if (iconRect.right() > textRect.right())
+                {
+                    break;
+                }
+                icon.paint(painter, iconRect);
+                iconX += componentIconSize + componentIconPadding;
+            }
+        }
 
         painter->restore();
 
