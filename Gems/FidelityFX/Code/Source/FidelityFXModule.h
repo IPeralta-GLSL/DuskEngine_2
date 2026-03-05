@@ -3,6 +3,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 #include <FidelityFXSystemComponent.h>
+#include <Fsr3SettingsComponent.h>
 
 namespace AZ::Render
 {
@@ -17,6 +18,7 @@ namespace AZ::Render
         {
             m_descriptors.insert(m_descriptors.end(), {
                 FidelityFXSystemComponent::CreateDescriptor(),
+                Fsr3SettingsComponent::CreateDescriptor(),
             });
         }
 

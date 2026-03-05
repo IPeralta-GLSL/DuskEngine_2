@@ -7,4 +7,6 @@ set(FILES
     Source/Fsr3FeatureProcessor.h
     Source/Fsr3Pass.cpp
     Source/Fsr3Pass.h
+    Source/Fsr3SettingsComponent.cpp
+    Source/Fsr3SettingsComponent.h
 )

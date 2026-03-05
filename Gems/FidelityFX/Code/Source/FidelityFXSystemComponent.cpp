@@ -1,6 +1,7 @@
 #include <FidelityFXSystemComponent.h>
 #include <Fsr3Pass.h>
 #include <Fsr3FeatureProcessor.h>
+#include <Fsr3SettingsComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -18,6 +19,7 @@ namespace AZ::Render
 
         Fsr3PassData::Reflect(context);
         Fsr3FeatureProcessor::Reflect(context);
+        Fsr3SettingsComponent::Reflect(context);
     }
 
     void FidelityFXSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
