@@ -26,7 +26,7 @@ QTreeView
 {
     /* give a background color to views without parent (completer popups)
        it is reset to transparent in the next setting for views with a parent */
-    background-color: #3a3a3a;
+    background-color: #202020;
 }
 
 QWidget > QTableView,
@@ -44,7 +44,7 @@ QWidget > QTreeView
 .QFrame[frameShape="5"],
 .QFrame[frameShape="6"]
 {
-    background-color: #3a3a3a;
+    background-color: #202020;
 }
 
 QMainWindow:separator
@@ -62,7 +62,7 @@ QDialog,
 QDockWidget
 {
     color: #cccccc;
-    background-color: #3a3a3a;
+    background-color: #202020;
 }
 
 QTextEdit,
