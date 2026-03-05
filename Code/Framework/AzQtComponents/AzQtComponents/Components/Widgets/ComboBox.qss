@@ -100,7 +100,7 @@ QComboBox QAbstractItemView::item
 */
 QComboBox QAbstractItemView::item:selected
 {
-    background-color: #444444;
+    background-color: #202020;
     color: #FFFFFF;
 }
 
@@ -112,7 +112,7 @@ QComboBox QAbstractItemView::item:disabled
 QComboBox QAbstractItemView::separator
 {
     height: 1px;
-    background: #444444;
+    background: #202020;
 }
 
 QComboBox QAbstractItemView::indicator

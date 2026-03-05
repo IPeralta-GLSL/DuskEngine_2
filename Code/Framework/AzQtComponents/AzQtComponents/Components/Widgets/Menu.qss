@@ -26,7 +26,7 @@ QMenu::item
 QMenu::item:selected,
 QMenu::item .WidgetAction:hover
 {
-    background-color: #444444;
+    background-color: #202020;
 }
 
 QMenu::icon,
