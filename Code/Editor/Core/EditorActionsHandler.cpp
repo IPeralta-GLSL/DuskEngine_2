@@ -213,7 +213,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     // Editor Entity Property Editor (Entity Inspector)
     {
         AzToolsFramework::ActionContextProperties contextProperties;
-        contextProperties.m_name = "Dusk Engine Editor - Entity Inspector";
+        contextProperties.m_name = "Dusk Engine Editor - Entity Attributes";
 
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, contextProperties);

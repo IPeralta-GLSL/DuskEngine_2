@@ -398,45 +398,46 @@ PushButton::Config PushButton::defaultConfig()
 {
     Config config;
 
-    config.primary.disabled.start = QColor("#978DAA");
-    config.primary.disabled.end = QColor("#978DAA");
+    // Flat style – no gradients, accent green for primary, muted gray for secondary
+    config.primary.disabled.start = QColor("#4a7a4d");
+    config.primary.disabled.end = QColor("#4a7a4d");
 
-    config.primary.sunken.start = QColor("#4D2F7B");
-    config.primary.sunken.end = QColor("#4D2F7B");
+    config.primary.sunken.start = QColor("#2e7d32");
+    config.primary.sunken.end = QColor("#2e7d32");
 
-    config.primary.hovered.start = QColor("#9F7BD7");
-    config.primary.hovered.end = QColor("#8B6EBA");
+    config.primary.hovered.start = QColor("#66BB6A");
+    config.primary.hovered.end = QColor("#66BB6A");
 
-    config.primary.normal.start = QColor("#8156CF");
-    config.primary.normal.end = QColor("#6441A4");
+    config.primary.normal.start = QColor("#4CAF50");
+    config.primary.normal.end = QColor("#4CAF50");
 
-    config.secondary.disabled.start = QColor("#666666");
-    config.secondary.disabled.end = QColor("#666666");
+    config.secondary.disabled.start = QColor("#505050");
+    config.secondary.disabled.end = QColor("#505050");
 
-    config.secondary.sunken.start = QColor("#444444");
-    config.secondary.sunken.end = QColor("#444444");
+    config.secondary.sunken.start = QColor("#303030");
+    config.secondary.sunken.end = QColor("#303030");
 
-    config.secondary.hovered.start = QColor("#888888");
-    config.secondary.hovered.end = QColor("#777777");
+    config.secondary.hovered.start = QColor("#606060");
+    config.secondary.hovered.end = QColor("#606060");
 
-    config.secondary.normal.start = QColor("#777777");
-    config.secondary.normal.end = QColor("#666666");
+    config.secondary.normal.start = QColor("#525252");
+    config.secondary.normal.end = QColor("#525252");
 
-    config.defaultBorder.thickness = 1;
+    config.defaultBorder.thickness = 0;
     config.defaultBorder.color = QColor("#000000");
 
-    config.disabledBorder.thickness = config.defaultBorder.thickness;
+    config.disabledBorder.thickness = 0;
     config.disabledBorder.color = QColor("#222222");
 
-    config.focusedBorder.thickness = 2;
-    config.focusedBorder.color = QColor("#C8ABFF");
+    config.focusedBorder.thickness = 1;
+    config.focusedBorder.color = QColor("#4CAF50");
 
     config.defaultFrame.height = 32;
-    config.defaultFrame.radius = 4;
+    config.defaultFrame.radius = 0;
     config.defaultFrame.margin = 4;
 
     config.smallIcon.frame.height = 24;
-    config.smallIcon.frame.radius = 2;
+    config.smallIcon.frame.radius = 0;
     config.smallIcon.frame.margin = 4;
     config.smallIcon.enabledArrowColor = QColor("#FFFFFF");
     config.smallIcon.disabledArrowColor = QColor("#BBBBBB");
