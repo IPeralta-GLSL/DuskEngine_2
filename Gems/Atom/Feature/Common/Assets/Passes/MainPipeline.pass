@@ -366,6 +366,34 @@
                     ]
                 },
                 {
+                    "Name": "Fsr3Pass",
+                    "TemplateName": "Fsr3Template",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "PostProcessPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "MotionVectorPass",
+                                "Attachment": "MotionVectorOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "AuxGeomPass",
                     "TemplateName": "AuxGeomPassTemplate",
                     "Enabled": true,
@@ -373,8 +401,8 @@
                         {
                             "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
-                                "Pass": "PostProcessPass",
-                                "Attachment": "Output"
+                                "Pass": "Fsr3Pass",
+                                "Attachment": "OutputColor"
                             }
                         },
                         {

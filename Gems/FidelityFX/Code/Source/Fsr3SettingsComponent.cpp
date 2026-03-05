@@ -3,6 +3,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Windowing/WindowBus.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -69,6 +70,31 @@ namespace AZ::Render
     void Fsr3SettingsComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
+
+        AzFramework::NativeWindowHandle windowHandle = nullptr;
+        AzFramework::WindowSystemRequestBus::BroadcastResult(
+            windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+
+        if (windowHandle)
+        {
+            AzFramework::WindowSize clientSize{};
+            AzFramework::WindowRequestBus::EventResult(
+                clientSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::Event(
+                windowHandle, &AzFramework::WindowRequestBus::Events::SetRenderResolution, clientSize);
+        }
+
+        auto* passSystem = RPI::PassSystemInterface::Get();
+        if (passSystem)
+        {
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(
+                Name("Fsr3Pass"), static_cast<const RPI::Scene*>(nullptr));
+            RPI::Pass* foundPass = passSystem->FindFirstPass(passFilter);
+            if (foundPass)
+            {
+                foundPass->SetEnabled(false);
+            }
+        }
     }
 
     void Fsr3SettingsComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -76,15 +102,36 @@ namespace AZ::Render
         ApplySettings();
     }
 
+    static float GetUpscaleRatio(Fsr3QualityMode mode)
+    {
+        switch (mode)
+        {
+        case Fsr3QualityMode::NativeAA:         return 1.0f;
+        case Fsr3QualityMode::Quality:           return 1.5f;
+        case Fsr3QualityMode::Balanced:          return 1.7f;
+        case Fsr3QualityMode::Performance:       return 2.0f;
+        case Fsr3QualityMode::UltraPerformance:  return 3.0f;
+        default:                                 return 1.0f;
+        }
+    }
+
     void Fsr3SettingsComponent::ApplySettings()
     {
+        if (m_enabled == m_lastEnabled &&
+            m_qualityMode == m_lastQualityMode &&
+            m_sharpness == m_lastSharpness)
+        {
+            return;
+        }
+
         auto* passSystem = RPI::PassSystemInterface::Get();
         if (!passSystem)
         {
             return;
         }
 
-        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(Name("Fsr3Pass"), static_cast<const RPI::Scene*>(nullptr));
+        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(
+            Name("Fsr3Pass"), static_cast<const RPI::Scene*>(nullptr));
         RPI::Pass* foundPass = passSystem->FindFirstPass(passFilter);
         if (!foundPass)
         {
@@ -93,14 +140,49 @@ namespace AZ::Render
 
         foundPass->SetEnabled(m_enabled);
 
+        AzFramework::NativeWindowHandle windowHandle = nullptr;
+        AzFramework::WindowSystemRequestBus::BroadcastResult(
+            windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+
         if (m_enabled)
         {
             auto* fsr3Pass = azrtti_cast<Fsr3Pass*>(foundPass);
             if (fsr3Pass)
             {
-                fsr3Pass->SetQualityMode(static_cast<FfxFsr3UpscalerQualityMode>(static_cast<int>(m_qualityMode)));
+                fsr3Pass->SetQualityMode(
+                    static_cast<FfxFsr3UpscalerQualityMode>(static_cast<int>(m_qualityMode)));
                 fsr3Pass->SetSharpness(m_sharpness);
             }
+
+            if (windowHandle && (m_qualityMode != m_lastQualityMode || m_enabled != m_lastEnabled))
+            {
+                AzFramework::WindowSize clientSize{};
+                AzFramework::WindowRequestBus::EventResult(
+                    clientSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+
+                float ratio = GetUpscaleRatio(m_qualityMode);
+                AzFramework::WindowSize renderSize{
+                    AZStd::max(1u, static_cast<uint32_t>(clientSize.m_width / ratio)),
+                    AZStd::max(1u, static_cast<uint32_t>(clientSize.m_height / ratio))
+                };
+                AzFramework::WindowRequestBus::Event(
+                    windowHandle, &AzFramework::WindowRequestBus::Events::SetRenderResolution, renderSize);
+            }
         }
+        else
+        {
+            if (windowHandle && m_enabled != m_lastEnabled)
+            {
+                AzFramework::WindowSize clientSize{};
+                AzFramework::WindowRequestBus::EventResult(
+                    clientSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                AzFramework::WindowRequestBus::Event(
+                    windowHandle, &AzFramework::WindowRequestBus::Events::SetRenderResolution, clientSize);
+            }
+        }
+
+        m_lastEnabled = m_enabled;
+        m_lastQualityMode = m_qualityMode;
+        m_lastSharpness = m_sharpness;
     }
 }

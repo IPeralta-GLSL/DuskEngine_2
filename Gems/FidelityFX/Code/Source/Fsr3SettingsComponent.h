@@ -37,5 +37,9 @@ namespace AZ::Render
         bool m_enabled = true;
         Fsr3QualityMode m_qualityMode = Fsr3QualityMode::Performance;
         float m_sharpness = 0.0f;
+
+        bool m_lastEnabled = false;
+        Fsr3QualityMode m_lastQualityMode = Fsr3QualityMode::NativeAA;
+        float m_lastSharpness = -1.0f;
     };
 }

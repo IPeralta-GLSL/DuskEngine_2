@@ -114,34 +114,6 @@
                     ]
                 },
                 {
-                    "Name": "Fsr3Pass",
-                    "TemplateName": "Fsr3Template",
-                    "Enabled": false,
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputColor",
-                            "AttachmentRef": {
-                                "Pass": "TaaPass",
-                                "Attachment": "OutputColor"
-                            }
-                        },
-                        {
-                            "LocalSlot": "InputDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "Depth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "MotionVectors",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "MotionVectors"
-                            }
-                        }
-                    ]
-                },
-                {
                     "Name": "DepthOfFieldPass",
                     "TemplateName": "NewDepthOfFieldTemplate",
                     "Enabled": true,
@@ -149,7 +121,7 @@
                         {
                             "LocalSlot": "LightingBuffer",
                             "AttachmentRef": {
-                                "Pass": "Fsr3Pass",
+                                "Pass": "TaaPass",
                                 "Attachment": "OutputColor"
                             }
                         },

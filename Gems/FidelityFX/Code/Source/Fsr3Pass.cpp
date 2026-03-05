@@ -11,8 +11,11 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 #include <Atom/RHI.Interface/Vulkan/RHIVulkanInterface.h>
+
+#include <AzFramework/Windowing/WindowBus.h>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -173,6 +176,18 @@ namespace AZ::Render
         m_inputDepthBinding = FindAttachmentBinding(Name("InputDepth"));
         m_motionVectorsBinding = FindAttachmentBinding(Name("MotionVectors"));
         m_outputColorBinding = FindAttachmentBinding(Name("OutputColor"));
+
+        if (m_outputColorBinding)
+        {
+            for (auto& owned : m_ownedAttachments)
+            {
+                if (owned->m_name == Name("Fsr3Output"))
+                {
+                    owned->m_sizeSource = nullptr;
+                    break;
+                }
+            }
+        }
     }
 
     void Fsr3Pass::FrameBeginInternal(FramePrepareParams params)
@@ -186,9 +201,32 @@ namespace AZ::Render
                 m_renderHeight = inputDesc.m_size.m_height;
             }
 
-            auto outputDesc = m_outputColorBinding->GetAttachment()->m_descriptor.m_image;
-            m_displayWidth = outputDesc.m_size.m_width;
-            m_displayHeight = outputDesc.m_size.m_height;
+            AzFramework::NativeWindowHandle windowHandle = nullptr;
+            AzFramework::WindowSystemRequestBus::BroadcastResult(
+                windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+
+            AzFramework::WindowSize windowSize{};
+            if (windowHandle)
+            {
+                AzFramework::WindowRequestBus::EventResult(
+                    windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            }
+
+            if (windowSize.m_width > 0 && windowSize.m_height > 0)
+            {
+                m_displayWidth = windowSize.m_width;
+                m_displayHeight = windowSize.m_height;
+
+                auto& outputAttachment = m_outputColorBinding->GetAttachment();
+                outputAttachment->m_descriptor.m_image.m_size.m_width = m_displayWidth;
+                outputAttachment->m_descriptor.m_image.m_size.m_height = m_displayHeight;
+            }
+            else
+            {
+                auto outputDesc = m_outputColorBinding->GetAttachment()->m_descriptor.m_image;
+                m_displayWidth = outputDesc.m_size.m_width;
+                m_displayHeight = outputDesc.m_size.m_height;
+            }
         }
 
         if (m_renderWidth == 0 || m_renderHeight == 0 || m_displayWidth == 0 || m_displayHeight == 0)

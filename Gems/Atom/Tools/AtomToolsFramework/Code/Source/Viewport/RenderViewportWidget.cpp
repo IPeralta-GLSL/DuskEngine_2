@@ -287,8 +287,6 @@ namespace AtomToolsFramework
 
     void RenderViewportWidget::SendWindowResizeEvent()
     {
-        // Scale the size by the DPI of the platform to
-        // get the proper size in pixels.
         const auto pixelRatio = devicePixelRatioF();
         const QSize uiWindowSize = size();
         const QSize windowSize = uiWindowSize * pixelRatio;
@@ -296,8 +294,11 @@ namespace AtomToolsFramework
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+
+        auto renderSize = GetRenderResolution();
         AzFramework::WindowNotificationBus::Event(
-            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, windowSize.width(), windowSize.height());
+            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged,
+            renderSize.m_width, renderSize.m_height);
     }
 
     void RenderViewportWidget::SendWindowCloseEvent()
@@ -460,13 +461,32 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
     {
-        // We want render resolution matches the screen's resolution
-        return GetClientAreaSize();
+        auto clientSize = GetClientAreaSize();
+        return AzFramework::WindowSize{
+            AZStd::max(1u, static_cast<uint32_t>(clientSize.m_width * m_renderScale)),
+            AZStd::max(1u, static_cast<uint32_t>(clientSize.m_height * m_renderScale))
+        };
     }
 
-    void RenderViewportWidget::SetRenderResolution([[maybe_unused]]AzFramework::WindowSize resolution)
+    void RenderViewportWidget::SetRenderResolution(AzFramework::WindowSize resolution)
     {
-        // The RenderViewportWidget does not currently support customized render resolution.
+        auto clientSize = GetClientAreaSize();
+        if (clientSize.m_width > 0 && clientSize.m_height > 0)
+        {
+            m_renderScale = AZStd::clamp(
+                static_cast<float>(resolution.m_width) / static_cast<float>(clientSize.m_width),
+                0.1f, 1.0f);
+        }
+        else
+        {
+            m_renderScale = 1.0f;
+        }
+
+        const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+        auto renderSize = GetRenderResolution();
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged,
+            renderSize.m_width, renderSize.m_height);
     }
 
     float RenderViewportWidget::GetDpiScaleFactor() const

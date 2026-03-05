@@ -164,5 +164,6 @@ namespace AtomToolsFramework
         AZStd::unique_ptr<ViewportInteractionImpl> m_viewportInteractionImpl;
         // Allow to delay the resize event to prevent freezing the editor on continuous mouse drag
         QTimer m_resizeEventCooldown;
+        float m_renderScale = 1.0f;
     };
 } //namespace AtomToolsFramework
