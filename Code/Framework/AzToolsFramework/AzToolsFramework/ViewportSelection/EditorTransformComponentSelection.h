@@ -191,6 +191,7 @@ namespace AzToolsFramework
         void CreateTranslationManipulators();
         void CreateRotationManipulators();
         void CreateScaleManipulators();
+        void CreateUniversalManipulators(); //!< Creates all three manipulators simultaneously (Universal mode).
         void RegenerateManipulators();
 
         void CreateTransformModeSelectionCluster();
@@ -326,6 +327,8 @@ namespace AzToolsFramework
         const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr;
         AZStd::unique_ptr<EditorHelpers> m_editorHelpers; //!< Editor visualization of entities (icons, shapes, debug visuals etc).
         EntityIdManipulators m_entityIdManipulators; //!< Mapping from a Manipulator to potentially many EntityIds.
+        AZStd::unique_ptr<Manipulators> m_universalRotationManipulators; //!< Extra rotation manipulators for Universal mode.
+        AZStd::unique_ptr<Manipulators> m_universalScaleManipulators; //!< Extra scale manipulators for Universal mode.
 
         EditorBoxSelect m_boxSelect; //!< Type responsible for handling box select.
         //! Track adjustments to manipulator translation and orientation (during mouse press/move).
@@ -334,7 +337,7 @@ namespace AzToolsFramework
         ViewportInteraction::KeyboardModifiers m_previousModifiers; //!< What modifiers were held last frame.
         EditorContextMenu m_contextMenu; //!< Viewport right click context menu.
         OptionalFrame m_pivotOverrideFrame; //!< Has a pivot override been set.
-        Mode m_mode = Mode::Translation; //!< Manipulator mode - default to translation.
+        Mode m_mode = Mode::Universal; //!< Manipulator mode - default to universal.
         Pivot m_pivotMode = Pivot::Object; //!< Entity pivot mode - default to object (authored root).
         ReferenceFrame m_referenceFrame = ReferenceFrame::Local; //!< What reference frame is the Manipulator currently operating in.
         Frame m_axisPreview; //!< Axes of entity at the time of mouse down to indicate delta of translation.
@@ -348,6 +351,7 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_translateButtonId; //!< Id of the Viewport UI button for translate mode.
         ViewportUi::ButtonId m_rotateButtonId; //!< Id of the Viewport UI button for rotate mode.
         ViewportUi::ButtonId m_scaleButtonId; //!< Id of the Viewport UI button for scale mode.
+        ViewportUi::ButtonId m_universalButtonId; //!< Id of the Viewport UI button for universal mode.
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.

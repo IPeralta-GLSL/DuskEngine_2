@@ -1722,6 +1722,283 @@ namespace AzToolsFramework
         m_entityIdManipulators.m_manipulators = AZStd::move(scaleManipulators);
     }
 
+    void EditorTransformComponentSelection::CreateUniversalManipulators()
+    {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        // Create the translation manipulators as the primary set.
+        // This also populates m_entityIdManipulators.m_lookups with the selected entities.
+        CreateTranslationManipulators();
+
+        // ---- Rotation manipulators ----
+        {
+            AZStd::unique_ptr<RotationManipulators> rotationManipulators =
+                AZStd::make_unique<RotationManipulators>(AZ::Transform::CreateIdentity());
+            rotationManipulators->SetCircleBoundWidth(ManipulatorCicleBoundWidth());
+
+            // Register and attach to the same entities already tracked in m_entityIdManipulators.m_lookups
+            rotationManipulators->Register(GetMainManipulatorManagerId());
+            for (const auto& lookup : m_entityIdManipulators.m_lookups)
+            {
+                const AZ::ComponentId transformComponentId = GetTransformComponentId(lookup.first);
+                if (transformComponentId != AZ::InvalidComponentId)
+                {
+                    rotationManipulators->AddEntityComponentIdPair(AZ::EntityComponentIdPair(lookup.first, transformComponentId));
+                }
+            }
+
+            rotationManipulators->SetLocalTransform(
+                RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
+            rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+            rotationManipulators->ConfigureView(
+                RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+                AzFramework::ViewportColors::ZAxisColor);
+
+            // Capture raw pointer for use in callbacks (ownership moves later)
+            RotationManipulators* rotManipPtr = rotationManipulators.get();
+
+            struct SharedRotationState
+            {
+                AZ::Quaternion m_savedOrientation = AZ::Quaternion::CreateIdentity();
+                ReferenceFrame m_referenceFrameAtMouseDown = ReferenceFrame::Local;
+                EntityIdList m_entityIds;
+            };
+            auto sharedRotationState = AZStd::make_shared<SharedRotationState>();
+
+            rotationManipulators->InstallLeftMouseDownCallback(
+                [this, sharedRotationState, rotManipPtr](
+                    [[maybe_unused]] const AngularManipulator::Action& action) mutable
+                {
+                    sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
+                    sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
+                    BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, sharedRotationState->m_entityIds);
+                    UpdateInitialTransform(m_entityIdManipulators);
+                    m_axisPreview.m_translation = rotManipPtr->GetLocalTransform().GetTranslation();
+                    m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(rotManipPtr->GetLocalTransform());
+                    BeginRecordManipulatorCommand();
+                });
+
+            rotationManipulators->InstallMouseMoveCallback(
+                [this, prevModifiers = ViewportInteraction::KeyboardModifiers(), sharedRotationState, rotManipPtr](
+                    const AngularManipulator::Action& action) mutable
+                {
+                    const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
+                    const Influence influence = InfluenceFromModifiers(action.m_modifiers);
+                    const AZ::Quaternion manipulatorOrientation = action.m_start.m_rotation * action.m_current.m_delta;
+
+                    if (action.m_modifiers.Ctrl())
+                    {
+                        m_pivotOverrideFrame.m_orientationOverride = manipulatorOrientation;
+                    }
+
+                    if (sharedRotationState->m_referenceFrameAtMouseDown == ReferenceFrame::Local || action.m_modifiers.Ctrl())
+                    {
+                        rotManipPtr->SetLocalTransform(AZ::Transform::CreateFromQuaternionAndTranslation(
+                            manipulatorOrientation, rotManipPtr->GetLocalTransform().GetTranslation()));
+                        // also update translation gizmo orientation so arrows match rotation
+                        if (m_entityIdManipulators.m_manipulators)
+                        {
+                            m_entityIdManipulators.m_manipulators->SetLocalTransform(
+                                AZ::Transform::CreateFromQuaternionAndTranslation(
+                                    manipulatorOrientation, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation()));
+                        }
+                    }
+
+                    if (prevModifiers != action.m_modifiers)
+                    {
+                        UpdateInitialTransform(m_entityIdManipulators);
+                        sharedRotationState->m_savedOrientation = action.m_current.m_delta.GetInverseFull();
+                    }
+
+                    if (action.m_modifiers.Ctrl())
+                    {
+                        UpdateInitialTransform(m_entityIdManipulators);
+                        sharedRotationState->m_savedOrientation = action.m_current.m_delta.GetInverseFull();
+                    }
+                    else
+                    {
+                        if (referenceFrame == ReferenceFrame::Local && sharedRotationState->m_entityIds.size() > 1)
+                        {
+                            m_pivotOverrideFrame.m_orientationOverride = manipulatorOrientation;
+                        }
+
+                        for (AZ::EntityId entityId : sharedRotationState->m_entityIds)
+                        {
+                            auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(entityId);
+                            if (entityIdLookupIt == m_entityIdManipulators.m_lookups.end())
+                            {
+                                continue;
+                            }
+
+                            const AZ::Transform offsetRotation =
+                                AZ::Transform::CreateFromQuaternion(sharedRotationState->m_savedOrientation * action.m_current.m_delta);
+
+                            switch (influence)
+                            {
+                            case Influence::Individual:
+                                {
+                                    const AZ::Quaternion rotation = entityIdLookupIt->second.m_initial.GetRotation().GetNormalized();
+                                    const AZ::Vector3 position = entityIdLookupIt->second.m_initial.GetTranslation();
+                                    const float scale = entityIdLookupIt->second.m_initial.GetUniformScale();
+                                    const AZ::Vector3 centerOffset = CalculateCenterOffset(entityId, m_pivotMode);
+                                    SetEntityWorldTransform(
+                                        entityId,
+                                        AZ::Transform::CreateTranslation(position) * AZ::Transform::CreateFromQuaternion(rotation) *
+                                            AZ::Transform::CreateTranslation(centerOffset) * offsetRotation *
+                                            AZ::Transform::CreateTranslation(-centerOffset) * AZ::Transform::CreateUniformScale(scale));
+                                }
+                                break;
+                            case Influence::Group:
+                                {
+                                    const AZ::Transform pivotTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                                        manipulatorOrientation, rotManipPtr->GetLocalTransform().GetTranslation());
+                                    const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * entityIdLookupIt->second.m_initial;
+                                    SetEntityWorldTransform(entityId, pivotTransform * offsetRotation * transformInPivotSpace);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    prevModifiers = action.m_modifiers;
+                });
+
+            rotationManipulators->InstallLeftMouseUpCallback(
+                [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action)
+                {
+                    AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                        &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                        sharedRotationState->m_entityIds);
+                    EndRecordManipulatorCommand();
+                });
+
+            m_universalRotationManipulators = AZStd::move(rotationManipulators);
+        }
+
+        // ---- Scale manipulators ----
+        {
+            // Use a slightly shorter axis so scale handles don't overlap the translation arrow tips
+            const float universalScaleAxisLength = LinearManipulatorAxisLength() * 0.75f;
+
+            AZStd::unique_ptr<ScaleManipulators> scaleManipulators =
+                AZStd::make_unique<ScaleManipulators>(AZ::Transform::CreateIdentity());
+            scaleManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth());
+
+            scaleManipulators->Register(GetMainManipulatorManagerId());
+            for (const auto& lookup : m_entityIdManipulators.m_lookups)
+            {
+                const AZ::ComponentId transformComponentId = GetTransformComponentId(lookup.first);
+                if (transformComponentId != AZ::InvalidComponentId)
+                {
+                    scaleManipulators->AddEntityComponentIdPair(AZ::EntityComponentIdPair(lookup.first, transformComponentId));
+                }
+            }
+
+            scaleManipulators->SetLocalTransform(
+                RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
+            scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+            scaleManipulators->ConfigureView(
+                universalScaleAxisLength, AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
+
+            struct SharedScaleState
+            {
+                AZ::Vector3 m_savedScaleOffset = AZ::Vector3::CreateZero();
+                float m_initialViewScale = 0.0f;
+                EntityIdList m_entityIds;
+            };
+            auto sharedScaleState = AZStd::make_shared<SharedScaleState>();
+
+            auto uniformLeftMouseDownCallback = [this, sharedScaleState]([[maybe_unused]] const LinearManipulator::Action& action)
+            {
+                sharedScaleState->m_savedScaleOffset = AZ::Vector3::CreateZero();
+                sharedScaleState->m_initialViewScale = ManipulatorViewBaseScale();
+                BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, sharedScaleState->m_entityIds);
+                UpdateInitialTransform(m_entityIdManipulators);
+                m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
+                m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+            };
+
+            auto uniformLeftMouseUpCallback = [this, sharedScaleState]([[maybe_unused]] const LinearManipulator::Action& action)
+            {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    sharedScaleState->m_entityIds);
+                m_entityIdManipulators.m_manipulators->SetLocalTransform(RecalculateAverageManipulatorTransform(
+                    m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
+            };
+
+            auto uniformLeftMouseMoveCallback =
+                [this, sharedScaleState, prevModifiers = ViewportInteraction::KeyboardModifiers()](
+                    const LinearManipulator::Action& action) mutable
+            {
+                if (prevModifiers != action.m_modifiers)
+                {
+                    UpdateInitialTransform(m_entityIdManipulators);
+                    sharedScaleState->m_savedScaleOffset = action.LocalScaleOffset();
+                    sharedScaleState->m_initialViewScale = ManipulatorViewBaseScale();
+                }
+
+                const auto sumVectorElements = [](const AZ::Vector3& vec)
+                {
+                    return vec.GetX() + vec.GetY() + vec.GetZ();
+                };
+
+                const float uniformScale =
+                    action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset() - sharedScaleState->m_savedScaleOffset);
+
+                if (action.m_modifiers.Ctrl())
+                {
+                    SetManipulatorViewBaseScale(AZ::GetClamp(
+                        sharedScaleState->m_initialViewScale + uniformScale, MinManipulatorViewBaseScale, MaxManipulatorViewBaseScale));
+                }
+                else
+                {
+                    for (AZ::EntityId entityId : sharedScaleState->m_entityIds)
+                    {
+                        auto entityIdLookupIt = m_entityIdManipulators.m_lookups.find(entityId);
+                        if (entityIdLookupIt == m_entityIdManipulators.m_lookups.end())
+                        {
+                            continue;
+                        }
+
+                        const AZ::Transform initial = entityIdLookupIt->second.m_initial;
+                        const float initialScale = initial.GetUniformScale();
+                        const float scale = AZ::GetClamp(1.0f + uniformScale / initialScale, AZ::MinTransformScale, AZ::MaxTransformScale);
+                        const AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
+
+                        switch (InfluenceFromModifiers(action.m_modifiers))
+                        {
+                        case Influence::Individual:
+                            {
+                                const AZ::Transform pivotTransform = TransformNormalizedScale(entityIdLookupIt->second.m_initial);
+                                const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
+                                SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                            }
+                            break;
+                        case Influence::Group:
+                            {
+                                const AZ::Transform pivotTransform =
+                                    TransformNormalizedScale(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+                                const AZ::Transform transformInPivotSpace = pivotTransform.GetInverse() * initial;
+                                SetEntityWorldTransform(entityId, pivotTransform * scaleTransform * transformInPivotSpace);
+                            }
+                            break;
+                        }
+                    }
+                }
+                prevModifiers = action.m_modifiers;
+            };
+
+            scaleManipulators->InstallAxisLeftMouseDownCallback(uniformLeftMouseDownCallback);
+            scaleManipulators->InstallAxisLeftMouseUpCallback(uniformLeftMouseUpCallback);
+            scaleManipulators->InstallAxisMouseMoveCallback(uniformLeftMouseMoveCallback);
+            scaleManipulators->InstallUniformLeftMouseDownCallback(uniformLeftMouseDownCallback);
+            scaleManipulators->InstallUniformLeftMouseUpCallback(uniformLeftMouseUpCallback);
+            scaleManipulators->InstallUniformMouseMoveCallback(uniformLeftMouseMoveCallback);
+
+            m_universalScaleManipulators = AZStd::move(scaleManipulators);
+        }
+    }
+
     void EditorTransformComponentSelection::InitializeManipulators(Manipulators& manipulators)
     {
         manipulators.Register(GetMainManipulatorManagerId());
@@ -2244,6 +2521,7 @@ namespace AzToolsFramework
             ClearManipulatorOrientationOverride();
             break;
         case Mode::Translation:
+        case Mode::Universal:
             ClearManipulatorTranslationOverride();
             break;
         case Mode::Scale:
@@ -2674,6 +2952,7 @@ namespace AzToolsFramework
                         instance->CopyScaleToSelectedEntitiesIndividualLocal(1.0f);
                         break;
                     case Mode::Translation:
+                    case Mode::Universal:
                         instance->ResetTranslationForSelectedEntitiesLocal();
                         break;
                     }
@@ -3060,6 +3339,49 @@ namespace AzToolsFramework
             hotkeyManager->SetActionHotKey(actionIdentifier, "3");
         }
 
+        // Transform Mode - Universal (combined Move + Rotate + Scale)
+        {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.universal";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Universal";
+            actionProperties.m_description = "Select and move/rotate/scale selected object(s) simultaneously";
+            actionProperties.m_category = "Edit";
+            actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
+
+            actionManager->RegisterCheckableAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []()
+                {
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return;
+                    }
+
+                    instance->SetTransformMode(Mode::Universal);
+                },
+                []() -> bool
+                {
+                    EditorTransformComponentSelection* instance = GetCurrentInstance();
+                    if (!instance)
+                    {
+                        return false;
+                    }
+                    return instance->GetTransformMode() == Mode::Universal;
+                }
+            );
+
+            // Update when the transform mode changes.
+            actionManager->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            actionManager->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+            hotkeyManager->SetActionHotKey(actionIdentifier, "4");
+        }
+
         // Move Up
         {
             const AZStd::string_view actionIdentifier = "o3de.action.entitySorting.moveUp";
@@ -3267,6 +3589,18 @@ namespace AzToolsFramework
             return;
         }
 
+        // Destroy any secondary manipulators from a previous Universal mode session
+        if (m_universalRotationManipulators)
+        {
+            m_universalRotationManipulators->Unregister();
+            m_universalRotationManipulators.reset();
+        }
+        if (m_universalScaleManipulators)
+        {
+            m_universalScaleManipulators->Unregister();
+            m_universalScaleManipulators.reset();
+        }
+
         switch (m_mode)
         {
         case Mode::Translation:
@@ -3277,6 +3611,9 @@ namespace AzToolsFramework
             break;
         case Mode::Scale:
             CreateScaleManipulators();
+            break;
+        case Mode::Universal:
+            CreateUniversalManipulators();
             break;
         }
 
@@ -3330,6 +3667,7 @@ namespace AzToolsFramework
         m_translateButtonId = RegisterClusterButton(m_transformModeClusterId, "Move");
         m_rotateButtonId = RegisterClusterButton(m_transformModeClusterId, "Rotate");
         m_scaleButtonId = RegisterClusterButton(m_transformModeClusterId, "Scale");
+        m_universalButtonId = RegisterClusterButton(m_transformModeClusterId, "Scale"); // combined gizmo
 
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
@@ -3341,6 +3679,9 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
             m_scaleButtonId, TransformModeClusterScaleTooltip);
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            m_universalButtonId, "Switch to universal mode (4)");
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
@@ -3356,13 +3697,17 @@ namespace AzToolsFramework
             {
                 SetTransformMode(Mode::Scale);
             }
+            else if (buttonId == m_universalButtonId)
+            {
+                SetTransformMode(Mode::Universal);
+            }
         };
 
         m_transformModeSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
 
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_transformModeClusterId,
-            m_translateButtonId);
+            m_universalButtonId);
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_transformModeClusterId,
             m_transformModeSelectionHandler);
@@ -3552,6 +3897,9 @@ namespace AzToolsFramework
         case Mode::Scale:
             SetViewportUiClusterActiveButton(m_transformModeClusterId, m_scaleButtonId);
             break;
+        case Mode::Universal:
+            SetViewportUiClusterActiveButton(m_transformModeClusterId, m_universalButtonId);
+            break;
         }
 
         RegenerateManipulators();
@@ -3637,6 +3985,16 @@ namespace AzToolsFramework
                 }
 
                 m_entityIdManipulators.m_manipulators->SetLocalTransform(transform);
+
+                // In Universal mode, also keep the secondary manipulators in sync
+                if (m_universalRotationManipulators)
+                {
+                    m_universalRotationManipulators->SetLocalTransform(transform);
+                }
+                if (m_universalScaleManipulators)
+                {
+                    m_universalScaleManipulators->SetLocalTransform(transform);
+                }
 
                 m_triedToRefresh = false;
             }

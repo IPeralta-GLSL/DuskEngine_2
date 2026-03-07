@@ -61,7 +61,8 @@ namespace AzToolsFramework
             // ensures scrolling the mouse wheel cycles between modes in the right order.
             Rotation,
             Translation,
-            Scale
+            Scale,
+            Universal //!< Shows all three manipulators simultaneously (move + rotate + scale).
         };
 
         //! Specify the type of refresh (what type of transform modification caused the refresh).

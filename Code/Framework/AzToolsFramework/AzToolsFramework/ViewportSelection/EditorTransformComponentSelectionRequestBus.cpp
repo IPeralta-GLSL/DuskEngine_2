@@ -26,6 +26,8 @@ namespace AzToolsFramework
                 "TransformMode_Translation") TEMP_SET_ATTRIBUTES_FOR_EditorTransformComponentSelectionRequests();
             behaviorContext->EnumProperty<static_cast<int>(EditorTransformComponentSelectionRequests::Mode::Scale)>("TransformMode_Scale")
                 TEMP_SET_ATTRIBUTES_FOR_EditorTransformComponentSelectionRequests();
+            behaviorContext->EnumProperty<static_cast<int>(EditorTransformComponentSelectionRequests::Mode::Universal)>("TransformMode_Universal")
+                TEMP_SET_ATTRIBUTES_FOR_EditorTransformComponentSelectionRequests();
 
             behaviorContext->EnumProperty<static_cast<int>(EditorTransformComponentSelectionRequests::RefreshType::Translation)>(
                 "TransformRefreshType_Translation") TEMP_SET_ATTRIBUTES_FOR_EditorTransformComponentSelectionRequests();
