@@ -558,7 +558,7 @@ namespace AzToolsFramework
 
     void EditorTransformComponentSelection::SetAllViewportUiVisible(const bool visible)
     {
-        SetViewportUiClusterVisible(m_transformModeClusterId, visible);
+        // m_transformModeClusterId is intentionally kept hidden (Universal mode always active)
         SetViewportUiClusterVisible(m_spaceCluster.m_clusterId, visible);
         SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, visible);
         m_viewportUiVisible = visible;
@@ -1075,6 +1075,8 @@ namespace AzToolsFramework
 
         CreateComponentModeSwitcher();
         CreateTransformModeSelectionCluster();
+        // Universal mode is always active — hide the mode-switching cluster
+        SetViewportUiClusterVisible(m_transformModeClusterId, false);
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
 
