@@ -1750,8 +1750,10 @@ namespace AzToolsFramework
             rotationManipulators->SetLocalTransform(
                 RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
             rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+            // Radius slightly larger than arrow tip reach so rings visually contain the arrows
+            const float universalRotationRadius = (LinearManipulatorAxisLength() + LinearManipulatorConeLength()) * 1.15f;
             rotationManipulators->ConfigureView(
-                RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
+                universalRotationRadius, AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
                 AzFramework::ViewportColors::ZAxisColor);
 
             // Capture raw pointer for use in callbacks (ownership moves later)
@@ -1876,8 +1878,8 @@ namespace AzToolsFramework
 
         // ---- Scale manipulators ----
         {
-            // Use a slightly shorter axis so scale handles don't overlap the translation arrow tips
-            const float universalScaleAxisLength = LinearManipulatorAxisLength() * 0.75f;
+            // Shorter than translation arrows (55%) so cube handles are clearly distinct from arrow tips
+            const float universalScaleAxisLength = LinearManipulatorAxisLength() * 0.55f;
 
             AZStd::unique_ptr<ScaleManipulators> scaleManipulators =
                 AZStd::make_unique<ScaleManipulators>(AZ::Transform::CreateIdentity());
@@ -1896,8 +1898,12 @@ namespace AzToolsFramework
             scaleManipulators->SetLocalTransform(
                 RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
             scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+            // Use axis colors for scale cubes: same hue as arrows/rings but cube shape makes them visually distinct
             scaleManipulators->ConfigureView(
-                universalScaleAxisLength, AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
+                universalScaleAxisLength,
+                AzFramework::ViewportColors::XAxisColor,
+                AzFramework::ViewportColors::YAxisColor,
+                AzFramework::ViewportColors::ZAxisColor);
 
             struct SharedScaleState
             {

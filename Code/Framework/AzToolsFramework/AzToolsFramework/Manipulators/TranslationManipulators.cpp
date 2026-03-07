@@ -13,10 +13,10 @@
 
 namespace AzToolsFramework
 {
-    static const AZ::Color LinearManipulatorXAxisColor = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
-    static const AZ::Color LinearManipulatorYAxisColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
-    static const AZ::Color LinearManipulatorZAxisColor = AZ::Color(0.0f, 0.0f, 1.0f, 1.0f);
-    static const AZ::Color SurfaceManipulatorColor = AZ::Color(1.0f, 1.0f, 0.0f, 0.5f);
+    static const AZ::Color LinearManipulatorXAxisColor = AZ::Color(1.0f, 0.18f, 0.18f, 1.0f);
+    static const AZ::Color LinearManipulatorYAxisColor = AZ::Color(0.26f, 1.0f, 0.26f, 1.0f);
+    static const AZ::Color LinearManipulatorZAxisColor = AZ::Color(0.24f, 0.52f, 1.0f, 1.0f);
+    static const AZ::Color SurfaceManipulatorColor = AZ::Color(1.0f, 1.0f, 0.2f, 0.4f);
 
     static TranslationManipulatorsViewCreateInfo DefaultTranslationManipulatorViewCreateInfo()
     {

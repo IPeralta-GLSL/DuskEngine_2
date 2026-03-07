@@ -34,13 +34,14 @@ namespace AzFramework
         const AZ::Color HiddenColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         /// Color to use for x-axis
-        const AZ::Color XAxisColor(1.0f, 0.0f, 0.0f, 1.0f);
+        // Blender-inspired vibrant axis colors
+        const AZ::Color XAxisColor(1.0f, 0.18f, 0.18f, 1.0f);  // vivid red
 
         /// Color to use for y-axis
-        const AZ::Color YAxisColor(0.0f, 1.0f, 0.0f, 1.0f);
+        const AZ::Color YAxisColor(0.26f, 1.0f, 0.26f, 1.0f);  // vivid green
 
         /// Color to use for z-axis
-        const AZ::Color ZAxisColor(0.0f, 0.0f, 1.0f, 1.0f);
+        const AZ::Color ZAxisColor(0.24f, 0.52f, 1.0f, 1.0f);  // vivid blue
 
         /// Color used by QuadBillboard Manipulator View.
         const AZ::Color DefaultManipulatorHandleColor(0.06275f, 0.1647f, 0.1647f, 1.0f);
