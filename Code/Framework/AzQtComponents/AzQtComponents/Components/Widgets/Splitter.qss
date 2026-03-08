@@ -7,7 +7,7 @@
  */
 
 QSplitter::handle {
-    background-color: #222222;
+    background-color: #111111;
 }
 
 QSplitter::handle:horizontal {

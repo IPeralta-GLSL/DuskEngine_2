@@ -27,10 +27,10 @@ QMenuBar::item
 
 QMenuBar::item:selected
 {
-    background-color: #555555;
+    background-color: #111111;
 }
 
 QMenuBar::item:pressed
 {
-    background-color: #222222;
+    background-color: #111111;
 }

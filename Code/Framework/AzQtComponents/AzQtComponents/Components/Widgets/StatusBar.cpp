@@ -33,7 +33,7 @@ StatusBar::Config StatusBar::defaultConfig()
 {
     Config config;
 
-    config.backgroundColor = QColor(QStringLiteral("#444444"));
+    config.backgroundColor = QColor(QStringLiteral("#111111"));
     config.borderColor = QColor(QStringLiteral("#111111"));
     config.borderWidth = 2;
 

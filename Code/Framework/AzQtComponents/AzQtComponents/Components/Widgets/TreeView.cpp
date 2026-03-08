@@ -319,7 +319,7 @@ namespace AzQtComponents
         dragPainter.fillRect(dragImage.rect(), Qt::transparent);
         dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         dragPainter.setOpacity(0.35f);
-        dragPainter.fillRect(rect, QColor("#222222"));
+        dragPainter.fillRect(rect, QColor("#111111"));
         dragPainter.setOpacity(1.0f);
 
         int imageY = 0;

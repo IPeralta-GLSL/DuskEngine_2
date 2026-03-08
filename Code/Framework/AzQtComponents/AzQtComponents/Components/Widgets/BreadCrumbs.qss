@@ -14,7 +14,7 @@
 
 AzQtComponents--BreadCrumbs #breadcrumbs-separator
 {
-    background-color: #373737;
+    background-color: #111111;
 }
 
 AzQtComponents--BreadCrumbs #MenuButton

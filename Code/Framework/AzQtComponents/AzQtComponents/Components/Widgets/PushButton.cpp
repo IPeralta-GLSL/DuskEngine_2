@@ -411,23 +411,23 @@ PushButton::Config PushButton::defaultConfig()
     config.primary.normal.start = QColor("#4CAF50");
     config.primary.normal.end = QColor("#4CAF50");
 
-    config.secondary.disabled.start = QColor("#505050");
-    config.secondary.disabled.end = QColor("#505050");
+    config.secondary.disabled.start = QColor("#222222");
+    config.secondary.disabled.end = QColor("#222222");
 
-    config.secondary.sunken.start = QColor("#303030");
-    config.secondary.sunken.end = QColor("#303030");
+    config.secondary.sunken.start = QColor("#111111");
+    config.secondary.sunken.end = QColor("#111111");
 
-    config.secondary.hovered.start = QColor("#606060");
-    config.secondary.hovered.end = QColor("#606060");
+    config.secondary.hovered.start = QColor("#333333");
+    config.secondary.hovered.end = QColor("#333333");
 
-    config.secondary.normal.start = QColor("#525252");
-    config.secondary.normal.end = QColor("#525252");
+    config.secondary.normal.start = QColor("#1a1a1a");
+    config.secondary.normal.end = QColor("#1a1a1a");
 
     config.defaultBorder.thickness = 0;
     config.defaultBorder.color = QColor("#000000");
 
     config.disabledBorder.thickness = 0;
-    config.disabledBorder.color = QColor("#222222");
+    config.disabledBorder.color = QColor("#111111");
 
     config.focusedBorder.thickness = 1;
     config.focusedBorder.color = QColor("#4CAF50");

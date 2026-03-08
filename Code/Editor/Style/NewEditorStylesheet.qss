@@ -60,7 +60,7 @@ QListView[class="SingleRequiredSelection"]::item {
 
 NetPromoterScoreDialog QDialog
 {
-	background: #333333;
+	background: #111111;
 }
 
 NetPromoterScoreDialog QPushButton[RatingButton="true"], QPushButton[class="RatingButtonLeave"]
@@ -68,9 +68,9 @@ NetPromoterScoreDialog QPushButton[RatingButton="true"], QPushButton[class="Rati
 	background-color: #f6f6f6;
 	color: black;
 	border-right: 1px solid black;
-	border-left: 1px #333333;	
-	border-top: 1px #333333;	
-	border-bottom: 1px #333333;		
+	border-left: 1px #111111;	
+	border-top: 1px #111111;	
+	border-bottom: 1px #111111;		
 }
 
 NetPromoterScoreDialog QPushButton[class="RatingButtonHover"]
@@ -78,9 +78,9 @@ NetPromoterScoreDialog QPushButton[class="RatingButtonHover"]
 	background-color: #FFC400;
 	color: black;
 	border-right: 1px solid black;
-	border-left: 1px #333333;	
-	border-top: 1px #333333;	
-	border-bottom: 1px #333333;	
+	border-left: 1px #111111;	
+	border-top: 1px #111111;	
+	border-bottom: 1px #111111;	
 }
 
 NetPromoterScoreDialog QPushButton[class="RatingButtonPress"]
@@ -88,9 +88,9 @@ NetPromoterScoreDialog QPushButton[class="RatingButtonPress"]
 	background-color: #FFA724;
 	color: black;
 	border-right: 1px solid black;
-	border-left: 1px #333333;	
-	border-top: 1px #333333;	
-	border-bottom: 1px #333333;	
+	border-left: 1px #111111;	
+	border-top: 1px #111111;	
+	border-bottom: 1px #111111;	
 }
 
 NetPromoterScoreDialog QTextEdit, QTextEdit[class="CommentBoxBefore"]
@@ -410,13 +410,13 @@ AzToolsFramework--ComponentPaletteWidget #SearchClearButton
 
 AzToolsFramework--ComponentPaletteWidget #Tree
 {
-    background-color: #222222;
+    background-color: #111111;
     color: white;
     font-size: 12px;
     outline: none;
     padding: 5 0 8 8;
     selection-color: #4CAF50;
-    selection-background-color: #222222;
+    selection-background-color: #111111;
 }
 
 AzToolsFramework--ComponentPaletteWidget #Tree::item::hover
@@ -472,7 +472,7 @@ AzToolsFramework--ComponentEditorHeader
     padding: 0px;
     border: none;
     border-radius: 2px;
-    background-color: #222222;
+    background-color: #111111;
 }
 
 AzToolsFramework--ComponentEditorHeader #Background
@@ -481,7 +481,7 @@ AzToolsFramework--ComponentEditorHeader #Background
     padding: 0px;
     border: none;
     border-radius: 2px;
-    background-color: #222222;
+    background-color: #111111;
     background-image: none;
 }
 
@@ -990,7 +990,7 @@ QPushButton[class='Link'] { color: @LinkColor; }
 
 #ResourceManagement #ResourceImporter #RegionBox:disabled
 {
-    color: #555555;
+    color: #222222;
 }
 
 #ResourceManagement #ResourceImporter #ListTable
@@ -1005,7 +1005,7 @@ QPushButton[class='Link'] { color: @LinkColor; }
     padding-right: 12px;
     padding-top: 3px;
     padding-bottom: 3px;
-    background-color: #333436;
+    background-color: #111111;
 }
 
 #ResourceManagement #ResourceImporter #ListTable::item:alternate
@@ -1109,7 +1109,7 @@ QPushButton[class='Link'] { color: @LinkColor; }
 
 #LoginDialog Amazon--LoginWelcomeTitle
 {
-    color: #444444;
+    color: #111111;
     background-color: #F8F8F8;
     font-size: 21px;
     qproperty-alignment: AlignCenter;
@@ -1118,7 +1118,7 @@ QPushButton[class='Link'] { color: @LinkColor; }
 
 #LoginDialog Amazon--LoginWelcomeText
 {
-    color: #444444;
+    color: #111111;
     background-color: #F8F8F8;
     font-size: 13px;
     qproperty-alignment: AlignLeft;
@@ -1162,7 +1162,7 @@ QLineEdit[inputValid="false"]:focus
 }
 
 QWidget#ViewportTitleDlgContainer, QWidget#ViewportTitleDlgContainer QWidget {
-    background-color: rgba(47, 46, 46, 217);
+    background-color: rgba(17, 17, 17, 217);
 }
 
 QLineEdit#filteredSearchWidget
@@ -1229,13 +1229,13 @@ QToolButton#assetTypeSelector:focus
 ******************************************************************************/
 
 QWidget {
-    background-color: rgb(56, 58, 59);
+    background-color: #111111;
     font-family: "Open Sans";
     font-weight: 400;
 }
 
 QMenuBar {
-    background-color: rgb(47, 46, 46);
+    background-color: #111111;
     color: rgb(204, 204, 204);
     min-height: 24px;
     font-size: 13px;
@@ -1391,14 +1391,14 @@ QTextEdit {
     font-size: 12px;
     line-height: 20px;
 
-    background-color: rgb(34, 35, 38);
-    border: 1px solid rgb(34, 35, 38);
+    background-color: #111111;
+    border: 1px solid #111111;
 }
 
 
 QScrollBar {
-    background-color: #333333;
-    border: 1px solid rgb(34, 35, 38);
+    background-color: #111111;
+    border: 1px solid #111111;
 }
 
 QScrollBar:horizontal {
@@ -1412,7 +1412,7 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle {
-    background-color: #555555;
+    background-color: #222222;
     border: 0.5px solid rgb(51, 52, 56);
     border-radius: 2px;
 }
@@ -1434,7 +1434,7 @@ QScrollBar::add-line, QScrollBar::sub-line, QScrollBar::add-page, QScrollBar::su
 
 QProgressBar {
     height: 7px;
-    background: rgb(108, 111, 112);
+    background: #222222;
     border-radius: 2px;
     color: transparent; /* no label */
 }
@@ -1453,7 +1453,7 @@ QSlider:vertical {
 }
 
 QSlider::groove {
-    background: rgb(108, 111, 112);
+    background: #222222;
     border-radius: 2px;
 }
 QSlider::groove:horizontal {
@@ -1469,7 +1469,7 @@ QSlider::groove:vertical {
 
 /* right side of the slider */
 QSlider::add-page:horizontal, QSlider::add-page:vertical {
-     background-color: rgb(108, 111, 112);
+     background-color: #222222;
      border-radius: 2px;
 }
 
@@ -1480,12 +1480,12 @@ QSlider::sub-page:horizontal, QSlider::sub-page:vertical {
 }
 
 QSlider::sub-page:horizontal:disabled, QSlider::sub-page:vertical:disabled {
-    background: rgb(108, 111, 112);
+    background: #222222;
     border-radius: 2px;
 }
 
 QSlider::sub-page:horizontal[invertedAppearance=true], QSlider::sub-page:vertical[invertedAppearance=true] {
-     background: rgb(108, 111, 112);
+     background: #222222;
      border-radius: 2px;
 }
 QSlider::add-page:horizontal[invertedAppearance=true], QSlider::add-page:vertical[invertedAppearance=true] {
@@ -1503,7 +1503,7 @@ QSlider::handle:disabled {
 }
 
 QMenu {
-    background-color: #333333;
+    background-color: #111111;
     margin: 3 5 5 5;
 }
 
@@ -1523,7 +1523,7 @@ QMenu::item:selected {
 }
 
 QMenu::item:disabled {
-    color: #555555;
+    color: #222222;
 }
 
 QMenu::separator
@@ -1535,7 +1535,7 @@ QMenu::separator
     border-top-color: #303030;
     border-bottom-width: 1px;
     border-bottom-style: solid;
-    border-bottom-color: #222222;
+    border-bottom-color: #111111;
 }
 
 QComboBox {
@@ -1546,27 +1546,27 @@ QComboBox {
 }
 
 QComboBox:enabled:!focus {
-    background-color: #555555;
+    background-color: #222222;
 }
 
 QComboBox:enabled:!focus:on {
-    background-color: #555555;
+    background-color: #222222;
     border: 1px solid rgb(76, 175, 80);
 }
 
 QComboBox:focus {
-    background-color: #555555;
+    background-color: #222222;
     border: 1px solid rgb(76, 175, 80);
 }
 
 QComboBox QListView {
-    background-color: #222222;
+    background-color: #111111;
     color: white;
     font-size: 12px;
     outline: none;
     padding: 5 0 8 8;
     selection-color: #4CAF50;
-    selection-background-color: #222222;
+    selection-background-color: #111111;
 }
 
 QComboBox QListView::item {
@@ -1575,12 +1575,12 @@ QComboBox QListView::item {
 }
 
 QComboBox QListView::item:selected {
-    background-color: #222222;
+    background-color: #111111;
     color: #4CAF50;
 }
 
 QComboBox QScrollBar {
-    background-color: #222222;
+    background-color: #111111;
     border: 0px;
 }
 
@@ -1617,7 +1617,7 @@ QComboBox::down-arrow:!editable:disabled {
 
 QComboBox:disabled {
     color: rgb(105, 105, 105);
-    background-color: rgb(78, 80, 81);
+    background-color: #111111;
 }
 
 QToolBar QComboBox {
@@ -1662,18 +1662,18 @@ VectorEdit QLineEdit:enabled:focus {
 }
 
 VectorEdit QLineEdit:enabled {
-    background-color: rgb(110, 112, 113);
+    background-color: #222222;
     border: 1px solid rgb(76, 175, 80);
 }
 
 VectorEdit QLineEdit:disabled {
-    color: rgb(56, 58, 59);
-    background-color: rgb(78, 80, 81);
+    color: #111111;
+    background-color: #111111;
 }
 
 QAbstractSpinBox:disabled {
     color: rgb(0, 0, 0);
-    background-color: rgb(90, 90, 90);
+    background-color: #111111;
 }
 
 VectorEdit[flavor="1"] QLineEdit { /* Information */
@@ -1698,8 +1698,8 @@ QExpandingLineEdit {
 }
 
 QAbstractItemView {
-    background-color: rgb(56, 58, 59);
-    alternate-background-color: rgb(66, 68, 69);
+    background-color: #111111;
+    alternate-background-color: #111111;
     color: rgb(153, 153, 153);
     border: none;
     selection-color: rgb(255, 255, 255);
@@ -1893,7 +1893,7 @@ AzQtComponents--StyledDetailsTableView::item {
 }
 
 QTableView {
-    gridline-color: rgb(56, 58, 59);
+    gridline-color: #111111;
 }
 
 QToolBar::handle:horizontal {
@@ -2150,7 +2150,7 @@ ConditionGroupWidget QLineEdit
     height: 21;
     border: 1px solid rgb(40, 41, 42);
     border-radius: 2px;
-    background-color: rgb(110, 112, 113);
+    background-color: #222222;
     padding: 0 0 0 4;
 }
 
@@ -2375,7 +2375,7 @@ AzQtComponents--FilterCriteriaButton
     padding: 0px;
     border-radius: 2px;
     border: 1px solid #808080;
-    background-color: #2E2E2E;
+    background-color: #111111;
 }
 
 AzQtComponents--FilterCriteriaButton QLabel,
@@ -2678,7 +2678,7 @@ AzQtComponents--CardHeader #Background
 
 .primaryCardHeader
 {
-    background-color: #222222;
+    background-color: #111111;
 }
 
 .secondaryCardHeader
@@ -2855,7 +2855,7 @@ AzToolsFramework--AssetBrowser--AssetBrowserTreeView::branch:open:has-children:h
 
 AzQtComponents--SegmentBar QAbstractButton
 {
-    background-color: #333333;
+    background-color: #111111;
     border-color: #000000;
     border-style: solid;
     border-width: 1px;
@@ -2895,13 +2895,13 @@ AzQtComponents--SegmentBar[orientation="2"] QAbstractButton.TabLast
 
 AzQtComponents--SegmentBar QAbstractButton:checked
 {
-    background-color: #222222;
+    background-color: #111111;
 }
 
 AzQtComponents--SegmentBar QAbstractButton:hover:!checked,
 AzQtComponents--SegmentBar QAbstractButton:pressed:!checked
 {
-    background-color: #444444;
+    background-color: #111111;
 }
 
 AzToolsFramework--AssetCompleterListView

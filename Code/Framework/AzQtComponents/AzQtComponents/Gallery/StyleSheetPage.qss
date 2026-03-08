@@ -11,7 +11,7 @@
 
 AzQtComponents--FilteredSearchWidget {
     padding: 8px;
-    background-color: rgb(40,40,40);
+    background-color: #111111;
 }
 
 QLineEdit {

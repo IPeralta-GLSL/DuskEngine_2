@@ -19,7 +19,7 @@ AzQtComponents--TitleBar[drawAsTabBar="true"]
 
 AzQtComponents--TitleBar[drawSimple="true"]
 {
-    background-color: #222222;
+    background-color: #111111;
     border-bottom: 3px solid #111111;
 }
 

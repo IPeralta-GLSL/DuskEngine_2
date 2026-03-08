@@ -79,7 +79,7 @@ AzQtComponents--BrowseEdit #attached-button:hover
 
 AzQtComponents--BrowseEdit #attached-button:pressed
 {
-    background-color: #444444;
+    background-color: #111111;
 }
 
 AzQtComponents--BrowseEdit #attached-button:disabled

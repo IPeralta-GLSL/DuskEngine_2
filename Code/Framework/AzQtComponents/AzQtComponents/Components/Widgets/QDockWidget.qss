@@ -19,7 +19,7 @@
 
 .QDockWidget::title
 {
-    background-color: #181818;
+    background-color: #111111;
 }
 
 /* Note that the icon size is hard-coded to 10px by Qt */
