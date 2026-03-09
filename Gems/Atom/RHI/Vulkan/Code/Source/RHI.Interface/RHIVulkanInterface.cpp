@@ -13,6 +13,8 @@
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/Image.h>
+#include <RHI/ImageView.h>
+#include <RHI/Instance.h>
 #include <RHI/PhysicalDevice.h>
 #include <RHI/TimelineSemaphoreFence.h>
 
@@ -148,6 +150,17 @@ namespace AZ
         {
             AZ_Assert(azrtti_cast<Device*>(&device), "%s can only be called with a Vulkan RHI object", __FUNCTION__);
             return static_cast<Device&>(device).GetContext().GetDeviceProcAddr;
+        }
+
+        VkInstance GetInstanceNativeHandle()
+        {
+            return Instance::GetInstance().GetNativeInstance();
+        }
+
+        VkImageView GetNativeImageView(RHI::DeviceImageView& imageView)
+        {
+            AZ_Assert(azrtti_cast<ImageView*>(&imageView), "%s can only be called with a Vulkan RHI object", __FUNCTION__);
+            return static_cast<ImageView&>(imageView).GetNativeImageView();
         }
     } // namespace Vulkan
 } // namespace AZ

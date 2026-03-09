@@ -11,6 +11,7 @@
 #include <Atom/RHI/DeviceBuffer.h>
 #include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI/PhysicalDevice.h>
 #include <Atom/RHI/CommandList.h>
 
@@ -52,5 +53,11 @@ namespace AZ
         VkCommandBuffer GetNativeCommandBuffer(RHI::CommandList* commandList);
 
         PFN_vkGetDeviceProcAddr GetDeviceProcAddr(RHI::Device& device);
+
+        //! Provide access to native VkInstance handle (global singleton)
+        VkInstance GetInstanceNativeHandle();
+
+        //! Provide access to native VkImageView from a DeviceImageView
+        VkImageView GetNativeImageView(RHI::DeviceImageView& imageView);
     } // namespace Vulkan
 } // namespace AZ

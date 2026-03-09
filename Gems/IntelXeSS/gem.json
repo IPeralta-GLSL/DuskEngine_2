@@ -1,0 +1,22 @@
+{
+    "gem_name": "IntelXeSS",
+    "version": "1.0.0",
+    "display_name": "Intel XeSS",
+    "license": "MIT",
+    "license_url": "https://opensource.org/licenses/MIT",
+    "origin": "DuskEngine",
+    "type": "Code",
+    "summary": "Intel Xe Super Sampling (XeSS) integration providing AI-powered temporal upscaling for Vulkan",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Rendering",
+        "PostProcessing",
+        "Upscaling"
+    ],
+    "dependencies": [
+        "Atom_RPI",
+        "Atom_RHI_Vulkan"
+    ]
+}

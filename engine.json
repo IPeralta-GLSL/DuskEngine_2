@@ -38,6 +38,7 @@
         "Gems/ExpressionEvaluation",
         "Gems/FastNoise",
         "Gems/FidelityFX",
+        "Gems/IntelXeSS",
         "Gems/GameState",
         "Gems/GameStateSamples",
         "Gems/Gestures",

@@ -1,0 +1,14 @@
+set(FILES
+    Source/IntelXeSSModule.cpp
+    Source/IntelXeSSModule.h
+    Source/IntelXeSSSystemComponent.cpp
+    Source/IntelXeSSSystemComponent.h
+    Source/XeSSLoader.cpp
+    Source/XeSSLoader.h
+    Source/XeSSFeatureProcessor.cpp
+    Source/XeSSFeatureProcessor.h
+    Source/XeSSPass.cpp
+    Source/XeSSPass.h
+    Source/XeSSSettingsComponent.cpp
+    Source/XeSSSettingsComponent.h
+)
