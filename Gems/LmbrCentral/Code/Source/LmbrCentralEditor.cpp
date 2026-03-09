@@ -21,6 +21,7 @@
 #include "Scripting/EditorTagComponent.h"
 
 #include "Editor/EditorCommentComponent.h"
+#include "Editor/EditorFolderComponent.h"
 #include "Shape/EditorAxisAlignedBoxShapeComponent.h"
 #include "Shape/EditorAxisAlignedBoxShapeComponentMode.h"
 #include "Shape/EditorBoxShapeComponent.h"
@@ -76,6 +77,7 @@ namespace LmbrCentral
             EditorSplineComponent::CreateDescriptor(),
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
+            EditorFolderComponent::CreateDescriptor(),
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),

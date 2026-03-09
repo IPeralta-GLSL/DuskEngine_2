@@ -74,6 +74,8 @@ set(FILES
     Source/Shape/EditorShapeComponentConverters.cpp
     Source/Editor/EditorCommentComponent.h
     Source/Editor/EditorCommentComponent.cpp
+    Source/Editor/EditorFolderComponent.h
+    Source/Editor/EditorFolderComponent.cpp
     Source/Shape/TubeShape.h
     Source/Shape/TubeShape.cpp
     Source/Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.cpp

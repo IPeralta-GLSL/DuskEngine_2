@@ -584,6 +584,81 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
 
         hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Alt+N");
     }
+
+    // Create folder
+    {
+        const AZStd::string_view actionIdentifier = "o3de.action.sandbox.createFolder";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Create folder";
+        actionProperties.m_description = "Creates a folder entity under the current selection";
+        actionProperties.m_category = "Entity";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
+
+        actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [this]()
+            {
+                AzToolsFramework::EntityIdList selectedEntities;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                AZ::EntityId parentId;
+                if (selectedEntities.size() == 1)
+                {
+                    AZ::EntityId selectedEntityId = selectedEntities.front();
+                    bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+                    auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+                    if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
+                    {
+                        parentId = selectedEntityId;
+                    }
+                }
+
+                AZ::EntityId newEntityId = m_prefabIntegrationInterface->CreateNewEntityAtPosition(AZ::Vector3::CreateZero(), parentId);
+
+                AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+                    &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+                    AzToolsFramework::EntityIdList{ newEntityId },
+                    AZ::ComponentTypeList{ AZ::Uuid("{A7B7B7A0-3F2C-4E2A-8D9F-4C6B5A3E1D0F}") }
+                );
+
+                AZ::Entity* entity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, newEntityId);
+                if (entity)
+                {
+                    entity->SetName("Folder");
+                }
+            }
+        );
+
+        actionManagerInterface->InstallEnabledStateCallback(
+            actionIdentifier,
+            [readOnlyEntityPublicInterface = m_readOnlyEntityPublicInterface]() -> bool
+            {
+                AzToolsFramework::EntityIdList selectedEntities;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                if (selectedEntities.size() == 0)
+                {
+                    return true;
+                }
+                else if (selectedEntities.size() == 1)
+                {
+                    AZ::EntityId selectedEntityId = selectedEntities.front();
+                    bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+                    auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+                    return (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly);
+                }
+
+                return false;
+            }
+        );
+
+        actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+    }
 }
 
 void SandboxIntegrationManager::OnMenuBindingHook()
@@ -597,6 +672,8 @@ void SandboxIntegrationManager::OnMenuBindingHook()
 
     // Entity Outliner Context Menu
     auto outcome = menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.sandbox.createEntity", 100);
+
+    menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.sandbox.createFolder", 200);
 
     // Viewport Context Menu
     menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.sandbox.createEntity", 100);
