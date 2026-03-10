@@ -786,10 +786,25 @@ namespace AZ
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
             AZLOG_DEBUG("Obtained presentable images.\n");
 
-            // Acquire the first image
+            // Acquire the first image. Use retries because the surface may not
+            // be ready immediately (e.g. during game mode / simulate startup on Linux/Vulkan).
+            // AcquireNewImage uses a 100ms timeout internally; we retry for up to 3 seconds.
             uint32_t imageIndex = 0;
-            result = AcquireNewImage(&imageIndex);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            constexpr int MaxRetries = 30;
+            for (int attempt = 0; attempt <= MaxRetries; ++attempt)
+            {
+                result = AcquireNewImage(&imageIndex);
+                if (result == RHI::ResultCode::Success)
+                {
+                    break;
+                }
+                if (attempt == MaxRetries)
+                {
+                    AZ_Printf("WindowContext", "[DEBUG_VULKAN] CreateSwapchain: AcquireNewImage failed after %d retries\n", MaxRetries);
+                    RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                }
+                AZ_Printf("WindowContext", "[DEBUG_VULKAN] CreateSwapchain: AcquireNewImage retry %d/%d\n", attempt + 1, MaxRetries);
+            }
             AZLOG_DEBUG("Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
