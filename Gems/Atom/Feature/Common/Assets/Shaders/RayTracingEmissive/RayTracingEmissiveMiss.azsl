@@ -1,0 +1,8 @@
+#include "RayTracingEmissiveCommon.azsli"
+
+[shader("miss")]
+void Miss(inout EmissivePayload payload)
+{
+    payload.m_emissiveColor = float3(0, 0, 0);
+    payload.m_hitT = -1.0f;
+}

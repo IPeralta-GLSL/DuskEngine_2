@@ -1,0 +1,21 @@
+#include "RayTracingEmissiveCommon.azsli"
+
+[shader("closesthit")]
+void ClosestHit(inout EmissivePayload payload, BuiltInTriangleIntersectionAttributes attrib)
+{
+    payload.m_hitT = RayTCurrent();
+
+    MeshInfo meshInfo;
+    if (!GetMeshInfoEntry(InstanceID(), meshInfo))
+    {
+        payload.m_emissiveColor = float3(0, 0, 0);
+        return;
+    }
+
+    MaterialInfo materialInfo = SceneSrg::m_fallbackPBRMaterial[NonUniformResourceIndex(InstanceID())];
+
+    VsInput vertex = GetHitInterpolatedVertexData(meshInfo, PrimitiveIndex(), attrib.barycentrics);
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingSceneSrg::LinearSampler, vertex.uv0);
+
+    payload.m_emissiveColor = textureData.m_emissiveColor;
+}

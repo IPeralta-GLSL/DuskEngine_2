@@ -497,6 +497,10 @@
                 "Path": "Passes/RayTracingShadows.pass"
             },
             {
+                "Name": "RayTracingEmissivePassTemplate",
+                "Path": "Passes/RayTracingEmissive.pass"
+            },
+            {
                 "Name": "UIParentTemplate",
                 "Path": "Passes/UIParent.pass"
             },

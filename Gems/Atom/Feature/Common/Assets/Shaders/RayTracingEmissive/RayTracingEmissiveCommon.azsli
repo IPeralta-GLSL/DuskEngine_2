@@ -1,0 +1,11 @@
+#pragma once
+
+#include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
+#include <Atom/Features/RayTracing/RayTracingSceneUtils.azsli>
+#include <Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli>
+
+struct EmissivePayload
+{
+    float3 m_emissiveColor;
+    float  m_hitT;
+};

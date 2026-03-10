@@ -25,6 +25,12 @@ ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
     float                 m_shadowMaxRayLength;
     [[pad_to(16)]]
 
+    RWTexture2D<float4>   m_emissiveOutput;
+    float                 m_emissiveIntensityScale;
+    uint                  m_emissiveSampleCount;
+    float                 m_emissiveMaxRayLength;
+    [[pad_to(16)]]
+
     float m_invOutputScale;
     float m_maxRayLength;
     float m_maxRoughness;

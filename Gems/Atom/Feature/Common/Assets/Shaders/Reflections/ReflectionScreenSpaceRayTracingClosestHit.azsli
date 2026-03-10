@@ -165,7 +165,7 @@ void ScreenSpaceClosestHitImpl(inout PayloadData payload, VsInput vertexData, fl
         specular += iblSpecular * exposure;         
 
         // compute emissive
-        float3 emissive = textureData.m_emissiveColor * albedo;
+        float3 emissive = textureData.m_emissiveColor;
 
         // set fallback outputs
         payload.m_fallbackColor = diffuse + specular + emissive;

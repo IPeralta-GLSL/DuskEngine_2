@@ -294,6 +294,27 @@
                     ]
                 },
                 {
+                    "Name": "RayTracingEmissivePass",
+                    "TemplateName": "RayTracingEmissivePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Forward",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "Forward",
+                                "Attachment": "NormalOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "ReflectionsPass",
                     "TemplateName": "ReflectionsParentPassTemplate",
                     "Enabled": true,

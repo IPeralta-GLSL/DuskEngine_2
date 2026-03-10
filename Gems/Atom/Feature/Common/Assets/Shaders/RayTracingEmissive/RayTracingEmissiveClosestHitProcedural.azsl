@@ -1,0 +1,14 @@
+#include "RayTracingEmissiveCommon.azsli"
+#include <Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli>
+
+[shader("closesthit")]
+void ClosestHitProcedural(inout EmissivePayload payload, ProceduralGeometryIntersectionAttributes attrib)
+{
+    payload.m_hitT = RayTCurrent();
+
+    MaterialInfo materialInfo = SceneSrg::m_fallbackPBRMaterial[NonUniformResourceIndex(InstanceID())];
+
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingSceneSrg::LinearSampler, attrib.GetUv());
+
+    payload.m_emissiveColor = textureData.m_emissiveColor;
+}
