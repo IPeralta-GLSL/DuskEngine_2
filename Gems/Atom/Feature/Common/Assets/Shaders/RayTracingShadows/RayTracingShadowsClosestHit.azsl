@@ -1,0 +1,7 @@
+#include "RayTracingShadowsCommon.azsli"
+
+[shader("closesthit")]
+void ClosestHit(inout ShadowPayload payload, BuiltInTriangleIntersectionAttributes attrib)
+{
+    payload.m_visibility = 0.0f;
+}

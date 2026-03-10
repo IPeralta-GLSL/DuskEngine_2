@@ -1,0 +1,8 @@
+#include "RayTracingShadowsCommon.azsli"
+#include <Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli>
+
+[shader("closesthit")]
+void ClosestHitProcedural(inout ShadowPayload payload, ProceduralGeometryIntersectionAttributes attrib)
+{
+    payload.m_visibility = 0.0f;
+}

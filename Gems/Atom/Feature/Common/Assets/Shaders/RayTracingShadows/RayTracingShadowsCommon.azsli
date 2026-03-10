@@ -1,0 +1,9 @@
+#pragma once
+
+#include <Atom/Features/RayTracing/RayTracingSrgs.azsli>
+#include <Atom/Features/PBR/Lights/LightStructures.azsli>
+
+struct ShadowPayload
+{
+    float m_visibility;
+};

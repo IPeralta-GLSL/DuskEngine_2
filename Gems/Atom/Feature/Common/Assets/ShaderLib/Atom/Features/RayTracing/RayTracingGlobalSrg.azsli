@@ -20,6 +20,11 @@ ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
     RWTexture2D<float4>   m_fallbackPosition;
     RWTexture2D<float4>   m_fallbackNormal;
 
+    RWTexture2D<float>    m_shadowOutput;
+    float                 m_shadowBias;
+    float                 m_shadowMaxRayLength;
+    [[pad_to(16)]]
+
     float m_invOutputScale;
     float m_maxRayLength;
     float m_maxRoughness;

@@ -1,0 +1,7 @@
+#include "RayTracingShadowsCommon.azsli"
+
+[shader("miss")]
+void Miss(inout ShadowPayload payload)
+{
+    payload.m_visibility = 1.0f;
+}

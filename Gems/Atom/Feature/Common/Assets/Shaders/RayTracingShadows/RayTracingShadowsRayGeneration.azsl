@@ -1,0 +1,112 @@
+#include "RayTracingShadowsCommon.azsli"
+#include <Atom/RPI/Math.azsli>
+
+[shader("raygeneration")]
+void RayGeneration()
+{
+    uint2 pixelCoords = DispatchRaysIndex().xy;
+    uint2 dimensions = DispatchRaysDimensions().xy;
+    float2 UV = (float2)pixelCoords / dimensions;
+
+    float depth = RayTracingGlobalSrg::m_depth.Load(pixelCoords, 0);
+    if (depth >= 1.0f)
+    {
+        RayTracingGlobalSrg::m_shadowOutput[pixelCoords] = 1.0f;
+        return;
+    }
+
+    float2 ndcPos = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(ndcPos, depth, 1.0f);
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    positionVS /= positionVS.w;
+    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+
+    float4 encodedNormal = RayTracingGlobalSrg::m_normal.Load(pixelCoords, 0);
+    float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+
+    float3 origin = positionWS.xyz + normalWS * RayTracingGlobalSrg::m_shadowBias;
+    float totalVisibility = 0.0f;
+    uint lightCount = 0;
+
+    for (uint dirIdx = 0; dirIdx < RayTracingSceneSrg::m_directionalLightCount; ++dirIdx)
+    {
+        DirectionalLight light = RayTracingSceneSrg::m_directionalLights[dirIdx];
+        float3 lightDir = -normalize(light.m_direction);
+
+        float NdotL = dot(normalWS, lightDir);
+        if (NdotL <= 0.0f)
+        {
+            lightCount++;
+            continue;
+        }
+
+        RayDesc ray;
+        ray.Origin = origin;
+        ray.Direction = lightDir;
+        ray.TMin = 0.0f;
+        ray.TMax = RayTracingGlobalSrg::m_shadowMaxRayLength;
+
+        ShadowPayload payload;
+        payload.m_visibility = 1.0f;
+        TraceRay(RayTracingSceneSrg::m_scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 1, 0, ray, payload);
+        totalVisibility += payload.m_visibility;
+        lightCount++;
+    }
+
+    for (uint ptIdx = 0; ptIdx < RayTracingSceneSrg::m_pointLightCount; ++ptIdx)
+    {
+        PointLight light = RayTracingSceneSrg::m_pointLights[ptIdx];
+        float3 toLight = light.m_position - origin;
+        float dist = length(toLight);
+        float3 lightDir = toLight / dist;
+
+        float NdotL = dot(normalWS, lightDir);
+        if (NdotL <= 0.0f)
+        {
+            lightCount++;
+            continue;
+        }
+
+        RayDesc ray;
+        ray.Origin = origin;
+        ray.Direction = lightDir;
+        ray.TMin = 0.0f;
+        ray.TMax = dist;
+
+        ShadowPayload payload;
+        payload.m_visibility = 1.0f;
+        TraceRay(RayTracingSceneSrg::m_scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 1, 0, ray, payload);
+        totalVisibility += payload.m_visibility;
+        lightCount++;
+    }
+
+    for (uint spIdx = 0; spIdx < RayTracingSceneSrg::m_simplePointLightCount; ++spIdx)
+    {
+        SimplePointLight light = RayTracingSceneSrg::m_simplePointLights[spIdx];
+        float3 toLight = light.m_position - origin;
+        float dist = length(toLight);
+        float3 lightDir = toLight / dist;
+
+        float NdotL = dot(normalWS, lightDir);
+        if (NdotL <= 0.0f)
+        {
+            lightCount++;
+            continue;
+        }
+
+        RayDesc ray;
+        ray.Origin = origin;
+        ray.Direction = lightDir;
+        ray.TMin = 0.0f;
+        ray.TMax = dist;
+
+        ShadowPayload payload;
+        payload.m_visibility = 1.0f;
+        TraceRay(RayTracingSceneSrg::m_scene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER, 0xFF, 0, 1, 0, ray, payload);
+        totalVisibility += payload.m_visibility;
+        lightCount++;
+    }
+
+    float result = (lightCount > 0) ? (totalVisibility / (float)lightCount) : 1.0f;
+    RayTracingGlobalSrg::m_shadowOutput[pixelCoords] = result;
+}
