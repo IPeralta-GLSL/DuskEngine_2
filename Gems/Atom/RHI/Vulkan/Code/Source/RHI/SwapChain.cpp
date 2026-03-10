@@ -77,6 +77,7 @@ namespace AZ
         {
             if (m_pendingRecreation)
             {
+                AZ_Printf("WindowContext", "[DEBUG_VULKAN] ProcessRecreation: started (W:%d H:%d)\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
                 VkSwapchainKHR oldSwapchain = m_nativeSwapChain;
                 ShutdownImages();
                 CreateSwapchain();
@@ -92,6 +93,7 @@ namespace AZ
                 InitImages();
 
                 m_pendingRecreation = false;
+                AZ_Printf("WindowContext", "[DEBUG_VULKAN] ProcessRecreation: completed OK\n");
                 return true;
             }
             return false;
@@ -213,6 +215,7 @@ namespace AZ
 
         RHI::ResultCode SwapChain::ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions)
         {
+            AZ_Printf("WindowContext", "[DEBUG_VULKAN] ResizeInternal to W:%d H:%d\n", dimensions.m_imageWidth, dimensions.m_imageHeight);
             VkSwapchainKHR oldSwapchain = m_nativeSwapChain;
             auto& device = static_cast<Device&>(GetDevice());
             RHI::SwapChainDimensions clampedDimensions = dimensions;
@@ -643,16 +646,49 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto& semaphoreAllocator = device.GetSwapChainSemaphoreAllocator();
             Semaphore* imageAvailableSemaphore = semaphoreAllocator.Allocate();
+            // Use a 100ms timeout instead of UINT64_MAX to avoid deadlocking the main thread
+            // when the swapchain becomes invalid (e.g. during dock resize on Linux/Vulkan).
+            constexpr uint64_t timeoutNs = 100'000'000; // 100 ms
             VkResult vkResult = device.GetContext().AcquireNextImageKHR(
                 device.GetNativeDevice(),
                 m_nativeSwapChain,
-                UINT64_MAX,
+                timeoutNs,
                 imageAvailableSemaphore->GetNativeSemaphore(),
                 VK_NULL_HANDLE,
                 acquiredImageIndex);
 
+            // Handle error codes that prevent using the acquired image:
+            // VK_TIMEOUT / VK_NOT_READY     : surface not ready (e.g. during dock resize). Skip frame.
+            // VK_ERROR_OUT_OF_DATE_KHR      : surface changed and swapchain MUST be recreated before use. Skip frame.
+            if (vkResult == VK_TIMEOUT ||
+                vkResult == VK_NOT_READY ||
+                vkResult == VK_ERROR_OUT_OF_DATE_KHR)
+            {
+                semaphoreAllocator.DeAllocate(imageAvailableSemaphore);
+                m_pendingRecreation = true;
+                AZ_Printf("WindowContext", "[DEBUG_VULKAN] AcquireNewImage vkResult=%d, marking pendingRecreation and skipping frame\n", static_cast<int>(vkResult));
+                return RHI::ResultCode::Fail;
+            }
+
+            // VK_SUBOPTIMAL_KHR: image is valid and usable, but swapchain should be recreated.
+            // ConvertResult() does NOT handle it (falls to default=Fail), so normalize it to
+            // VK_SUCCESS here and schedule recreation for the next frame.
+            if (vkResult == VK_SUBOPTIMAL_KHR)
+            {
+                AZ_Printf("WindowContext", "[DEBUG_VULKAN] AcquireNewImage VK_SUBOPTIMAL_KHR, scheduling recreation and continuing render\n");
+#if AZ_TRAIT_ATOM_VULKAN_RECREATE_SWAPCHAIN_WHEN_SUBOPTIMAL
+                m_pendingRecreation = true;
+#endif
+                vkResult = VK_SUCCESS;
+            }
+
             RHI::ResultCode result = ConvertResult(vkResult);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            if (result != RHI::ResultCode::Success)
+            {
+                AZ_Printf("WindowContext", "[DEBUG_VULKAN] AcquireNewImage unexpected failure vkResult=%d\n", static_cast<int>(vkResult));
+                semaphoreAllocator.DeAllocate(imageAvailableSemaphore);
+                return result;
+            }
 
             if (m_currentFrameContext.m_imageAvailableSemaphore)
             {

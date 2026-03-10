@@ -112,6 +112,7 @@ namespace AZ
         
         void WindowContext::OnWindowResized([[maybe_unused]]uint32_t width, [[maybe_unused]]uint32_t height)
         {
+            AZ_Printf("WindowContext", "[DEBUG_RPI] OnWindowResized W:%d H:%d\n", width, height);
             CheckResizeSwapChain();
         }
 
@@ -122,11 +123,13 @@ namespace AZ
 
         bool WindowContext::CheckResizeSwapChain()
         {
+            AZ_Printf("WindowContext", "[DEBUG_RPI] CheckResizeSwapChain()\n");
             RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             const AZ::RHI::SwapChainDimensions& currentDimensions = defaultSwapChain->GetDescriptor().m_dimensions;
             AzFramework::WindowSize renderSize = ResolveSwapchainSize();
             if (renderSize.m_width != currentDimensions.m_imageWidth || renderSize.m_height != currentDimensions.m_imageHeight)
             {
+                AZ_Printf("WindowContext", "[DEBUG_RPI] SwapChain resizing to W:%d H:%d\n", renderSize.m_width, renderSize.m_height);
                 // Get current dimension and only overwrite the sizes.
                 RHI::SwapChainDimensions dimensions = defaultSwapChain->GetDescriptor().m_dimensions;
                 dimensions.m_imageWidth = renderSize.m_width;

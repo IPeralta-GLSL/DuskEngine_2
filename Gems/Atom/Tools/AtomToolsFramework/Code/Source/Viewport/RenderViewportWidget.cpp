@@ -250,12 +250,12 @@ namespace AtomToolsFramework
             }
             case QEvent::PlatformSurface:
             {
-                //Surface is about to be destroyed by QT. Lets close the window
-                QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
-                if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
-                {
-                    SendWindowCloseEvent();
-                }
+                // Do NOT call SendWindowCloseEvent() on SurfaceAboutToBeDestroyed.
+                // Qt emits this event transiently during dock/re-parent operations on Linux.
+                // Treating it as a true window close tears down the Vulkan swapchain irreversibly,
+                // leaving the 3D viewport frozen while the rest of the UI stays responsive.
+                // The swapchain will be properly rebuilt via the normal resize path once Qt
+                // creates the new native surface for the re-parented widget.
                 break;
             }
             default:
