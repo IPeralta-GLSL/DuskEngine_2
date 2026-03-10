@@ -340,9 +340,6 @@ namespace AZ
 
             m_state.m_pipelineState = nullptr;
 
-            // [GFX TODO][ATOM-5736] Cache ray tracing pipeline state and bindings
-
-            // set the global root signature
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
             if (!rayTracingPipelineState)
             {
@@ -350,7 +347,12 @@ namespace AZ
                 return;
             }
 
-            commandList->SetComputeRootSignature(rayTracingPipelineState->GetGlobalRootSignature());
+            const bool rtPipelineChanged = (m_state.m_rtPipelineState != rayTracingPipelineState);
+
+            if (rtPipelineChanged)
+            {
+                commandList->SetComputeRootSignature(rayTracingPipelineState->GetGlobalRootSignature());
+            }
 
             const PipelineState* globalPipelineState = static_cast<const PipelineState*>(dispatchRaysItem.m_globalPipelineState);
             if (!globalPipelineState)
@@ -370,11 +372,17 @@ namespace AZ
             for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)
             {
                 const uint32_t srgBindingSlot = dispatchRaysItem.m_shaderResourceGroups[srgIndex]->GetBindingSlot();
+                const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
 
-                // retrieve binding
+                if (!rtPipelineChanged && m_state.m_rtSrgsBySlot[srgBindingSlot] == srg)
+                {
+                    continue;
+                }
+
+                m_state.m_rtSrgsBySlot[srgBindingSlot] = srg;
+
                 const size_t srgBindingIndex = globalPipelineLayout->GetIndexBySlot(srgBindingSlot);
                 RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(srgBindingIndex);
-                const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
                 const ShaderResourceGroupCompiledData& compiledData = srg->GetCompiledData();
 
                 if (binding.m_resourceTable.IsValid()
@@ -421,8 +429,11 @@ namespace AZ
                 }
             }
 
-            // set RayTracing pipeline state
-            commandList->SetPipelineState1(rayTracingPipelineState->Get());
+            if (rtPipelineChanged)
+            {
+                commandList->SetPipelineState1(rayTracingPipelineState->Get());
+                m_state.m_rtPipelineState = rayTracingPipelineState;
+            }
 
             switch (dispatchRaysItem.m_arguments.m_type)
             {

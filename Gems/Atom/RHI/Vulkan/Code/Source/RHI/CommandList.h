@@ -35,6 +35,7 @@ namespace AZ
         class Device;
         class PipelineState;
         class PipelineLayout;
+        class RayTracingPipelineState;
         class ShaderResourceGroup;
         class SwapChain;
         class Framebuffer;
@@ -150,10 +151,11 @@ namespace AZ
 
             struct State
             {
-                // Array of shader resource bindings, indexed by command pipe.
                 AZStd::array<ShaderResourceBindings, static_cast<size_t>(RHI::PipelineStateType::Count)> m_bindingsByPipe;
 
-                // Graphics-specific state
+                const RayTracingPipelineState* m_rtPipelineState = nullptr;
+                AZStd::array<VkDescriptorSet, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_rtDescriptorSets = { {VK_NULL_HANDLE} };
+
                 AZStd::array<uint64_t, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferHashes = { {} };
                 uint64_t m_indexBufferHash = 0;
                 uint32_t m_subpassIndex = 0;

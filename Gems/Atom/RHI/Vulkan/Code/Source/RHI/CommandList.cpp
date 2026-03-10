@@ -542,8 +542,15 @@ namespace AZ
 
             const RayTracingPipelineState* rayTracingPipelineState =
                 static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
-            context.CmdBindPipeline(
-                m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipeline());
+
+            const bool rtPipelineChanged = (m_state.m_rtPipelineState != rayTracingPipelineState);
+
+            if (rtPipelineChanged)
+            {
+                context.CmdBindPipeline(
+                    m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipeline());
+                m_state.m_rtPipelineState = rayTracingPipelineState;
+            }
 
             // bind Srgs
             AZStd::vector<VkDescriptorSet> descriptorSets;
@@ -618,9 +625,30 @@ namespace AZ
             }
             AZ_Assert(!srgMismatch, "The provided SRGs don't match the SRGs requested by the shader.");
 
-            context.CmdBindDescriptorSets(
-                m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipelineLayout(), 0,
-                aznumeric_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+            bool descriptorSetsChanged = rtPipelineChanged;
+            if (!descriptorSetsChanged)
+            {
+                for (uint32_t i = 0; i < descriptorSets.size(); ++i)
+                {
+                    if (m_state.m_rtDescriptorSets[i] != descriptorSets[i])
+                    {
+                        descriptorSetsChanged = true;
+                        break;
+                    }
+                }
+            }
+
+            if (descriptorSetsChanged)
+            {
+                context.CmdBindDescriptorSets(
+                    m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipelineLayout(), 0,
+                    aznumeric_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+
+                for (uint32_t i = 0; i < descriptorSets.size(); ++i)
+                {
+                    m_state.m_rtDescriptorSets[i] = descriptorSets[i];
+                }
+            }
 
             const RayTracingShaderTable* shaderTable = static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
             const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();

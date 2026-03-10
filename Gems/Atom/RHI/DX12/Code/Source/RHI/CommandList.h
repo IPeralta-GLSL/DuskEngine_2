@@ -252,8 +252,10 @@ namespace AZ
                 // A queue of tile mappings to execute on the command queue at submission time (prior to executing the command list).
                 TileMapRequestList m_tileMapRequests;
 
-                // The currently bound shading rate image
                 const ImageView* m_shadingRateImage = nullptr;
+
+                const RHI::DeviceRayTracingPipelineState* m_rtPipelineState = nullptr;
+                AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_rtSrgsBySlot = {{}};
 
             } m_state;
 
