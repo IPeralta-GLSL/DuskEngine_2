@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/Feature/RayTracing/RayTracingFeatureProcessorInterface.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Render/DiffuseProbeGridRenderPass.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
@@ -66,13 +67,94 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
             {
-                // no diffuse probe grids
+                m_noGridFrames++;
+                if (m_noGridFrames == 1 || (m_noGridFrames % 120) == 0)
+                {
+                    AZ_TracePrintf("DiffuseProbeGrid",
+                        "[DiffuseProbeGridRenderPass] IsEnabled=false - no probe grids registered "
+                        "(frame %u) hasFP=%d\n",
+                        m_noGridFrames, diffuseProbeGridFeatureProcessor != nullptr);
+                }
+                // Scene emptied - reset so the next registration triggers a fresh TLAS wait
+                m_wasEnabled = false;
+                m_tlasWaitFrames = 0;
+                m_gridRegisteredLogged = false;
+                m_lastFirstProbeGrid = nullptr;
                 return false;
+            }
+            m_noGridFrames = 0;
+
+            // Detect probe grid set change (editor->game mode and back).
+            // When the first real-time grid pointer changes the scene was rebuilt
+            // and the TLAS wait must restart from scratch.
+            const auto& realTimeGrids = diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids();
+            const DiffuseProbeGrid* currentFirstGrid = realTimeGrids.empty() ? nullptr : realTimeGrids.front().get();
+            if (currentFirstGrid != m_lastFirstProbeGrid)
+            {
+                AZ_TracePrintf("DiffuseProbeGrid",
+                    "[DiffuseProbeGridRenderPass] Probe grid set changed (old=%p new=%p) - resetting TLAS wait\n",
+                    m_lastFirstProbeGrid, currentFirstGrid);
+                m_lastFirstProbeGrid   = currentFirstGrid;
+                m_wasEnabled           = false;
+                m_tlasWaitFrames       = 0;
+                m_gridRegisteredLogged = false;
+            }
+
+            if (!m_gridRegisteredLogged)
+            {
+                m_gridRegisteredLogged = true;
+                AZ_TracePrintf("DiffuseProbeGrid",
+                    "[DiffuseProbeGridRenderPass] Probe grids registered: total=%zu realtime=%zu\n",
+                    diffuseProbeGridFeatureProcessor->GetProbeGrids().size(),
+                    realTimeGrids.size());
+            }
+
+            // For real-time probe grids, verify that the TLAS is ready and has geometry.
+            if (!realTimeGrids.empty())
+            {
+                auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
+
+                const bool hasFP            = rayTracingFeatureProcessor != nullptr;
+                const bool hasTlas          = hasFP && rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() != nullptr;
+                const uint32_t subMeshCount = hasFP ? rayTracingFeatureProcessor->GetSubMeshCount() : 0;
+                const uint32_t pendingCount = hasFP ? rayTracingFeatureProcessor->GetPendingBlasCount() : 0;
+
+                // Block only during an initial large BLAS build (>5% of submeshes pending).
+                // Small incremental BLAS compaction cycles must NOT block or the atlas never converges.
+                // Also allow through if pendingCount is <= 10 absolute (always safe to render).
+                const bool initialBuildInProgress =
+                    (subMeshCount == 0) ||
+                    (pendingCount > 10 && pendingCount * 20 > subMeshCount);
+
+                if (!hasFP || !hasTlas || initialBuildInProgress)
+                {
+                    m_tlasWaitFrames++;
+                    m_wasEnabled = false;
+
+                    // Log every frame for first 5 frames, then every 60 frames
+                    if (m_tlasWaitFrames <= 5 || (m_tlasWaitFrames % 60) == 0)
+                    {
+                        AZ_TracePrintf("DiffuseProbeGrid",
+                            "[DiffuseProbeGridRenderPass] IsEnabled=false - waiting for TLAS "
+                            "(frame %u) | hasFP=%d | hasTlas=%d | subMeshCount=%u | pendingCount=%u | initialBuild=%d\n",
+                            m_tlasWaitFrames, hasFP, hasTlas, subMeshCount, pendingCount, (int)initialBuildInProgress);
+                    }
+                    return false;
+                }
+
+                if (!m_wasEnabled)
+                {
+                    m_wasEnabled = true;
+                    AZ_TracePrintf("DiffuseProbeGrid",
+                        "[DiffuseProbeGridRenderPass] TLAS ready - probe rendering ENABLED "
+                        "after %u frame(s) | subMeshCount=%u | pendingCount=%u\n",
+                        m_tlasWaitFrames, subMeshCount, pendingCount);
+                    m_tlasWaitFrames = 0;
+                }
             }
 
             return true;
         }
-
         void DiffuseProbeGridRenderPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
@@ -223,11 +305,44 @@ namespace AZ
                 return false;
             }
 
-            // check for RealTime mode without ray tracing
+            // check for RealTime mode without ray tracing support
             if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime &&
                 (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices))
             {
                 return false;
+            }
+
+            // check for RealTime mode with ray tracing support but no valid TLAS
+            // Block only during initial large BLAS build (>5% pending), not during
+            // incremental BLAS compaction cycles which only affect a few BLASes.
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime)
+            {
+                RPI::Scene* scene = m_pipeline->GetScene();
+                auto* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessorInterface>();
+                if (rayTracingFeatureProcessor)
+                {
+                    const bool hasTlas          = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() != nullptr;
+                    const uint32_t subMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
+                    const uint32_t pendingCount = rayTracingFeatureProcessor->GetPendingBlasCount();
+                    const bool initialBuildInProgress = (subMeshCount == 0) || (pendingCount * 20 > subMeshCount);
+
+                    if (!hasTlas || initialBuildInProgress)
+                    {
+                        m_shouldRenderSkipCount++;
+                        if (m_shouldRenderSkipCount == 1 || (m_shouldRenderSkipCount % 60) == 0)
+                        {
+                            AZ_TracePrintf("DiffuseProbeGrid",
+                                "[DiffuseProbeGridRenderPass::ShouldRender] Skipping grid @%p (skip#%u) "
+                                "(hasTlas=%d subMeshCount=%u pendingCount=%u)\n",
+                                diffuseProbeGrid.get(),
+                                m_shouldRenderSkipCount,
+                                hasTlas,
+                                subMeshCount,
+                                pendingCount);
+                        }
+                        return false;
+                    }
+                }
             }
 
             // check if culled out

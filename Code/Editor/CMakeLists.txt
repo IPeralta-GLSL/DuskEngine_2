@@ -188,6 +188,11 @@ ly_add_translations(
 )
 ly_add_dependencies(Editor AssetProcessor)
 
+# Linux: export symbols so backtrace_symbols_fd() gives real function names
+if(UNIX AND NOT APPLE)
+    target_link_options(Editor PRIVATE -rdynamic)
+endif()
+
 if(LY_DEFAULT_PROJECT_PATH)
     set_property(TARGET Editor APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
 endif()

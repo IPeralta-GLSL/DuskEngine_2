@@ -12,6 +12,7 @@
 
 #if defined(AZ_PLATFORM_LINUX)
 #include <signal.h>
+#include <ucontext.h>
 #include <execinfo.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -59,7 +60,7 @@ namespace LinuxCrashHandler
 
     static struct sigaction s_oldHandlers[32];
 
-    static void CrashSignalHandler(int sig, siginfo_t* /*info*/, void* /*ctx*/)
+    static void CrashSignalHandler(int sig, siginfo_t* info, void* ctx)
     {
         // Build crash log path: /tmp/o3de_crash_<timestamp>.log
         char crashPath[256];
@@ -87,6 +88,27 @@ namespace LinuxCrashHandler
         fdWrite(fd, "\n── Stack Trace ─────────────────────────────────\n");
         void* frames[128];
         int n = backtrace(frames, 128);
+
+        // Overwrite frame[1] with the actual faulting RIP from ucontext
+        // so addr2line resolves the real crash site instead of the signal frame
+        if (ctx)
+        {
+            const auto* uc = reinterpret_cast<const ucontext_t*>(ctx);
+#if defined(__x86_64__)
+            frames[1] = reinterpret_cast<void*>(uc->uc_mcontext.gregs[REG_RIP]);
+#elif defined(__aarch64__)
+            frames[1] = reinterpret_cast<void*>(uc->uc_mcontext.pc);
+#endif
+        }
+
+        // Also log fault address from siginfo
+        if (info)
+        {
+            char faultBuf[128];
+            snprintf(faultBuf, sizeof(faultBuf), "Fault addr : %p\n", info->si_addr);
+            fdWrite(fd, faultBuf);
+        }
+
         backtrace_symbols_fd(frames, n, fd);
         fdWrite(fd, "────────────────────────────────────────────────\n");
 

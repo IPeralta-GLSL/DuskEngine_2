@@ -245,6 +245,24 @@ namespace AZ
             uint64_t compactedBufferSize,
             const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools)
         {
+            if (compactedBufferSize == 0)
+            {
+                AZ_Warning(
+                    "RayTracingBlas",
+                    false,
+                    "CreateCompactedBuffersInternal: compactedBufferSize is 0, skipping compaction");
+                return RHI::ResultCode::Fail;
+            }
+
+            if (!rayTracingBufferPools.GetBlasBufferPool())
+            {
+                AZ_Error(
+                    "RayTracingBlas",
+                    false,
+                    "CreateCompactedBuffersInternal: BLAS buffer pool is null, skipping compaction");
+                return RHI::ResultCode::Fail;
+            }
+
             auto& device = static_cast<Device&>(deviceBase);
 
             BlasBuffers& buffers = m_buffers.AdvanceCurrentElement();
@@ -253,7 +271,7 @@ namespace AZ
             auto& sourceBuffers = sourceBlasVulkan->GetBuffers();
 
             AZ_Assert(
-                sourceBuffers.m_buildInfo.flags | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR,
+                sourceBuffers.m_buildInfo.flags & VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR,
                 "Cannot compact the acceleration structures without the VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_KHR flag");
 
             buffers.m_accelerationStructure = {};
@@ -276,6 +294,11 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS buffer");
 
             BufferMemoryView* blasMemoryView = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetBufferMemoryView();
+            if (!blasMemoryView)
+            {
+                AZ_Error("RayTracingBlas", false, "CreateCompactedBuffersInternal: failed to get BLAS buffer memory view after InitBuffer");
+                return RHI::ResultCode::Fail;
+            }
             blasMemoryView->SetName("BLAS");
 
             // create BLAS

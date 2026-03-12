@@ -69,6 +69,7 @@ namespace AZ::Render
         void* m_scratchBuffer = nullptr;
         bool m_contextCreated = false;
         bool m_needsReset = true;
+        bool m_firstDispatch = false; // true for first dispatch after (re)init to reset temporal history
 
         FfxFsr3UpscalerQualityMode m_qualityMode = FFX_FSR3UPSCALER_QUALITY_MODE_PERFORMANCE;
         float m_sharpness = 0.0f;

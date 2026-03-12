@@ -184,6 +184,7 @@ namespace AZ::Render
         }
 
         m_contextCreated = true;
+        m_firstDispatch = true; // reset temporal history on first dispatch after context (re)init
         m_jitterIndex = 0;
 
         AZ_TracePrintf("IntelXeSS", "XeSS context initialized: render=%ux%u display=%ux%u quality=%d\n",
@@ -314,8 +315,11 @@ namespace AZ::Render
             }
         }
 
-        if (m_renderWidth == 0 || m_renderHeight == 0 || m_displayWidth == 0 || m_displayHeight == 0)
+        if (m_renderWidth < 2 || m_renderHeight < 2 || m_displayWidth < 2 || m_displayHeight < 2)
         {
+            // Dimensions not ready yet (e.g. during game mode transition the window
+            // temporarily reports 0x0 or 1x1). Skip XeSS init to avoid crashing
+            // inside xessVKInit with invalid outputResolution.
             Base::FrameBeginInternal(params);
             return;
         }
@@ -502,7 +506,8 @@ namespace AZ::Render
         execParams.jitterOffsetX = m_jitterX;
         execParams.jitterOffsetY = m_jitterY;
         execParams.exposureScale = 1.0f;
-        execParams.resetHistory = 0;
+        execParams.resetHistory = m_firstDispatch ? 1 : 0;
+        m_firstDispatch = false;
         execParams.inputWidth = m_renderWidth;
         execParams.inputHeight = m_renderHeight;
 

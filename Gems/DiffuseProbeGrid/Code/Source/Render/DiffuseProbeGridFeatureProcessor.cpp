@@ -849,6 +849,22 @@ namespace AZ
                     }
                 }
 
+                // After any pass rebuild, re-disable DiffuseGlobalFullscreenPass if probe passes are present.
+                // Pass objects are recreated from templates on each rebuild (always enabled by default),
+                // so SetEnabled(false) from AddRenderPasses is no longer effective after the rebuild.
+                // We must re-apply it here whenever DiffuseProbeGridUpdatePass is alive in this pipeline.
+                RPI::PassFilter diffuseProbeGridUpdatePassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), renderPipeline);
+                RPI::Pass* diffuseProbeGridUpdatePass = RPI::PassSystemInterface::Get()->FindFirstPass(diffuseProbeGridUpdatePassFilter);
+                if (diffuseProbeGridUpdatePass)
+                {
+                    RPI::PassFilter diffuseGlobalFullscreenPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseGlobalFullscreenPass"), renderPipeline);
+                    RPI::Pass* diffuseGlobalFullscreenPass = RPI::PassSystemInterface::Get()->FindFirstPass(diffuseGlobalFullscreenPassFilter);
+                    if (diffuseGlobalFullscreenPass)
+                    {
+                        diffuseGlobalFullscreenPass->SetEnabled(false);
+                    }
+                }
+
                 UpdatePasses();
             }
             else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
@@ -917,10 +933,15 @@ namespace AZ
                 {
                     AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridVisualizationPassRequest.azasset", "PostProcessPass");
                 }
-
-                // disable the DiffuseGlobalFullscreenPass if it exists, since it is replaced with a DiffuseProbeGrid composite pass
-                diffuseGlobalFullscreenPass->SetEnabled(false);
             }
+
+            // Always disable DiffuseGlobalFullscreenPass whenever the probe pipeline is present.
+            // This must be done unconditionally (outside the block above) because the pipeline can be
+            // rebuilt during game mode transitions, which resets pass enabled states.  If we only
+            // disabled it on first setup the pass would re-enable itself on every rebuild, causing
+            // both DiffuseGlobalFullscreenPass and DiffuseCompositePass to run simultaneously with
+            // additive blend — resulting in a solid-color (green) viewport.
+            diffuseGlobalFullscreenPass->SetEnabled(false);
 
             UpdatePasses();
             m_needUpdatePipelineStates = true;

@@ -157,7 +157,15 @@ namespace AZ
             // check the total vertex count for this model and skip kd-tree if the model is simple enough
             if (*m_modelTriangleCount > s_minimumModelTriangleCountToOptimize)
             {
-                if (!m_kdTree)
+                // Take a local shared_ptr reference under the lock to avoid a race with SetData()
+                // resetting m_kdTree on another thread while we're using it.
+                AZStd::shared_ptr<ModelKdTree> kdTreeRef;
+                {
+                    AZStd::lock_guard<AZStd::mutex> kdLock(m_kdTreeLock);
+                    kdTreeRef = m_kdTree;
+                }
+
+                if (!kdTreeRef)
                 {
                     BuildKdTree();
 
@@ -166,7 +174,7 @@ namespace AZ
                 }
                 else
                 {
-                    return m_kdTree->RayIntersection(rayStart, rayDir, distanceNormalized, normal);
+                    return kdTreeRef->RayIntersection(rayStart, rayDir, distanceNormalized, normal);
                 }
             }
 
@@ -195,7 +203,7 @@ namespace AZ
                 {
                     AZ_PROFILE_FUNCTION(RPI);
 
-                    AZStd::unique_ptr<ModelKdTree> tree = AZStd::make_unique<ModelKdTree>();
+                    AZStd::shared_ptr<ModelKdTree> tree = AZStd::make_shared<ModelKdTree>();
                     tree->Build(this);
 
                     AZStd::lock_guard<AZStd::mutex> jobLock(m_kdTreeLock);

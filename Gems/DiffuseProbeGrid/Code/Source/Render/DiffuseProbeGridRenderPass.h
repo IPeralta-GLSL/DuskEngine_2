@@ -48,6 +48,19 @@ namespace AZ
 
             Data::Instance<RPI::Shader> m_shader;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
+
+            // TLAS readiness tracking — stored as members (not statics) so they
+            // reset correctly on every game mode transition.
+            mutable uint32_t m_noGridFrames = 0;
+            mutable bool m_gridRegisteredLogged = false;
+            mutable uint32_t m_tlasWaitFrames = 0;
+            mutable bool m_wasEnabled = false;
+            mutable uint32_t m_shouldRenderSkipCount = 0;
+
+            // Detect probe-grid set changes (editor→game mode and back).
+            // When the raw pointer of the first real-time grid changes we know
+            // the scene was rebuilt and we must restart the TLAS wait.
+            mutable const DiffuseProbeGrid* m_lastFirstProbeGrid = nullptr;
         };
     } // namespace Render
 } // namespace AZ

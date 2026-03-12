@@ -96,12 +96,48 @@ namespace AZ::RHI
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
 
+                auto deviceSourceBlas = sourceBlas.GetDeviceRayTracingBlas(deviceIndex);
+                if (!deviceSourceBlas)
+                {
+                    AZ_Error(
+                        "RayTracingBlas",
+                        false,
+                        "CreateCompactedBuffers: source BLAS has no device object for device index %d, skipping compaction",
+                        deviceIndex);
+                    resultCode = ResultCode::Fail;
+                    return false;
+                }
+
+                auto compactedSizeIt = compactedSizes.find(deviceIndex);
+                if (compactedSizeIt == compactedSizes.end() || compactedSizeIt->second == 0)
+                {
+                    AZ_Warning(
+                        "RayTracingBlas",
+                        false,
+                        "CreateCompactedBuffers: compacted size is 0 or missing for device index %d, skipping compaction",
+                        deviceIndex);
+                    resultCode = ResultCode::Fail;
+                    return false;
+                }
+
+                auto devicePools = rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex);
+                if (!devicePools)
+                {
+                    AZ_Error(
+                        "RayTracingBlas",
+                        false,
+                        "CreateCompactedBuffers: no buffer pools for device index %d, skipping compaction",
+                        deviceIndex);
+                    resultCode = ResultCode::Fail;
+                    return false;
+                }
+
                 resultCode = GetDeviceRayTracingBlas(deviceIndex)
                                  ->CreateCompactedBuffers(
                                      *device,
-                                     sourceBlas.GetDeviceRayTracingBlas(deviceIndex),
-                                     compactedSizes.at(deviceIndex),
-                                     *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+                                     deviceSourceBlas,
+                                     compactedSizeIt->second,
+                                     *devicePools.get());
 
                 return resultCode == ResultCode::Success;
             });
@@ -141,14 +177,45 @@ namespace AZ::RHI
 
         auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
         this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
-        this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingBlas();
+
+        auto deviceSourceBlas = sourceBlas.GetDeviceRayTracingBlas(deviceIndex);
+        if (!deviceSourceBlas)
+        {
+            AZ_Error(
+                "RayTracingBlas",
+                false,
+                "AddDeviceCompacted: source BLAS has no device object for device index %d, skipping compaction",
+                deviceIndex);
+            return ResultCode::Fail;
+        }
+
+        if (compactedSize == 0)
+        {
+            AZ_Warning(
+                "RayTracingBlas",
+                false,
+                "AddDeviceCompacted: compacted size is 0 for device index %d, skipping compaction",
+                deviceIndex);
+            return ResultCode::Fail;
+        }
+
+        auto devicePools = rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex);
+        if (!devicePools)
+        {
+            AZ_Error(
+                "RayTracingBlas",
+                false,
+                "AddDeviceCompacted: no buffer pools for device index %d, skipping compaction",
+                deviceIndex);
+            return ResultCode::Fail;
+        }
 
         return GetDeviceRayTracingBlas(deviceIndex)
             ->CreateCompactedBuffers(
                 *device,
-                sourceBlas.GetDeviceRayTracingBlas(deviceIndex),
+                deviceSourceBlas,
                 compactedSize,
-                *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+                *devicePools.get());
     }
 
     void RayTracingBlas::RemoveDevice(int deviceIndex)

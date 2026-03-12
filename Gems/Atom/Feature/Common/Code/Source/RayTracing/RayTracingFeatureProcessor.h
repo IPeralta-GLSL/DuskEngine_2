@@ -85,6 +85,8 @@ namespace AZ
             SubMeshVector& GetSubMeshes() override { return m_subMeshes; }
             const MeshMap& GetMeshMap() override { return m_meshes; }
             uint32_t GetSubMeshCount() const override { return m_subMeshCount; }
+            bool HasPendingBlasBuilds() const override { return !m_blasToCreate.empty(); }
+            uint32_t GetPendingBlasCount() const override { return static_cast<uint32_t>(m_blasToCreate.size()); }
             uint32_t GetSkinnedMeshCount() const override { return m_skinnedMeshCount; }
 
             Data::Instance<RPI::ShaderResourceGroup> GetRayTracingSceneSrg() const override { return m_rayTracingSceneSrg; }

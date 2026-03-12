@@ -72,13 +72,17 @@ namespace AZ
 
         uint64_t RayTracingCompactionQueryPool::GetResult(int index)
         {
-            uint64_t result;
-            VkQueryResultFlags vkFlags = VK_QUERY_RESULT_64_BIT;
+            uint64_t result = 0;
+            // VK_QUERY_RESULT_WAIT_BIT ensures we get a valid result rather than 0 if the
+            // query is somehow not yet available (e.g. frame-delay miscalculation).
+            // In normal operation we are already FrameCountMax frames behind the GPU, so
+            // this flag is a no-op and adds no stall.
+            VkQueryResultFlags vkFlags = VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT;
             auto& device = static_cast<Device&>(GetDevice());
             VkResult vkResult = device.GetContext().GetQueryPoolResults(
                 device.GetNativeDevice(), m_nativeQueryPool, index, 1, sizeof(uint64_t), &result, sizeof(uint64_t), vkFlags);
             [[maybe_unused]] auto resultCode = ConvertResult(vkResult);
-            AZ_Assert(resultCode == RHI::ResultCode::Success, "RayTracingCompactionQuery::GetResult: Result not ready");
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "RayTracingCompactionQuery::GetResult: Failed to get query result");
             return result;
         }
 

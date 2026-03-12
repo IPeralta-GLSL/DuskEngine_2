@@ -59,6 +59,7 @@ namespace AZ::Render
         xess_context_handle_t m_xessContext = nullptr;
         bool m_contextCreated = false;
         bool m_needsReset = true;
+        bool m_firstDispatch = false; // reset temporal history on first dispatch after (re)init
         bool m_xessAvailable = false;
 
         xess_quality_settings_t m_qualityMode = XESS_QUALITY_SETTING_PERFORMANCE;

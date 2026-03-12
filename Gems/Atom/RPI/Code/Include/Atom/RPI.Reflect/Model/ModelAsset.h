@@ -148,7 +148,7 @@ namespace AZ
             AZ::Name m_positionName{ "POSITION" };
             // there is a tradeoff between memory use and performance but anywhere under a few thousand triangles or so remains under a few milliseconds per ray cast
             static constexpr AZ::u32 s_minimumModelTriangleCountToOptimize = 100;
-            mutable AZStd::unique_ptr<ModelKdTree> m_kdTree;
+            mutable AZStd::shared_ptr<ModelKdTree> m_kdTree;
             volatile mutable bool m_isKdTreeCalculationRunning = false;
             mutable AZStd::mutex m_kdTreeLock;
             mutable AZStd::optional<AZStd::size_t> m_modelTriangleCount;

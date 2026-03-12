@@ -256,6 +256,12 @@ namespace AZ::Render
         //! Retrieves the total number of ray tracing meshes.
         virtual uint32_t GetSubMeshCount() const = 0;
 
+        //! Returns true if there are BLASes still pending creation (TLAS is not yet fully built).
+        virtual bool HasPendingBlasBuilds() const = 0;
+
+        //! Returns the number of BLASes currently pending creation.
+        virtual uint32_t GetPendingBlasCount() const = 0;
+
         //! Returns true if the ray tracing scene contains mesh geometry
         virtual bool HasMeshGeometry() const = 0;
 

@@ -694,12 +694,24 @@ namespace AZ
         void AsyncUploadQueue::ProcessCallback(const RHI::AsyncWorkHandle& handle)
         {
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallback");
-            AZStd::unique_lock<AZStd::mutex> lock(m_callbackListMutex);
-            auto findIter = m_callbackList.find(handle);
-            if (findIter != m_callbackList.end())
+            // Extract and erase the callback while holding the mutex, then execute it
+            // WITHOUT holding the mutex. This prevents a re-entrancy deadlock where
+            // the callback itself releases a resource that calls WaitForUpload ->
+            // ProcessCallback -> tries to lock m_callbackListMutex a second time on
+            // the same thread (AZStd::mutex is non-recursive -> SIGABRT).
+            AZStd::function<void()> callback;
             {
-                findIter->second();
-                m_callbackList.erase(findIter);
+                AZStd::unique_lock<AZStd::mutex> lock(m_callbackListMutex);
+                auto findIter = m_callbackList.find(handle);
+                if (findIter != m_callbackList.end())
+                {
+                    callback = AZStd::move(findIter->second);
+                    m_callbackList.erase(findIter);
+                }
+            }
+            if (callback)
+            {
+                callback();
             }
         }
     }

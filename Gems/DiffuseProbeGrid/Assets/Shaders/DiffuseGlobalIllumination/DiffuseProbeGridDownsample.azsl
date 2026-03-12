@@ -53,13 +53,16 @@ struct PSOutput
 // Pixel Shader
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {  
-    uint2 screenCoords = IN.m_position.xy * PassSrg::m_outputImageScale;
+    // Guard: if m_outputImageScale was never set (still 0), default to 4 (Low quality)
+    // to avoid reading from coords (0,0) for all pixels and zero-iteration loops
+    uint outputImageScale = max(PassSrg::m_outputImageScale, 1u);
+    uint2 screenCoords = IN.m_position.xy * outputImageScale;
 
     float downsampledDepth = 0;
     float4 downsampledEncodedNormal;
-    for (uint y = 0; y < PassSrg::m_outputImageScale; ++y)
+    for (uint y = 0; y < outputImageScale; ++y)
     {
-        for (uint x = 0; x < PassSrg::m_outputImageScale; ++x)
+        for (uint x = 0; x < outputImageScale; ++x)
         {
             float depth = PassSrg::m_depth.Load(screenCoords + int2(x, y), sampleIndex).r;
             float4 encodedNormal = PassSrg::m_normal.Load(screenCoords + int2(x, y), sampleIndex);

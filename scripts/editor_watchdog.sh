@@ -25,8 +25,18 @@ FREEZE_TIMEOUT=10          # segundos sin heartbeat = freeze
 # Entorno necesario en Linux
 export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-xcb}"
 export DRI_PRIME="${DRI_PRIME:-1}"
+
 LOG_DIR="/tmp/o3de_watchdog_logs"
 mkdir -p "$LOG_DIR"
+
+# Habilitar core dumps para análisis post-mortem con GDB
+ulimit -c unlimited
+CORE_DIR="$LOG_DIR/cores"
+mkdir -p "$CORE_DIR"
+if [[ -w /proc/sys/kernel/core_pattern ]]; then
+    echo "$CORE_DIR/core.o3de.%p" | sudo tee /proc/sys/kernel/core_pattern > /dev/null 2>&1 || true
+fi
+export ASAN_OPTIONS="${ASAN_OPTIONS:-disable_coredump=0}"
 
 # ── Parse args ────────────────────────────────────────────────────────────────
 PROJECT_PATH=""
@@ -187,12 +197,26 @@ elif [[ $EXIT_CODE -ne 0 && $EXIT_CODE -ne 2 ]]; then
 
     echo "[Watchdog] Reporte guardado en: ${LOG_PREFIX}_crash_report.txt"
 
-    # Mostrar último crash log si existe
-    LATEST_CRASH=$(ls -t /tmp/o3de_crash_*.log 2>/dev/null | head -1 || true)
-    if [[ -n "$LATEST_CRASH" ]]; then
+    # Analizar core dump con GDB via systemd-coredump
+    LATEST_CORE=$(ls -t "$CORE_DIR"/core.o3de.* /tmp/core.* "$LOG_DIR"/core.* core core."$EDITOR_PID" 2>/dev/null | head -1 || true)
+    if command -v coredumpctl &>/dev/null; then
+        echo "[Watchdog] Extrayendo core dump via coredumpctl (PID $EDITOR_PID)..."
+        CORE_FILE="$LOG_DIR/core.$EDITOR_PID"
+        coredumpctl dump "$EDITOR_PID" --output="$CORE_FILE" 2>/dev/null && LATEST_CORE="$CORE_FILE" || true
+    fi
+    if [[ -n "$LATEST_CORE" && -f "$LATEST_CORE" ]] && command -v gdb &>/dev/null; then
+        echo "[Watchdog] Analizando core dump con GDB: $LATEST_CORE"
+        GDB_OUT="${LOG_PREFIX}_crash_gdb.log"
+        gdb -batch \
+            -ex "set pagination 0" \
+            -ex "thread apply all bt full" \
+            -ex "info registers" \
+            -ex "quit" \
+            "$EDITOR_BIN" "$LATEST_CORE" > "$GDB_OUT" 2>&1 || true
+        echo "[Watchdog] Backtrace GDB guardado en: $GDB_OUT"
         echo ""
-        echo "── Último crash log ($LATEST_CRASH) ──────"
-        cat "$LATEST_CRASH"
+        echo "── GDB backtrace (primeros 80 lines) ─────────────────"
+        head -80 "$GDB_OUT"
     fi
 else
     echo "══ Editor terminó normalmente (exit code: $EXIT_CODE) ══"
