@@ -29,7 +29,7 @@
 static const char lastLoadPathFilename[] = "lastLoadPath.preset";
 
 // Folder in which levels are stored
-static const char kLevelsFolder[] = "Levels";
+static const char kLevelsFolder[] = "Stages";
 
 CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
     : QDialog(parent)

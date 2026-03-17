@@ -105,16 +105,16 @@ namespace AZ::Prefab
             if (product->GetAssetType() == azrtti_typeid<ProceduralPrefabAsset>())
             {
                 AZ::Data::AssetId assetId = product->GetAssetId();
-                menu->addAction("Save as Prefab...", [assetId, this]()
+                menu->addAction("Save as Archetype...", [assetId, this]()
                 {
-                    QString filePath = AzQtComponents::FileDialog::GetSaveFileName(nullptr, QString("Save to file"), "", QString("Prefab file (*.prefab)"));
+                    QString filePath = AzQtComponents::FileDialog::GetSaveFileName(nullptr, QString("Save to file"), "", QString("Archetype file (*.arch)"));
                     if (filePath.isEmpty())
                     {
                         return;
                     }
                     if (SaveAsAuthoredPrefab(assetId, filePath.toUtf8().data()))
                     {
-                        AZ_Printf("Prefab", "Prefab was saved to a .prefab file %s", filePath.toUtf8().data());
+                        AZ_Printf("Prefab", "Prefab was saved to a .arch file %s", filePath.toUtf8().data());
                     }
                 });
             }

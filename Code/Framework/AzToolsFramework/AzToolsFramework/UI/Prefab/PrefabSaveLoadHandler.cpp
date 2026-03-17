@@ -63,7 +63,7 @@ namespace AzToolsFramework
         PrefabPublicInterface* PrefabSaveHandler::s_prefabPublicInterface = nullptr;
         PrefabSystemComponentInterface* PrefabSaveHandler::s_prefabSystemComponentInterface = nullptr;
 
-        const AZStd::string PrefabSaveHandler::s_prefabFileExtension = ".prefab";
+        const AZStd::string PrefabSaveHandler::s_prefabFileExtension = ".arch";
         const AZStd::string PrefabSaveHandler::s_procPrefabFileExtension = ".procprefab";
 
         static const char* const ClosePrefabDialog = "ClosePrefabDialog";
@@ -211,7 +211,7 @@ namespace AzToolsFramework
 
                 if (!instantiatePrefabOutcome.IsSuccess())
                 {
-                    WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
+                    WarningDialog("Archetype Instantiation Error", instantiatePrefabOutcome.GetError());
                 }
                 else
                 {
@@ -222,7 +222,7 @@ namespace AzToolsFramework
                         auto detachOutcome = s_prefabPublicInterface->DetachPrefab(instantiatedContainerEntity);
                         if (!detachOutcome.IsSuccess())
                         {
-                            WarningDialog("Prefab was instantiated but could not detach:", detachOutcome.GetError());
+                            WarningDialog("Archetype was instantiated but could not detach:", detachOutcome.GetError());
                         }
                     }
                 }
@@ -249,7 +249,7 @@ namespace AzToolsFramework
                 {
                     event->accept();
                     event->setDropAction(Qt::DropAction::CopyAction);
-                    ScopedUndoBatch undo("Instantiate Prefab");
+                    ScopedUndoBatch undo("Instantiate Archetype");
 
                     DoDragAndDropData(instantiateLocation, AZ::EntityId(), thingsToInstantiate, thingsToDetach);
 
@@ -312,9 +312,10 @@ namespace AzToolsFramework
                     const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
                     AZStd::string extension;
                     AZ::StringFunc::Path::GetExtension(sourceEntry->GetFullPath().c_str(), extension);
-                    if (AZ::StringFunc::Equal(PrefabSaveHandler::s_prefabFileExtension, extension.c_str()))
+                    if (AZ::StringFunc::Equal(PrefabSaveHandler::s_prefabFileExtension, extension.c_str()) ||
+                        AZ::StringFunc::Equal(".prefab", extension.c_str()))
                     {
-                        // its a prefab file.
+                        // its a prefab/arch file.
                         if (prefabsToInstantiate)
                         {
                             prefabsToInstantiate->emplace_back(sourceEntry->GetFullPath());
@@ -502,8 +503,8 @@ namespace AzToolsFramework
             // We'll need to check if the file contents are actually a prefab later in the flow anyways,
             // so this should not be an issue.
             StringFilter* stringFilter = new StringFilter();
-            stringFilter->SetName("Prefab");
-            stringFilter->SetFilterString(".prefab");
+            stringFilter->SetName("Archetype");
+            stringFilter->SetFilterString(".arch");
             stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
             auto stringFilterPtr = FilterConstType(stringFilter);
 
@@ -514,7 +515,7 @@ namespace AzToolsFramework
             auto sourceFilterPtr = FilterConstType(sourceFilter);
 
             CompositeFilter* compositeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-            compositeFilter->SetName("Prefab");
+            compositeFilter->SetName("Archetype");
             compositeFilter->AddFilter(sourceFilterPtr);
             compositeFilter->AddFilter(stringFilterPtr);
             auto compositeFilterPtr = FilterConstType(compositeFilter);
@@ -706,7 +707,7 @@ namespace AzToolsFramework
                 {
                     AZ_PROFILE_FUNCTION(AzToolsFramework);
                     saveAs = QFileDialog::getSaveFileName(
-                        nullptr, QString("Save As..."), saveAsInitialSuggestedFullPath.c_str(), QString("Prefabs (*.prefab)"));
+                        nullptr, QString("Save As..."), saveAsInitialSuggestedFullPath.c_str(), QString("Archetypes (*.arch)"));
                 }
 
                 prefabSaveFileInfo = saveAs;
@@ -720,9 +721,9 @@ namespace AzToolsFramework
                 if (AzFramework::StringFunc::Utf8::CheckNonAsciiChar(targetPath))
                 {
                     WarningDialog(
-                        "Prefab Creation Failed.",
+                        "Archetype Creation Failed.",
                         "Unicode file name is not supported. \r\n"
-                        "Please use ASCII characters to name your prefab.");
+                        "Please use ASCII characters to name your archetype.");
                     return false;
                 }
 
@@ -749,7 +750,7 @@ namespace AzToolsFramework
                     "Instead, either push entities/fields to the prefab, or save to a different location.",
                     targetPath.c_str());
 
-                WarningDialog("Prefab Already Exists", message);
+                WarningDialog("Archetype Already Exists", message);
                 return false;
             }
 
@@ -771,12 +772,12 @@ namespace AzToolsFramework
                 if (prefabAssetId.IsValid())
                 {
                     const AZStd::string message = AZStd::string::format(
-                        "A prefab with the relative path \"%s\" already exists in the Asset Database. \r\n\r\n"
-                        "Overriding it will damage instances or cascades of this prefab. \r\n\r\n"
-                        "Instead, either push entities/fields to the prefab, or save to a different location.",
+                        "A archetype with the relative path \"%s\" already exists in the Asset Database. \r\n\r\n"
+                        "Overriding it will damage instances or cascades of this archetype. \r\n\r\n"
+                        "Instead, either push entities/fields to the archetype, or save to a different location.",
                         prefabRelativeName.c_str());
 
-                    WarningDialog("Prefab Path Error", message);
+                    WarningDialog("Archetype Path Error", message);
                     return false;
                 }
 
@@ -787,11 +788,11 @@ namespace AzToolsFramework
                 if (templateId != Prefab::InvalidTemplateId)
                 {
                     const AZStd::string message = AZStd::string::format(                        
-                        "A prefab with the path '%s' already exists in the Asset Database. \r\n\r\n"
-                        "Overriding it will damage instances or cascades of this prefab.",
+                        "A archetype with the path '%s' already exists in the Asset Database. \r\n\r\n"
+                        "Overriding it will damage instances or cascades of this archetype.",
                         prefabRelativeName.c_str());
 
-                    WarningDialog("Prefab Path Error", message);
+                    WarningDialog("Archetype Path Error", message);
                     return false;
                 }
             }
@@ -875,7 +876,7 @@ namespace AzToolsFramework
                         s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(unsavedPrefabFileName.data());
                     [[maybe_unused]] bool isTemplateSavedSuccessfully = s_prefabLoaderInterface->SaveTemplate(unsavedPrefabTemplateId);
                     AZ_Error(
-                        "Prefab", isTemplateSavedSuccessfully, "Prefab '%s' could not be saved successfully.",
+                        "Prefab", isTemplateSavedSuccessfully, "Archetype '%s' could not be saved successfully.",
                         unsavedPrefabFileName.c_str());
                 }
             }
@@ -907,7 +908,7 @@ namespace AzToolsFramework
             auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
             AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
             QLabel* prefabSavedSuccessfullyLabel = new QLabel(
-                QString("Prefab '<b>%1</b>' has been saved. Do you want to save the below dependent prefabs too?")
+                QString("Archetype '<b>%1</b>' has been saved. Do you want to save the below dependent archetypes too?")
                     .arg(prefabTemplatePath.c_str()),
                 savePrefabDialog.get());
             prefabSavedMessageLayout->addWidget(prefabSavedSuccessfullyIconContainer);

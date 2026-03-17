@@ -62,7 +62,7 @@ namespace AzToolsFramework
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
         m_rootInstance =
-            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
+            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.dstage"));
     }
 
     bool PrefabEditorEntityOwnershipService::IsInitialized()

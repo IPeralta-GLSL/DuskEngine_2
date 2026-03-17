@@ -116,7 +116,7 @@ namespace
         if (!QFile::exists(levelPath))
         {
             // if the input path can't be found, let's automatically add on the game folder and the levels
-            QString levelsDir = QString("%1/%2").arg(Path::GetEditingGameDataFolder().c_str()).arg("Levels");
+            QString levelsDir = QString("%1/%2").arg(Path::GetEditingGameDataFolder().c_str()).arg("Stages");
 
             // now let's check if they pre-pended directories (Samples/SomeLevelName)
             QString levelFileName = levelPath;

@@ -14,7 +14,7 @@
 #include "LevelFileDialog.h"
 
 // Folder in which levels are stored
-static const char kLevelsFolder[] = "Levels";
+static const char kLevelsFolder[] = "Stages";
 
 LevelTreeModelFilter::LevelTreeModelFilter(QObject* parent)
     : QSortFilterProxyModel(parent)

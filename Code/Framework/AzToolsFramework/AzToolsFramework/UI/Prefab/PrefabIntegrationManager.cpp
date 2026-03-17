@@ -199,9 +199,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.edit";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Open/Edit Prefab";
-                actionProperties.m_description = "Edit the prefab in focus mode.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = "Open/Edit Archetype";
+                actionProperties.m_description = "Edit the archetype in focus mode.";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -251,9 +251,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.procedural.inspect";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Inspect Procedural Prefab";
-                actionProperties.m_description = "See the procedural prefab contents in focus mode.";
-                actionProperties.m_category = "Procedural Prefabs";
+                actionProperties.m_name = "Inspect Procedural Archetype";
+                actionProperties.m_description = "See the procedural archetype contents in focus mode.";
+                actionProperties.m_category = "Procedural Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -303,9 +303,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.close";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Close Prefab";
-                actionProperties.m_description = "Close focus mode for this prefab and move one level up.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = "Close Archetype";
+                actionProperties.m_description = "Close focus mode for this archetype and move one level up.";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -356,9 +356,9 @@ namespace AzToolsFramework
                 {
                     AZStd::string actionIdentifier = "o3de.action.prefabs.openInstance";
                     AzToolsFramework::ActionProperties actionProperties;
-                    actionProperties.m_name = "Open Prefab Instance";
-                    actionProperties.m_description = "Open the prefab instance to apply overrides.";
-                    actionProperties.m_category = "Prefabs";
+                    actionProperties.m_name = "Open Archetype Instance";
+                    actionProperties.m_description = "Open the archetype instance to apply overrides.";
+                    actionProperties.m_category = "Archetypes";
 
                     m_actionManagerInterface->RegisterAction(
                         EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -408,9 +408,9 @@ namespace AzToolsFramework
                 {
                     AZStd::string actionIdentifier = "o3de.action.prefabs.closeInstance";
                     AzToolsFramework::ActionProperties actionProperties;
-                    actionProperties.m_name = "Close Prefab Instance";
-                    actionProperties.m_description = "Close this prefab instance.";
-                    actionProperties.m_category = "Prefabs";
+                    actionProperties.m_name = "Close Archetype Instance";
+                    actionProperties.m_description = "Close this archetype instance.";
+                    actionProperties.m_category = "Archetypes";
 
                     m_actionManagerInterface->RegisterAction(
                         EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -462,9 +462,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.create";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Create Prefab...";
-                actionProperties.m_description = "Creates a prefab out of the currently selected entities.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = "Create Archetype...";
+                actionProperties.m_description = "Creates an archetype out of the currently selected entities.";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -507,10 +507,10 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.detach";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Detach Prefab";
-                actionProperties.m_description = "Selected prefab is detached from its prefab file and becomes normal entities instead. "
+                actionProperties.m_name = "Detach Archetype";
+                actionProperties.m_description = "Selected archetype is detached from its archetype file and becomes normal entities instead. "
                                                  "You can change whether or not this action keeps the container entity in the editor settings panel.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -552,9 +552,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.instantiate";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Instantiate Prefab...";
-                actionProperties.m_description = "Instantiates a prefab file in the scene.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = "Instantiate Archetype...";
+                actionProperties.m_description = "Instantiates an archetype in the scene.";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -598,9 +598,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.procedural.instantiate";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Instantiate Procedural Prefab...";
-                actionProperties.m_description = "Instantiates a procedural prefab file in a prefab.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = "Instantiate Procedural Archetype...";
+                actionProperties.m_description = "Instantiates a procedural archetype in the scene.";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -644,9 +644,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.save";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Save Prefab to file";
-                actionProperties.m_description = "Save the changes to the prefab to disk.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = "Save Archetype to file";
+                actionProperties.m_description = "Save the changes to the archetype to disk.";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -689,8 +689,8 @@ namespace AzToolsFramework
                 AZStd::string actionIdentifier = "o3de.action.prefabs.focusOnLevel";
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Focus on top level";
-                actionProperties.m_description = "Move the Prefab Focus to the top level.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_description = "Move the Focus to the top level.";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -723,8 +723,8 @@ namespace AzToolsFramework
                 AZStd::string actionIdentifier = "o3de.action.prefabs.focusUpOneLevel";
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Focus up one level";
-                actionProperties.m_description = "Move the Prefab Focus up one level.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_description = "Move the Focus up one level.";
+                actionProperties.m_category = "Archetypes";
                 actionProperties.m_iconPath = ":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg";
 
                 m_actionManagerInterface->RegisterAction(
@@ -758,7 +758,7 @@ namespace AzToolsFramework
                     AzToolsFramework::ActionProperties actionProperties;
                     actionProperties.m_name = "Revert overrides";
                     actionProperties.m_description = "Revert all overrides on this entity.";
-                    actionProperties.m_category = "Prefabs";
+                    actionProperties.m_category = "Archetypes";
 
                     m_actionManagerInterface->RegisterAction(
                         EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -834,7 +834,7 @@ namespace AzToolsFramework
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Revert overrides";
                 actionProperties.m_description = "Revert all overrides on this component.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -906,7 +906,7 @@ namespace AzToolsFramework
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Apply overrides";
                 actionProperties.m_description = "Apply all overrides on this component.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_category = "Archetypes";
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -978,8 +978,8 @@ namespace AzToolsFramework
             // Prefab Focus Path Widget
             {
                 AzToolsFramework::WidgetActionProperties widgetActionProperties;
-                widgetActionProperties.m_name = "Prefab Focus Path";
-                widgetActionProperties.m_category = "Prefabs";
+                widgetActionProperties.m_name = "Archetype Focus Path";
+                widgetActionProperties.m_category = "Archetypes";
 
                 auto outcome = m_actionManagerInterface->RegisterWidgetAction(
                     "o3de.widgetAction.prefab.focusPath",
@@ -1365,7 +1365,7 @@ namespace AzToolsFramework
 
             if (!createPrefabOutcome.IsSuccess())
             {
-                WarningDialog("Prefab Creation Error", createPrefabOutcome.GetError());
+                WarningDialog("Archetype Creation Error", createPrefabOutcome.GetError());
             }
         }
 
@@ -1413,7 +1413,7 @@ namespace AzToolsFramework
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabFilePath, parentId, position);
                 if (!createPrefabOutcome.IsSuccess())
                 {
-                    WarningDialog("Prefab Instantiation Error", createPrefabOutcome.GetError());
+                    WarningDialog("Archetype Instantiation Error", createPrefabOutcome.GetError());
                 }
             }
         }
@@ -1443,7 +1443,7 @@ namespace AzToolsFramework
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabAssetPath, parentId, position);
                 if (!createPrefabOutcome.IsSuccess())
                 {
-                    WarningDialog("Procedural Prefab Instantiation Error", createPrefabOutcome.GetError());
+                    WarningDialog("Procedural Archetype Instantiation Error", createPrefabOutcome.GetError());
                 }
             }
         }
@@ -1502,7 +1502,7 @@ namespace AzToolsFramework
 
             if (!detachPrefabResult.IsSuccess())
             {
-                WarningDialog("Detach Prefab error", detachPrefabResult.GetError());
+                WarningDialog("Detach Archetype error", detachPrefabResult.GetError());
             }
         }
 
@@ -1701,7 +1701,7 @@ namespace AzToolsFramework
 
                     QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
                     msgBox.setWindowTitle("External Entity References");
-                    msgBox.setText("The prefab contains references to external entities that are not selected.");
+                    msgBox.setText("The archetype contains references to external entities that are not selected.");
                     msgBox.setInformativeText("You can move the referenced entities into this prefab or retain the external references.");
                     QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);
                     QAbstractButton* retainButton = (QAbstractButton*)msgBox.addButton("Retain", QMessageBox::NoRole);

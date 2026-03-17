@@ -76,7 +76,7 @@ namespace EditorInternal
         const char* GetLevelExtension() const override;
 
     private:
-        static constexpr char DefaultLevelFolder[] = "Levels";
+        static constexpr char DefaultLevelFolder[] = "Stages";
 
         bool m_StartupAborted = false;
         Editor::EditorMetricsPlainTextNameRegistrationBusListener m_metricsPlainTextRegistrar;

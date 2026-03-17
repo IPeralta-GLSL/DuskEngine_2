@@ -301,6 +301,10 @@ namespace AzToolsFramework
                 return "TIF";
             case ".physxmaterial"_hash:
                 return "PhysX Material";
+            case ".arch"_hash:
+                return "Archetype";
+            case ".dstage"_hash:
+                return "Stage";
             case ".prefab"_hash:
                 return "Prefab";
             case ".dds"_hash:

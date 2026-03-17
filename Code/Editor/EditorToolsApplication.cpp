@@ -260,7 +260,7 @@ namespace EditorInternal
 
     const char* EditorToolsApplication::GetLevelExtension() const
     {
-        return ".prefab";
+        return ".dstage";
     }
 
     const char* EditorToolsApplication::GetOldCryLevelExtension() const

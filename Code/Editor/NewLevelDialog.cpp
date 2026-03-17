@@ -24,7 +24,7 @@
 #include <ui_NewLevelDialog.h>
 
 // Folder in which levels are stored
-static const char kNewLevelDialog_LevelsFolder[] = "Levels";
+static const char kNewLevelDialog_LevelsFolder[] = "Stages";
 static constexpr const char* RegistryKey_CustomTemplatePaths = "/O3DE/Preferences/Prefab/CustomTemplatePaths";
 static constexpr const char* DefaultTemplate = "Default_Level.prefab";
 
