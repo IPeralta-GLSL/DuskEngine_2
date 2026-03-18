@@ -26,6 +26,7 @@
 
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/Widgets/ToolBar.h>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
@@ -51,6 +52,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QTimer>
+#include <QToolBar>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QWidget>
@@ -2030,13 +2032,11 @@ void EditorActionsHandler::OnToolBarBindingHook()
 
     // Play Controls
     {
-        m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.widgetAction.expander", 100);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, 200);
-        m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.widgetAction.game.playControlsLabel", 300);
+        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 9000);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-            EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 400);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, 500);
-        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, "o3de.action.game.simulate", 600);
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 9100);
+        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 9200);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.simulate", 9300);
     }
 }
 
@@ -2066,6 +2066,18 @@ void EditorActionsHandler::OnPostActionManagerRegistrationHook()
 
     // Initialize the Toolbox Macro actions
     RefreshToolboxMacroActions();
+
+    {
+        const QList<QToolBar*> toolbars = m_mainWindow->findChildren<QToolBar*>();
+        for (QToolBar* toolbar : toolbars)
+        {
+            if (toolbar->windowTitle() == "Tools")
+            {
+                AzQtComponents::ToolBar::setToolBarIconSize(toolbar, AzQtComponents::ToolBar::ToolBarIconSize::IconLarge);
+                break;
+            }
+        }
+    }
 }
 
 QWidget* EditorActionsHandler::CreateExpander()

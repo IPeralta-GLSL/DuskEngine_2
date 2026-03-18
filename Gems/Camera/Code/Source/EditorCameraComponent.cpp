@@ -243,6 +243,10 @@ namespace Camera
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        if (!IsSelected())
+        {
+            return;
+        }
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
         EditorDisplay(debugDisplay, transform);

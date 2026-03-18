@@ -86,6 +86,11 @@ namespace AZ::Render
         AzFramework::DebugDisplayRequests& debugDisplay,
         bool isSelected) const
     {
+        if (!isSelected)
+        {
+            return;
+        }
+
         debugDisplay.PushMatrix(transform);
 
         auto DrawConicalFrustum =

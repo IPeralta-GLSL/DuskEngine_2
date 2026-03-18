@@ -403,7 +403,7 @@ namespace AZ
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay)
         {
-            if (IsVisible())
+            if (IsVisible() && IsSelected())
             {
                 m_controller.HandleDisplayEntityViewport(viewportInfo, debugDisplay, IsSelected());
             }

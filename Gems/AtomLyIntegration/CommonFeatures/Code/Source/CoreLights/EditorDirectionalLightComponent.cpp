@@ -246,6 +246,10 @@ namespace AZ
             [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay)
         {
+            if (!IsSelected())
+            {
+                return;
+            }
             static const auto forward = Vector3::CreateAxisY();
             static const auto up = Vector3::CreateAxisZ();
             static const auto right = Vector3::CreateAxisX();

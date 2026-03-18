@@ -62,6 +62,11 @@ namespace AZ::Render
         AzFramework::DebugDisplayRequests& debugDisplay,
         [[maybe_unused]] bool isSelected) const
     {
+        if (!isSelected)
+        {
+            return;
+        }
+
         // Draw a cone using the cone angle and attenuation radius
         auto DrawCone = [&debugDisplay](uint32_t numRadiusLines, float radius, float height, const Color& color, float brightness)
         {

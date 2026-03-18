@@ -64,10 +64,14 @@ void QComponentEntityEditorInspectorWindow::AfterEntitySelectionChanged(
 
 void QComponentEntityEditorInspectorWindow::PreviewAsset([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
 {
+    // Feature disabled to prevent the inspector from losing focus on the level entity 
+    // when clicking things in the asset browser.
+    /*
     if (m_inspectorWidgetStack->currentWidget() != m_assetBrowserInspector && !m_propertyEditor->IsLockedToSpecificEntities())
     {
         m_inspectorWidgetStack->setCurrentIndex(m_inspectorWidgetStack->indexOf(m_assetBrowserInspector));
     }
+    */
 }
 
 void QComponentEntityEditorInspectorWindow::Init()
