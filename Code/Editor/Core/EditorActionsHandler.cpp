@@ -2073,6 +2073,7 @@ void EditorActionsHandler::OnPostActionManagerRegistrationHook()
         {
             if (toolbar->windowTitle() == "Tools")
             {
+                AzQtComponents::ToolBar::addMainToolBarStyle(toolbar);
                 AzQtComponents::ToolBar::setToolBarIconSize(toolbar, AzQtComponents::ToolBar::ToolBarIconSize::IconLarge);
                 break;
             }

@@ -2807,7 +2807,7 @@ AzQtComponents--Card[selected="true"]
 AzToolsFramework--AssetBrowser--SearchWidget QLineEdit
 {
     selection-background-color: rgb(233, 99, 0);
-    background: #6e7071;
+    background: #111111;
     background-image: url(:/AssetBrowser/Resources/search.png);
     background-repeat: no-repeat;
     background-position: left;
@@ -2817,8 +2817,8 @@ AzToolsFramework--AssetBrowser--SearchWidget QLineEdit
 
 AzToolsFramework--AssetBrowser--SearchWidget QPushButton#m_buttonClearFilter
 {
-    border: none; 
-    background: #6e7071;
+    border: none;
+    background: #111111;
 }
 
 

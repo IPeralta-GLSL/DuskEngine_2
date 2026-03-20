@@ -93,7 +93,7 @@ namespace AZ::Render
         AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
         if (!apiName.IsEmpty())
         {
-            m_rendererDescription = AZStd::string::format("Atom using %s RHI", apiName.GetCStr());
+            m_rendererDescription = AZStd::string::format("%s", apiName.GetCStr());
         }
 
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
@@ -163,14 +163,12 @@ namespace AZ::Render
         }
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
-        
-        auto viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
-            AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
-        
-        m_drawParams.m_color = AZ::Colors::White;
+
+        m_drawParams.m_position = AZ::Vector3(10.0f, 22.0f, 1.0f) * viewportContext->GetDpiScalingFactor();
+
+        m_drawParams.m_color = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
-        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
+        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Left;
         m_drawParams.m_monospace = false;
         m_drawParams.m_depthTest = false;
         m_drawParams.m_virtual800x600ScreenSize = false;
@@ -182,17 +180,17 @@ namespace AZ::Render
         const float lineHeight = m_fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
         m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
 
+        DrawFramerate();
+        DrawMemoryInfo();
+        if (displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo)
+        {
+            DrawPassInfo();
+        }
         DrawRendererInfo();
         if (displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo)
         {
             DrawCameraInfo();
         }
-        if (displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo)
-        {
-            DrawPassInfo();
-        }
-        DrawMemoryInfo();
-        DrawFramerate();
     }
 
     AtomBridge::ViewportInfoDisplayState AtomViewportDisplayInfoSystemComponent::GetDisplayState() const
@@ -231,29 +229,29 @@ namespace AZ::Render
         }
         auto resolutionStr =
             AZStd::string::format(
-                "Resolution: %dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
+                "%dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
         auto msaaStr =
             multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("NoMSAA");
- 
+
         if (hasAAMethod)
         {
             if (multisampleState.m_samples > 1)
             {
-                DrawLine(AZStd::string::format("%s (%s + %s)", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()));
+                DrawLine(AZStd::string::format("%s  %s + %s", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()));
             }
             else
             {
-                DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), defaultAA.c_str()));
+                DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), defaultAA.c_str()));
             }
         }
         else
         {
-            DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), msaaStr.c_str()));
+            DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), msaaStr.c_str()));
         }
 
-        if(viewportContext->GetCurrentPipeline())   // avoid VR crash on nullptr
+        if(viewportContext->GetCurrentPipeline())
         {
-            DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
+            DrawLine(AZStd::string::format("Pipeline  %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
         }
     }
 
@@ -291,11 +289,11 @@ namespace AZ::Render
         RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
 
         DrawLine(AZStd::string::format(
-            "RenderPasses: %d",
+            "Passes  %d",
             passSystemFrameStatistics.m_numRenderPassesExecuted
         ));
         DrawLine(AZStd::string::format(
-            "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
+            "Draw Calls  %d  |  Max  %d",
             passSystemFrameStatistics.m_totalDrawItemsRendered,
             passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass
         ));
@@ -368,7 +366,6 @@ namespace AZ::Render
         }
 
         float deviceResidentMB = static_cast<float>(deviceResident) / MB;
-        float deviceReservedMB = static_cast<float>(deviceReserved) / MB;
 
         AZ::Color deviceMemoryColor = AZ::Colors::White;
         if (availableDeviceMemoryMB != 0.f)
@@ -385,7 +382,7 @@ namespace AZ::Render
         }
         DrawLine(
             AZStd::string::format(
-                "VRAM (resident/reserved): %.2f / %.2f MiB | %.2f available", deviceResidentMB, deviceReservedMB, availableDeviceMemoryMB),
+                "VRAM  %.0f / %.0f MiB", deviceResidentMB, availableDeviceMemoryMB),
             deviceMemoryColor);
 
         // RPI default StreamingImagePool usage
@@ -393,9 +390,7 @@ namespace AZ::Render
         const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
         float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
-        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
-        bool supportTiledImage = streamingImagePool->GetRHIPool()->SupportTiledImage();
         AZ::Color fontColor = AZ::Colors::White;
         if (streamingImagePool->IsMemoryLow())
         {
@@ -403,7 +398,7 @@ namespace AZ::Render
         }
 
         DrawLine(
-            AZStd::string::format("Texture %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            AZStd::string::format("Textures  %.0f / %.0f MiB", imagePoolUsedAllocatedMB, imagePoolBudgetMB),
             fontColor
         );
     }
@@ -435,8 +430,6 @@ namespace AZ::Render
             averageFrameMs = 1000.0f/averageFPS;
         }
 
-        const double frameIntervalSeconds = m_fpsInterval.count();
-
         auto ClampedFloatDisplay = [](double value, const char* format) -> AZStd::string
         {
             constexpr float upperLimit = 10000.0f;
@@ -445,12 +438,15 @@ namespace AZ::Render
 
         DrawLine(
             AZStd::string::format(
-                "FPS %s [%s..%s], %sms/frame, avg over %.1fs",
-                ClampedFloatDisplay(averageFPS, "%.1f").c_str(),
-                ClampedFloatDisplay(minFPS, "%.0f").c_str(),
-                ClampedFloatDisplay(maxFPS, "%.0f").c_str(),
+                "FPS  %s",
+                ClampedFloatDisplay(averageFPS, "%.1f").c_str()),
+            AZ::Colors::Yellow);
+        DrawLine(
+            AZStd::string::format(
+                "Frame  %s ms  [%s .. %s]",
                 ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
-                frameIntervalSeconds),
+                ClampedFloatDisplay(minFPS, "%.0f").c_str(),
+                ClampedFloatDisplay(maxFPS, "%.0f").c_str()),
             AZ::Colors::Yellow);
     }
 } // namespace AZ::Render
