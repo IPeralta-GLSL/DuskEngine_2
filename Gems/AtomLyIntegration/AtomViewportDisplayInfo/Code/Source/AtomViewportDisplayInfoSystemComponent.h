@@ -61,6 +61,7 @@ namespace AZ
             void DrawPassInfo();
             void DrawMemoryInfo();
             void DrawFramerate();
+            void DrawBackground(float pixelX, float pixelY, float pixelW, float pixelH, AZ::Color color);
 
             static constexpr float BaseFontSize = 0.7f;
 

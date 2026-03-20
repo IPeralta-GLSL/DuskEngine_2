@@ -21,6 +21,8 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
@@ -181,15 +183,36 @@ namespace AZ::Render
         m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
 
         DrawFramerate();
-        DrawMemoryInfo();
+
+        constexpr float bgPad = 4.f;
+        const float bgX = 10.0f * viewportContext->GetDpiScalingFactor() - bgPad;
+        const float bgW = 260.0f * viewportContext->GetDpiScalingFactor();
+
+        {
+            const float y0 = m_drawParams.m_position.GetY();
+            DrawMemoryInfo();
+            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
+            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.0f, 0.05f, 0.18f, 0.85f));
+        }
         if (displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo)
         {
+            const float y0 = m_drawParams.m_position.GetY();
             DrawPassInfo();
+            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
+            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.1f, 0.0f, 0.18f, 0.85f));
         }
-        DrawRendererInfo();
+        {
+            const float y0 = m_drawParams.m_position.GetY();
+            DrawRendererInfo();
+            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
+            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.15f, 0.07f, 0.0f, 0.85f));
+        }
         if (displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo)
         {
+            const float y0 = m_drawParams.m_position.GetY();
             DrawCameraInfo();
+            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
+            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.0f, 0.14f, 0.07f, 0.85f));
         }
     }
 
@@ -209,20 +232,21 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::DrawRendererInfo()
     {
-        DrawLine(m_rendererDescription, AZ::Colors::Yellow);
+        const AZ::Color rendColor(1.0f, 0.8f, 0.3f, 1.0f);
+        DrawLine(m_rendererDescription, rendColor);
 
         // resolution and MSAA state
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
         const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
         AZ::RPI::ScenePtr pScene = viewportContext->GetRenderScene();
-       
+
         AZStd::string defaultAA = "MSAA";
         bool hasAAMethod = false;
         if (pScene != nullptr)
         {
             AZ::RPI::RenderPipelinePtr pPipeline = pScene->GetDefaultRenderPipeline();
- 
+
             AZ::RPI::AntiAliasingMode defaultAAMethod = pPipeline->GetActiveAAMethod();
             defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
             hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
@@ -237,21 +261,21 @@ namespace AZ::Render
         {
             if (multisampleState.m_samples > 1)
             {
-                DrawLine(AZStd::string::format("%s  %s + %s", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()));
+                DrawLine(AZStd::string::format("%s  %s + %s", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()), rendColor);
             }
             else
             {
-                DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), defaultAA.c_str()));
+                DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), defaultAA.c_str()), rendColor);
             }
         }
         else
         {
-            DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), msaaStr.c_str()));
+            DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), msaaStr.c_str()), rendColor);
         }
 
         if(viewportContext->GetCurrentPipeline())
         {
-            DrawLine(AZStd::string::format("Pipeline  %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
+            DrawLine(AZStd::string::format("Pipeline  %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()), rendColor);
         }
     }
 
@@ -274,7 +298,7 @@ namespace AZ::Render
             translation.GetX(), translation.GetY(), translation.GetZ(),
             rotation.GetX(), rotation.GetY(), rotation.GetZ(),
             cameraState.m_nearClip, cameraState.m_farClip
-        ));
+        ), AZ::Color(0.4f, 1.0f, 0.65f, 1.0f));
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
@@ -284,19 +308,18 @@ namespace AZ::Render
         {
             return;
         }
-        auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
 
         RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
 
         DrawLine(AZStd::string::format(
             "Passes  %d",
             passSystemFrameStatistics.m_numRenderPassesExecuted
-        ));
+        ), AZ::Color(0.75f, 0.5f, 1.0f, 1.0f));
         DrawLine(AZStd::string::format(
             "Draw Calls  %d  |  Max  %d",
             passSystemFrameStatistics.m_totalDrawItemsRendered,
             passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass
-        ));
+        ), AZ::Color(0.75f, 0.5f, 1.0f, 1.0f));
     }
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
@@ -367,7 +390,7 @@ namespace AZ::Render
 
         float deviceResidentMB = static_cast<float>(deviceResident) / MB;
 
-        AZ::Color deviceMemoryColor = AZ::Colors::White;
+        AZ::Color deviceMemoryColor = AZ::Color(0.4f, 0.85f, 1.0f, 1.0f);
         if (availableDeviceMemoryMB != 0.f)
         {
             // Highlight text based on device memory pressure
@@ -391,7 +414,7 @@ namespace AZ::Render
 
         float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
-        AZ::Color fontColor = AZ::Colors::White;
+        AZ::Color fontColor = AZ::Color(0.4f, 0.85f, 1.0f, 1.0f);
         if (streamingImagePool->IsMemoryLow())
         {
             fontColor = AZ::Colors::Red;
@@ -436,17 +459,73 @@ namespace AZ::Render
             return value > upperLimit ? "inf" : AZStd::string::format(format, value);
         };
 
-        DrawLine(
-            AZStd::string::format(
-                "FPS  %s",
-                ClampedFloatDisplay(averageFPS, "%.1f").c_str()),
-            AZ::Colors::Yellow);
-        DrawLine(
-            AZStd::string::format(
-                "Frame  %s ms  [%s .. %s]",
-                ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
-                ClampedFloatDisplay(minFPS, "%.0f").c_str(),
-                ClampedFloatDisplay(maxFPS, "%.0f").c_str()),
-            AZ::Colors::Yellow);
+        const AZStd::string fpsStr = AZStd::string::format("FPS  %s", ClampedFloatDisplay(averageFPS, "%.1f").c_str());
+        const AZStd::string frameStr = AZStd::string::format(
+            "Frame  %s ms  [%s .. %s]",
+            ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
+            ClampedFloatDisplay(minFPS, "%.0f").c_str(),
+            ClampedFloatDisplay(maxFPS, "%.0f").c_str());
+
+        const float lineH1 = m_fontDrawInterface->GetTextSize(m_drawParams, fpsStr).GetY();
+        const float lineH2 = m_fontDrawInterface->GetTextSize(m_drawParams, frameStr).GetY();
+        const float textW1 = m_fontDrawInterface->GetTextSize(m_drawParams, fpsStr).GetX();
+        const float textW2 = m_fontDrawInterface->GetTextSize(m_drawParams, frameStr).GetX();
+        const float blockH = lineH1 + m_lineSpacing + lineH2;
+        const float bgW = AZStd::max(textW1, textW2);
+        constexpr float bgPad = 4.f;
+        DrawBackground(
+            m_drawParams.m_position.GetX() - bgPad,
+            m_drawParams.m_position.GetY() - bgPad,
+            bgW + bgPad * 2.f,
+            blockH + bgPad * 2.f,
+            AZ::Color(0.0f, 0.15f, 0.2f, 0.9f));
+
+        DrawLine(fpsStr, AZ::Colors::White);
+        DrawLine(frameStr, AZ::Colors::White);
+    }
+
+    void AtomViewportDisplayInfoSystemComponent::DrawBackground(
+        float pixelX, float pixelY, float pixelW, float pixelH, AZ::Color color)
+    {
+        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        if (!viewportContext)
+        {
+            return;
+        }
+        AZ::RPI::AuxGeomDrawPtr auxGeom =
+            AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(viewportContext->GetRenderScene());
+        if (!auxGeom)
+        {
+            return;
+        }
+
+        auto vpSize = viewportContext->GetViewportSize();
+        const float vw = static_cast<float>(vpSize.m_width);
+        const float vh = static_cast<float>(vpSize.m_height);
+
+        const float x1 = pixelX / vw;
+        const float x2 = (pixelX + pixelW) / vw;
+        const float y1 = pixelY / vh;
+        const float y2 = (pixelY + pixelH) / vh;
+        constexpr float z = 0.5f;
+
+        const int32_t viewProjIdx = auxGeom->GetOrAdd2DViewProjOverride();
+
+        AZ::Vector3 verts[6] = {
+            {x1, y1, z}, {x2, y1, z}, {x2, y2, z},
+            {x2, y2, z}, {x1, y2, z}, {x1, y1, z}
+        };
+        AZ::Color colors[6] = { color, color, color, color, color, color };
+
+        AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments args;
+        args.m_verts      = verts;
+        args.m_vertCount  = 6;
+        args.m_colors     = colors;
+        args.m_colorCount = 6;
+        args.m_opacityType   = AZ::RPI::AuxGeomDraw::OpacityType::Translucent;
+        args.m_depthTest     = AZ::RPI::AuxGeomDraw::DepthTest::Off;
+        args.m_depthWrite    = AZ::RPI::AuxGeomDraw::DepthWrite::Off;
+        args.m_viewProjectionOverrideIndex = viewProjIdx;
+        auxGeom->DrawTriangles(args);
     }
 } // namespace AZ::Render

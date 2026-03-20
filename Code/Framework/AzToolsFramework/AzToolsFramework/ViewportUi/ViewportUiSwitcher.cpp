@@ -26,7 +26,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
         m_activeButton->setCheckable(false);
-        m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        m_activeButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        m_activeButton->hide();
         addWidget(m_activeButton);
 
         const AZStd::vector<Button*> buttons = buttonGroup->GetButtons();

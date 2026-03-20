@@ -29,6 +29,7 @@
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
 
 #include <Core/Widgets/PrefabEditVisualModeWidget.h>
 #include <Core/Widgets/ViewportSettingsWidgets.h>
@@ -52,6 +53,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QTimer>
+#include <QDateTime>
 #include <QToolBar>
 #include <QUrl>
 #include <QUrlQuery>
@@ -1996,6 +1998,32 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 80000);
     m_menuManagerInterface->AddActionToMenu(
         EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.entityOutliner.findEntity", 80100);
+
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.editor.captureScreenshot";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Capture Screenshot";
+        actionProperties.m_description = "Capture a screenshot of the viewport.";
+        actionProperties.m_category = "Editor";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Eyedropper.svg";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                const QString path = QDir::homePath() + "/Pictures/screenshot_" +
+                    QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") + ".png";
+                AZ::Render::FrameCaptureRequestBus::Broadcast(
+                    &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot,
+                    path.toUtf8().constData());
+            });
+
+        m_actionManagerInterface->AssignModeToAction(
+            AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
 }
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()
@@ -2032,6 +2060,7 @@ void EditorActionsHandler::OnToolBarBindingHook()
 
     // Play Controls
     {
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.editor.captureScreenshot", 8800);
         m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 9000);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
             EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 9100);
