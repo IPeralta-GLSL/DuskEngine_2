@@ -57,6 +57,8 @@ namespace AZ::Render
 
         CascadeShadows,
 
+        Wireframe,
+
         Count
     };
 

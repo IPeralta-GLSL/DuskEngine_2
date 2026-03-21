@@ -82,6 +82,8 @@ enum class RenderDebugViewMode
     Metallic,
 
     CascadeShadows,
+
+    Wireframe,
 };
 
 bool IsDebuggingEnabled()
@@ -144,6 +146,13 @@ void DebugModifyOutput(inout float4 outDiffuse, inout float4 outSpecular, inout 
 #if ENABLE_SHADER_DEBUGGING
         else if(viewMode == RenderDebugViewMode::CascadeShadows) { outSpecular.rgb = customDebugFloats.rgb; }
 #endif
+        else if(viewMode == RenderDebugViewMode::Wireframe)
+        {
+            // Edge detection via normal gradient: bright at face boundaries, dark on flat surfaces.
+            // Gives a wireframe-like silhouette view without requiring barycentric coordinates.
+            float edgeFactor = saturate(length(fwidth(normal)) * 8.0);
+            outSpecular.rgb = float3(edgeFactor, edgeFactor, edgeFactor);
+        }
         if(viewMode != RenderDebugViewMode::None)
         {
             outDiffuse = float4(0, 0, 0, 0);

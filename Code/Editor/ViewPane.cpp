@@ -91,6 +91,7 @@ static void SetViewportViewMode(AZ::Render::RenderDebugViewMode mode)
             actionManager->UpdateAction("o3de.action.viewport.viewmode.unlit");
             actionManager->UpdateAction("o3de.action.viewport.viewmode.normals");
             actionManager->UpdateAction("o3de.action.viewport.viewmode.albedo");
+            actionManager->UpdateAction("o3de.action.viewport.viewmode.wireframe");
         }
     }
 }
@@ -682,6 +683,28 @@ void CLayoutViewPane::OnActionRegistrationHook()
             }
         );
     }
+
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewmode.wireframe";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Wireframe";
+        actionProperties.m_iconPath = ":/Viewport/viewmode_wireframe.svg";
+        actionProperties.m_category = "View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetViewportViewMode(AZ::Render::RenderDebugViewMode::Wireframe);
+            },
+            []() -> bool
+            {
+                return IsCurrentViewMode(AZ::Render::RenderDebugViewMode::Wireframe);
+            }
+        );
+    }
 }
 
 void CLayoutViewPane::OnMenuBindingHook()
@@ -777,6 +800,7 @@ void CLayoutViewPane::OnMenuBindingHook()
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.unlit", 200);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.normals", 300);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.albedo", 400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.wireframe", 500);
     }
 }
 
@@ -801,6 +825,8 @@ void CLayoutViewPane::OnToolBarBindingHook()
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.normals", 853);
     m_toolBarManagerInterface->AddActionToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.albedo", 854);
+    m_toolBarManagerInterface->AddActionToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.wireframe", 855);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 900);
 }

@@ -1357,6 +1357,7 @@ namespace AzToolsFramework
                     manipulatorEntityIds->m_entityIds);
 
                 EndRecordManipulatorCommand();
+                RefreshManipulators(RefreshType::All);
             });
 
         // planar
@@ -1391,6 +1392,7 @@ namespace AzToolsFramework
                     manipulatorEntityIds->m_entityIds);
 
                 EndRecordManipulatorCommand();
+                RefreshManipulators(RefreshType::All);
             });
 
         // surface
@@ -1424,6 +1426,7 @@ namespace AzToolsFramework
                     manipulatorEntityIds->m_entityIds);
 
                 EndRecordManipulatorCommand();
+                RefreshManipulators(RefreshType::All);
             });
 
         translationManipulators->InstallSurfaceManipulatorEntityIdsToIgnoreFn(
@@ -1591,6 +1594,7 @@ namespace AzToolsFramework
                     sharedRotationState->m_entityIds);
 
                 EndRecordManipulatorCommand();
+                RefreshManipulators(RefreshType::All);
             });
 
         rotationManipulators->Register(GetMainManipulatorManagerId());
@@ -1643,8 +1647,7 @@ namespace AzToolsFramework
             AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                 &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged, sharedScaleState->m_entityIds);
 
-            m_entityIdManipulators.m_manipulators->SetLocalTransform(RecalculateAverageManipulatorTransform(
-                m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
+            RefreshManipulators(RefreshType::All);
         };
 
         auto uniformLeftMouseMoveCallback = [this, sharedScaleState, prevModifiers = ViewportInteraction::KeyboardModifiers()](
@@ -1873,6 +1876,7 @@ namespace AzToolsFramework
                         &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
                         sharedRotationState->m_entityIds);
                     EndRecordManipulatorCommand();
+                    RefreshManipulators(RefreshType::All);
                 });
 
             m_universalRotationManipulators = AZStd::move(rotationManipulators);
@@ -1930,8 +1934,7 @@ namespace AzToolsFramework
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
                     sharedScaleState->m_entityIds);
-                m_entityIdManipulators.m_manipulators->SetLocalTransform(RecalculateAverageManipulatorTransform(
-                    m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
+                RefreshManipulators(RefreshType::All);
             };
 
             auto uniformLeftMouseMoveCallback =
@@ -4558,7 +4561,7 @@ namespace AzToolsFramework
         // releasing shift and/or alt - make sure we update the manipulator orientation appropriately
         if (refresh)
         {
-            RefreshManipulators(RefreshType::Orientation);
+            RefreshManipulators(m_triedToRefresh ? RefreshType::All : RefreshType::Orientation);
         }
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
