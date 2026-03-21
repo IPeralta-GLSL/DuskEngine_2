@@ -559,7 +559,7 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::SetAllViewportUiVisible(const bool visible)
     {
         // m_transformModeClusterId is intentionally kept hidden (Universal mode always active)
-        SetViewportUiClusterVisible(m_spaceCluster.m_clusterId, visible);
+        // m_spaceCluster is intentionally kept hidden
         SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, visible);
         m_viewportUiVisible = visible;
     }

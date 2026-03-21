@@ -85,6 +85,13 @@ static void SetViewportViewMode(AZ::Render::RenderDebugViewMode mode)
     if (auto* settings = GetViewportDebugSettings())
     {
         settings->SetRenderDebugViewMode(mode);
+        if (auto* actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            actionManager->UpdateAction("o3de.action.viewport.viewmode.lit");
+            actionManager->UpdateAction("o3de.action.viewport.viewmode.unlit");
+            actionManager->UpdateAction("o3de.action.viewport.viewmode.normals");
+            actionManager->UpdateAction("o3de.action.viewport.viewmode.albedo");
+        }
     }
 }
 
