@@ -73,8 +73,8 @@ namespace AZ::Render
         AZ_PROFILE_SCOPE(RPI, "RenderDebugFeatureProcessor: Render");
         AZ_UNUSED(packet);
 
-        // Disable debugging if no render debug level component is active
-        bool debugEnabled = (m_debugComponentCount > 0) && m_settings->GetEnabled();
+        bool viewModeActive = m_settings->GetRenderDebugViewMode() != RenderDebugViewMode::None;
+        bool debugEnabled = ((m_debugComponentCount > 0) || viewModeActive) && m_settings->GetEnabled();
 
         RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_shaderDebugEnableOptionName, AZ::RPI::ShaderOptionValue{ debugEnabled });
 

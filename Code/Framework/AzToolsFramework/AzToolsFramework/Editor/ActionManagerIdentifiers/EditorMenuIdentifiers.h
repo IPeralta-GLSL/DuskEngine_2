@@ -49,6 +49,7 @@ namespace EditorIdentifiers
     inline constexpr AZStd::string_view ViewportSizeResolutionMenuIdentifier = "o3de.menu.editor.viewport.size.resolution";
     inline constexpr AZStd::string_view ViewportOptionsMenuIdentifier = "o3de.menu.editor.viewport.options";
     inline constexpr AZStd::string_view ViewportGraphicsSettingsMenuIdentifier = "o3de.menu.editor.viewport.graphicsSettings";
+    inline constexpr AZStd::string_view ViewportViewModeMenuIdentifier = "o3de.menu.editor.viewport.viewMode";
 
     // Editor Widget Menus
     inline constexpr AZStd::string_view EntityOutlinerContextMenuIdentifier = "o3de.menu.editor.entityOutliner.context";

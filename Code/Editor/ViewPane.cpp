@@ -43,6 +43,9 @@
 #include <AzQtComponents/Components/Style.h>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/Feature/Debug/RenderDebugFeatureProcessorInterface.h>
 
 // Editor
 #include "ViewManager.h"
@@ -61,6 +64,38 @@ static const std::pair<int, int> ViewportResolutions[] =
     { { 1280, 720 }, { 1920, 1080 }, { 2560, 1440 }, { 2048, 858 }, { 1998, 1080 }, { 3480, 2160 } };
 static const size_t ViewportResolutionsCount = sizeof(ViewportResolutions) / sizeof(ViewportResolutions[0]);
 static constexpr int SortKeySpacing = 100;
+
+static AZ::Render::RenderDebugSettingsInterface* GetViewportDebugSettings()
+{
+    if (auto* rpiSystem = AZ::RPI::RPISystemInterface::Get())
+    {
+        if (auto* scene = rpiSystem->GetSceneByName(AZ::Name("Main")))
+        {
+            if (auto* debugFP = scene->GetFeatureProcessor<AZ::Render::RenderDebugFeatureProcessorInterface>())
+            {
+                return debugFP->GetSettingsInterface();
+            }
+        }
+    }
+    return nullptr;
+}
+
+static void SetViewportViewMode(AZ::Render::RenderDebugViewMode mode)
+{
+    if (auto* settings = GetViewportDebugSettings())
+    {
+        settings->SetRenderDebugViewMode(mode);
+    }
+}
+
+static bool IsCurrentViewMode(AZ::Render::RenderDebugViewMode mode)
+{
+    if (auto* settings = GetViewportDebugSettings())
+    {
+        return settings->GetRenderDebugViewMode() == mode;
+    }
+    return mode == AZ::Render::RenderDebugViewMode::None;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CLayoutViewPane
@@ -155,6 +190,11 @@ void CLayoutViewPane::OnMenuRegistrationHook()
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Graphics Settings";
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportGraphicsSettingsMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "View Mode";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, menuProperties);
     }
 }
 
@@ -547,6 +587,94 @@ void CLayoutViewPane::OnActionRegistrationHook()
             }
         );
     }
+
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewmode.lit";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Lit";
+        actionProperties.m_iconPath = ":/Viewport/viewmode_lit.svg";
+        actionProperties.m_category = "View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetViewportViewMode(AZ::Render::RenderDebugViewMode::None);
+            },
+            []() -> bool
+            {
+                return IsCurrentViewMode(AZ::Render::RenderDebugViewMode::None);
+            }
+        );
+    }
+
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewmode.unlit";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Unlit";
+        actionProperties.m_iconPath = ":/Viewport/viewmode_unlit.svg";
+        actionProperties.m_category = "View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetViewportViewMode(AZ::Render::RenderDebugViewMode::BaseColor);
+            },
+            []() -> bool
+            {
+                return IsCurrentViewMode(AZ::Render::RenderDebugViewMode::BaseColor);
+            }
+        );
+    }
+
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewmode.normals";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Normals";
+        actionProperties.m_iconPath = ":/Viewport/viewmode_normals.svg";
+        actionProperties.m_category = "View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetViewportViewMode(AZ::Render::RenderDebugViewMode::Normal);
+            },
+            []() -> bool
+            {
+                return IsCurrentViewMode(AZ::Render::RenderDebugViewMode::Normal);
+            }
+        );
+    }
+
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewmode.albedo";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Albedo";
+        actionProperties.m_iconPath = ":/Viewport/viewmode_albedo.svg";
+        actionProperties.m_category = "View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetViewportViewMode(AZ::Render::RenderDebugViewMode::Albedo);
+            },
+            []() -> bool
+            {
+                return IsCurrentViewMode(AZ::Render::RenderDebugViewMode::Albedo);
+            }
+        );
+    }
 }
 
 void CLayoutViewPane::OnMenuBindingHook()
@@ -635,6 +763,14 @@ void CLayoutViewPane::OnMenuBindingHook()
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportGraphicsSettingsMenuIdentifier, "o3de.action.viewport.graphicsSettings.dof", 200);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportGraphicsSettingsMenuIdentifier, "o3de.action.viewport.graphicsSettings.fog", 300);
     }
+
+    // View Mode
+    {
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.lit", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.unlit", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.normals", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewmode.albedo", 400);
+    }
 }
 
 void CLayoutViewPane::OnToolBarBindingHook()
@@ -650,8 +786,14 @@ void CLayoutViewPane::OnToolBarBindingHook()
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 800);
-    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.graphicsSettings", EditorIdentifiers::ViewportGraphicsSettingsMenuIdentifier, 850);
+    m_toolBarManagerInterface->AddActionToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.lit", 851);
+    m_toolBarManagerInterface->AddActionToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.unlit", 852);
+    m_toolBarManagerInterface->AddActionToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.normals", 853);
+    m_toolBarManagerInterface->AddActionToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.albedo", 854);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 900);
 }

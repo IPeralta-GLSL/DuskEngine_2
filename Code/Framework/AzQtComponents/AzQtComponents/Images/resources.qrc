@@ -69,6 +69,12 @@
         <file alias="lock_on_hover.svg">Outliner/lock_on_hover.svg</file>
         <file alias="lock_on_transparent.svg">Outliner/lock_on_transparent.svg</file>
     </qresource>
+    <qresource prefix="/Viewport">
+        <file alias="viewmode_lit.svg">Viewport/viewmode_lit.svg</file>
+        <file alias="viewmode_unlit.svg">Viewport/viewmode_unlit.svg</file>
+        <file alias="viewmode_normals.svg">Viewport/viewmode_normals.svg</file>
+        <file alias="viewmode_albedo.svg">Viewport/viewmode_albedo.svg</file>
+    </qresource>
     <qresource prefix="/Icons">
         <file alias="Material_80.svg">AssetBrowser/Material_80.svg</file>
         <file alias="MaterialType_80.svg">AssetBrowser/MaterialType_80.svg</file>
