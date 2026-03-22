@@ -207,6 +207,10 @@ namespace AZ
             image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
 
             AZ_Assert(image.m_heapTiles[subresourceIndex].size() == 0, "Stopping on an existing tile allocation. This will leak.");
+            if (image.m_heapTiles[subresourceIndex].size() != 0)
+            {
+                return;
+            }
 
             uint32_t totalTiles = request.m_sourceRegionSize.NumTiles;
 

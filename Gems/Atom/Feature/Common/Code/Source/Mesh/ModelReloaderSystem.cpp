@@ -14,6 +14,16 @@ namespace AZ
 {
     namespace Render
     {
+        ModelReloaderSystem::~ModelReloaderSystem()
+        {
+            AZStd::scoped_lock lock(m_pendingReloadMutex);
+            for (auto& [assetId, reloader] : m_pendingReloads)
+            {
+                delete reloader;
+            }
+            m_pendingReloads.clear();
+        }
+
         void ModelReloaderSystem::ReloadModel(Data::Asset<RPI::ModelAsset> modelAsset, ModelReloadedEvent::Handler& onReloadedEventHandler)
         {
             AZStd::scoped_lock lock(m_pendingReloadMutex);

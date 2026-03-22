@@ -543,6 +543,11 @@ namespace AZ::Data
             "AssetManager::SetInstance was called without first destroying the old instance and setting it to nullptr.  "
             "This will cause the previous AssetManager instance to leak." );
 
+        if (*s_assetDB)
+        {
+            return false;
+        }
+
         (*s_assetDB) = assetManager;
         return true;
     }

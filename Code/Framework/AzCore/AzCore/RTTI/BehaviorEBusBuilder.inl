@@ -147,6 +147,10 @@ namespace AZ::Internal
             if (!insertIt.second)
             {
                 AZ_Error("BehaviorContext", false, "Reflection inserted a duplicate event: '%s' for bus '%s' - please check that you are not reflecting the same event repeatedly. This will cause memory leaks.", name, m_ebus->m_name.c_str());
+                delete ebusEvent.m_broadcast;
+                delete ebusEvent.m_event;
+                delete ebusEvent.m_queueBroadcast;
+                delete ebusEvent.m_queueEvent;
             }
             else
             {

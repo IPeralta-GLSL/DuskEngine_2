@@ -27,7 +27,9 @@ namespace AZ
         {
         public:
             AZ_RTTI(Render::ModelReloaderSystem, "{8C85ECCD-B6C8-4949-B26C-9C4F1020F2B8}", Render::ModelReloaderSystemInterface);
-            
+
+            ~ModelReloaderSystem();
+
             void ReloadModel(Data::Asset<RPI::ModelAsset> modelAsset, ModelReloadedEvent::Handler& onReloadedEventHandler) override;
             void RemoveReloader(const Data::AssetId& assetId) override;
 

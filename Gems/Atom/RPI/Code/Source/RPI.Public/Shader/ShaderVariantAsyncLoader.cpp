@@ -526,6 +526,7 @@ namespace AZ
                     ShaderVariantCollection& shaderVariantCollection = findIt->second;
                     shaderAssetId = shaderVariantCollection.m_shaderAssetId;
                     m_shaderVariantData.erase(findIt);
+                    m_shaderAssetIdToShaderVariantTreeAssetId.erase(shaderAssetId);
                 }
                 else
                 {

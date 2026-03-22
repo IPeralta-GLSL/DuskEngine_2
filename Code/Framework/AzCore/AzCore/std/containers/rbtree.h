@@ -579,7 +579,12 @@ namespace AZStd
             // we expect most people will call with insertPos if the node can't be inserted)
             node_ptr_type newNode = static_cast<node_ptr_type>(create_node(AZStd::move(value)));
             iterator result = insert_unique_node(insertPos, newNode);
-            if (result == insertPos)
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
+            const bool wasInserted = (result.get_iterator().m_node == newNode);
+#else
+            const bool wasInserted = (result.m_node == newNode);
+#endif
+            if (!wasInserted)
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
@@ -614,7 +619,12 @@ namespace AZStd
             // we need to construct the node just to get the key/value
             node_ptr_type newNode = static_cast<node_ptr_type>(create_node(AZStd::forward<InputArguments>(arguments) ...));
             iterator result = insert_unique_node(insertPos, newNode);
-            if (result == insertPos)
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
+            const bool wasInserted = (result.get_iterator().m_node == newNode);
+#else
+            const bool wasInserted = (result.m_node == newNode);
+#endif
+            if (!wasInserted)
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
@@ -748,7 +758,12 @@ namespace AZStd
             // we except most people will call with insertPos if the node can't be inserted)
             node_ptr_type newNode = static_cast<node_ptr_type>(create_node(value));
             iterator result = insert_unique_node(insertPos, newNode);
-            if (result == insertPos)
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
+            const bool wasInserted = (result.get_iterator().m_node == newNode);
+#else
+            const bool wasInserted = (result.m_node == newNode);
+#endif
+            if (!wasInserted)
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
