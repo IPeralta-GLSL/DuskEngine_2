@@ -420,6 +420,27 @@
                     }
                 },
                 {
+                    "Name": "WireframeDebugOverlayPass",
+                    "TemplateName": "WireframeDebugOverlayTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "AuxGeomPass",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "DebugOverlayPass",
                     "TemplateName": "DebugOverlayParentTemplate",
                     "Connections": [

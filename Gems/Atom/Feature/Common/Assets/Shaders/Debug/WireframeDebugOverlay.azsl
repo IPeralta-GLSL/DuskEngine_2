@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// Wireframe debug overlay: reads linear depth, detects geometric edges via Laplacian of depth,
+// and outputs colored edge lines over a black background.
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_linearDepthTexture;
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+};
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    float2 uv = IN.m_texCoord;
+
+    uint texWidth, texHeight;
+    PassSrg::m_linearDepthTexture.GetDimensions(texWidth, texHeight);
+    float2 ps = float2(1.0 / float(texWidth), 1.0 / float(texHeight));
+
+    float d  = PassSrg::m_linearDepthTexture.Sample(PassSrg::PointSampler, uv).r;
+    float dR = PassSrg::m_linearDepthTexture.Sample(PassSrg::PointSampler, uv + float2( ps.x, 0.0)).r;
+    float dL = PassSrg::m_linearDepthTexture.Sample(PassSrg::PointSampler, uv - float2( ps.x, 0.0)).r;
+    float dU = PassSrg::m_linearDepthTexture.Sample(PassSrg::PointSampler, uv + float2(0.0,  ps.y)).r;
+    float dD = PassSrg::m_linearDepthTexture.Sample(PassSrg::PointSampler, uv - float2(0.0,  ps.y)).r;
+
+    // Laplacian of depth: large at geometric boundaries, near-zero on flat surfaces.
+    // Normalize by depth so distant objects still show edges.
+    float laplacian = abs(-4.0 * d + dR + dL + dU + dD) / max(d, 0.01);
+    float edgeStrength = saturate(laplacian * 3.0);
+
+    // Color edges by gradient direction (axis-style coloring).
+    float2 grad = float2(dR - dL, dU - dD);
+    float2 gradNorm = (length(grad) > 0.001) ? normalize(grad) : float2(1.0, 0.0);
+    float3 edgeColor = float3(abs(gradNorm.x), abs(gradNorm.y), 1.0 - abs(gradNorm.x + gradNorm.y) * 0.5);
+
+    // Output edge color added additively; alpha = 0 so blending leaves non-edge areas unchanged.
+    OUT.m_color = float4(edgeColor * edgeStrength, 0.0);
+    return OUT;
+}

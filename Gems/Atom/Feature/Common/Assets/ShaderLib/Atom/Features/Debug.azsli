@@ -124,6 +124,11 @@ RenderDebugViewMode GetRenderDebugViewMode()
     return (RenderDebugViewMode)ViewSrg::m_renderDebugViewMode;
 }
 
+bool IsWireframeMode()
+{
+    return (RenderDebugViewMode)ViewSrg::m_renderDebugViewMode == RenderDebugViewMode::Wireframe;
+}
+
 void DebugModifyOutput(inout float4 outDiffuse, inout float4 outSpecular, inout float4 outAlbedo, inout float4 outSpecularF0,
                        float3 normal, float3 tangent, float3 bitangent,
                        float3 baseColor, float3 albedo, float roughness, float metallic)
@@ -148,10 +153,8 @@ void DebugModifyOutput(inout float4 outDiffuse, inout float4 outSpecular, inout 
 #endif
         else if(viewMode == RenderDebugViewMode::Wireframe)
         {
-            // Edge detection via normal gradient: bright at face boundaries, dark on flat surfaces.
-            // Gives a wireframe-like silhouette view without requiring barycentric coordinates.
-            float edgeFactor = saturate(length(fwidth(normal)) * 8.0);
-            outSpecular.rgb = float3(edgeFactor, edgeFactor, edgeFactor);
+            // Black out geometry; WireframeDebugOverlayPass post-process draws colored edge lines.
+            outSpecular.rgb = float3(0.0, 0.0, 0.0);
         }
         if(viewMode != RenderDebugViewMode::None)
         {

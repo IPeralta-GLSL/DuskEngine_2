@@ -485,6 +485,10 @@
                 "Path": "Passes/PostProcessParent.pass"
             },
             {
+                "Name": "WireframeDebugOverlayTemplate",
+                "Path": "Passes/WireframeDebugOverlay.pass"
+            },
+            {
                 "Name": "DebugOverlayParentTemplate",
                 "Path": "Passes/DebugOverlayParent.pass"
             },

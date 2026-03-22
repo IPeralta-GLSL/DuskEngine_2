@@ -73,6 +73,7 @@ namespace AZ::Render
         Name m_shaderDebugEnableOptionName = Name("o_shader_debugging_enabled");
 
         u32 m_debugComponentCount = 0;
+        bool m_wireframePassEnabled = false;
     };
 
 }

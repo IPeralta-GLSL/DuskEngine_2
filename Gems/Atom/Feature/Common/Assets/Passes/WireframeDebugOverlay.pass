@@ -1,0 +1,35 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "WireframeDebugOverlayTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "InputLinearDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepthTexture",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Debug/WireframeDebugOverlay.shader"
+                },
+                "BindViewSrg": false
+            }
+        }
+    }
+}

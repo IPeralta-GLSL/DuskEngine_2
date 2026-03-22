@@ -9,6 +9,7 @@
 #include <Debug/RenderDebugFeatureProcessor.h>
 #include <Debug/RenderDebugSettings.h>
 
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
@@ -125,6 +126,18 @@ namespace AZ::Render
                     viewSrg->SetConstant(m_renderDebugViewModeIndex, m_settings->GetRenderDebugViewMode());
                 }
             }
+        }
+
+        bool wireframeMode = m_settings->GetRenderDebugViewMode() == RenderDebugViewMode::Wireframe;
+        if (wireframeMode != m_wireframePassEnabled)
+        {
+            m_wireframePassEnabled = wireframeMode;
+            auto filter = RPI::PassFilter::CreateWithTemplateName(Name{"WireframeDebugOverlayTemplate"}, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(filter, [wireframeMode](RPI::Pass* pass)
+            {
+                pass->SetEnabled(wireframeMode);
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
         }
     }
 

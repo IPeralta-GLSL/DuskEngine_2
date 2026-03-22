@@ -17,6 +17,7 @@
 
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>
+#include <Atom/Features/Debug.azsli>
 
 #ifndef ENABLE_PHYSICAL_SKY
 #define ENABLE_PHYSICAL_SKY              1
@@ -121,6 +122,17 @@ PSOutput MainPS(VSOutput input)
     if(!SceneSrg::m_enable)
     {
         discard;
+    }
+
+    // In wireframe debug mode, suppress the sky so the background is pure black.
+    if(IsWireframeMode())
+    {
+        PSOutput OUT;
+        OUT.m_specular = float4(0.0, 0.0, 0.0, 1.0);
+#ifdef SKYBOX_TWO_OUTPUTS
+        OUT.m_reflection = float4(0.0, 0.0, 0.0, 1.0);
+#endif
+        return OUT;
     }
 
     real3 color = real3(0.5,0.5,0.5);
