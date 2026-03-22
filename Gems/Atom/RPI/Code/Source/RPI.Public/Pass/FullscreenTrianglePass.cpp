@@ -212,6 +212,13 @@ namespace AZ
         void FullscreenTrianglePass::InitializeInternal()
         {
             BuildRenderAttachmentConfiguration();
+
+            if (m_shader == nullptr)
+            {
+                AZ_Error("PassSystem", false, "[FullscreenTrianglePass]: Shader not loaded!");
+                return;
+            }
+
             if (m_shader->GetSupervariantIndex() != m_shader->GetAsset()->GetSupervariantIndex(GetSuperVariantName()))
             {
                 LoadShader();
@@ -220,12 +227,6 @@ namespace AZ
             RenderPass::InitializeInternal();
             
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);
-
-            if (m_shader == nullptr)
-            {
-                AZ_Error("PassSystem", false, "[FullscreenTrianglePass]: Shader not loaded!");
-                return;
-            }
 
             BuildDrawItem();
         }
