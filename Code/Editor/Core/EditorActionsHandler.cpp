@@ -703,7 +703,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Grid snapping";
         actionProperties.m_description = "Toggle grid snapping";
         actionProperties.m_category = "Edit";
-        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Grid.svg";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/SnapGrid.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -964,7 +964,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "Simulate";
         actionProperties.m_description = "Enable processing of Physics and AI.";
         actionProperties.m_category = "Game";
-        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Simulate_Physics.svg";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Simulate.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(

@@ -546,7 +546,7 @@ namespace ScriptCanvasEditor
         {
             m_takeScreenshot = new QToolButton();
             m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
-            m_takeScreenshot->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/scriptcanvas_screenshot.png"));
+            m_takeScreenshot->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/Screenshot.svg"));
             m_takeScreenshot->setEnabled(false);
         }
 

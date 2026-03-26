@@ -27,7 +27,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                         ->Attribute(
-                            AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // Create better icons for this effect
+                            AZ::Edit::Attributes::Icon, "Icons/Components/Post.svg")
                         ->Attribute(
                             AZ::Edit::Attributes::ViewportIcon,
                             "Icons/Components/Viewport/Component_Placeholder.svg") // Create better icons for this effect

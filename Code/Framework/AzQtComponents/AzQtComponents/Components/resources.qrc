@@ -87,9 +87,11 @@
     <file>img/UI20/toolbar/Environment.svg</file>
     <file>img/UI20/toolbar/Eyedropper.svg</file>
     <file>img/UI20/toolbar/Flowgraph.svg</file>
+    <file>img/UI20/toolbar/Graph.svg</file>
     <file>img/UI20/toolbar/Follow_terrain.svg</file>
     <file>img/UI20/toolbar/Get_physics_state.svg</file>
     <file>img/UI20/toolbar/Grid.svg</file>
+    <file>img/UI20/toolbar/SnapGrid.svg</file>
     <file>img/UI20/toolbar/Lighting.svg</file>
     <file>img/UI20/toolbar/Load.svg</file>
     <file>img/UI20/toolbar/Local.svg</file>
@@ -115,6 +117,7 @@
     <file>img/UI20/toolbar/Select.svg</file>
     <file>img/UI20/toolbar/select_object.svg</file>
     <file>img/UI20/toolbar/Select_terrain.svg</file>
+    <file>img/UI20/toolbar/Simulate.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
     <file>img/UI20/toolbar/SketchMode.svg</file>
