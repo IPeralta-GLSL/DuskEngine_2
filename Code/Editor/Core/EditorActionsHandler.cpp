@@ -2082,12 +2082,11 @@ void EditorActionsHandler::OnToolBarBindingHook()
     // Play Controls
     {
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.file.saveAll", 100);
-        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.editor.captureScreenshot", 8800);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 9000);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 9100);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 9200);
-        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.simulate", 9300);
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 200);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.simulate", 300);
+        m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 400);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.editor.captureScreenshot", 500);
     }
 }
 
@@ -2126,6 +2125,7 @@ void EditorActionsHandler::OnPostActionManagerRegistrationHook()
             {
                 AzQtComponents::ToolBar::addMainToolBarStyle(toolbar);
                 AzQtComponents::ToolBar::setToolBarIconSize(toolbar, AzQtComponents::ToolBar::ToolBarIconSize::IconLarge);
+                toolbar->setIconSize(QSize(32, 32));
                 break;
             }
         }
