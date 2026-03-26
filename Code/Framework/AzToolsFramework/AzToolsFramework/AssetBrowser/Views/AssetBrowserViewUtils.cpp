@@ -710,7 +710,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/Folder_80.svg";
+                    static constexpr const char* FolderIconPath = "Assets/Editor/Icons/Components/Folder.svg";
                     iconPathToUse = (engineRoot / FolderIconPath).c_str();
                 }
                 return iconPathToUse;

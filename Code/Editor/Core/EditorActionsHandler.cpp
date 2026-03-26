@@ -418,6 +418,27 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.save", "Ctrl+S");
     }
 
+    // Save All
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Save All";
+        actionProperties.m_description = "Save all current level changes";
+        actionProperties.m_category = "Level";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Save.svg";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.file.saveAll", actionProperties,
+            [cryEdit = m_cryEditApp]
+            {
+                cryEdit->OnFileSave();
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.saveAll", IsLevelLoaded);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, "o3de.action.file.saveAll");
+    }
+
     // Save As...
     {
         AzToolsFramework::ActionProperties actionProperties;
@@ -2005,7 +2026,7 @@ void EditorActionsHandler::OnMenuBindingHook()
         actionProperties.m_name = "Capture Screenshot";
         actionProperties.m_description = "Capture a screenshot of the viewport.";
         actionProperties.m_category = "Editor";
-        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Eyedropper.svg";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/Screenshot.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -2060,6 +2081,7 @@ void EditorActionsHandler::OnToolBarBindingHook()
 
     // Play Controls
     {
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.file.saveAll", 100);
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.editor.captureScreenshot", 8800);
         m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 9000);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
