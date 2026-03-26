@@ -2081,7 +2081,7 @@ void EditorActionsHandler::OnToolBarBindingHook()
 
     // Play Controls
     {
-        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.file.saveAll", 100);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.file.saveAll", 5);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
             EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 200);
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.simulate", 300);

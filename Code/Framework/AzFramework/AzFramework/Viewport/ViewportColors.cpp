@@ -16,16 +16,16 @@ namespace AzFramework
     namespace ViewportColors
     {
         /// Color to use for a deselected object
-        const AZ::Color DeselectedColor(1.0f, 1.0f, 0.78f, 0.4f);
+        const AZ::Color DeselectedColor(0.2f, 0.8f, 0.2f, 0.0f);
 
         /// Color to use for a selected object
-        const AZ::Color SelectedColor(1.0f, 1.0f, 0.0f, 0.9f);
+        const AZ::Color SelectedColor(0.0f, 1.0f, 0.0f, 1.0f);
 
         /// Color to use when hovering
-        const AZ::Color HoverColor(1.0f, 1.0f, 0.0f, 0.9f);
+        const AZ::Color HoverColor(0.0f, 1.0f, 0.0f, 1.0f);
 
         /// Color to use for wireframe
-        const AZ::Color WireColor(1.0f, 1.0f, 0.78f, 0.5f);
+        const AZ::Color WireColor(0.2f, 0.9f, 0.2f, 1.0f);
 
         /// Color to use for locked
         const AZ::Color LockColor(0.5f, 0.5f, 0.5f, 1.0f);
