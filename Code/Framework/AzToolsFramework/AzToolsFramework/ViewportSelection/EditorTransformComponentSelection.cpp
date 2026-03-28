@@ -951,6 +951,18 @@ namespace AzToolsFramework
     {
         constexpr size_t MaxTrailPoints = 96;
 
+        const auto previousPointIt = AZStd::find_if(
+            trail.begin(), trail.end(), [&position](const AZ::Vector3& point)
+            {
+                return point.IsClose(position);
+            });
+
+        if (previousPointIt != trail.end())
+        {
+            trail.erase(previousPointIt + 1, trail.end());
+            return;
+        }
+
         if (trail.empty() || !trail.back().IsClose(position))
         {
             trail.push_back(position);
