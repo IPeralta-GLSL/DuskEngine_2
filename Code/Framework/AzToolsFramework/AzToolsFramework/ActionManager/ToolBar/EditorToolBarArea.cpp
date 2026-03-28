@@ -71,8 +71,8 @@ namespace AzToolsFramework
                     m_mainWindow->addToolBar(m_toolBarArea, toolBar);
                     AzQtComponents::ToolBar::addMainToolBarStyle(toolBar);
                     AzQtComponents::ToolBar::setToolBarIconSize(toolBar, AzQtComponents::ToolBar::ToolBarIconSize::IconLarge);
-                    toolBar->setIconSize(QSize(32, 32));
                     AzQtComponents::StyleManager::repolishStyleSheet(toolBar);
+                    toolBar->setIconSize(QSize(16, 16));
                     m_toolBarsCache.push_back(toolBar);
                 }
             }

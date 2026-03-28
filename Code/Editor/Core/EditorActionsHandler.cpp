@@ -2074,8 +2074,6 @@ void EditorActionsHandler::OnToolBarBindingHook()
     // We space the sortkeys by 100 to allow external systems to add toolbars in-between.
     m_toolBarManagerInterface->AddToolBarToToolBarArea(
         EditorIdentifiers::MainWindowTopToolBarAreaIdentifier, EditorIdentifiers::ToolsToolBarIdentifier, 100);
-    m_toolBarManagerInterface->AddToolBarToToolBarArea(
-        EditorIdentifiers::MainWindowTopToolBarAreaIdentifier, EditorIdentifiers::PlayControlsToolBarIdentifier, 200);
 
     // Add actions to each toolbar
 

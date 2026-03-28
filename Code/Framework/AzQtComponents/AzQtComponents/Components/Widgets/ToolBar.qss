@@ -65,7 +65,7 @@ QToolBar.IconLarge QToolButton
 QToolBar.MainToolBar.IconLarge,
 QToolBar.MainToolBar.IconLarge QToolButton
 {
-    qproperty-iconSize: 64px 64px;
+    qproperty-iconSize: 32px 32px;
 }
 
 QToolBar::separator
