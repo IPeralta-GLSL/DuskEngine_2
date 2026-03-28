@@ -11,6 +11,7 @@
 
 #include "ContextMenuHandlers.h"
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/conversions.h>
@@ -61,6 +62,7 @@ namespace AZ::Data
 class CToolsApplicationUndoLink;
 
 class QMenu;
+class QToolButton;
 class QWidget;
 
 namespace AzToolsFramework
@@ -150,7 +152,13 @@ private:
 
     // ActionManagerRegistrationNotificationBus overrides ...
     void OnActionRegistrationHook() override;
+    void OnWidgetActionRegistrationHook() override;
+    void OnToolBarBindingHook() override;
     void OnMenuBindingHook() override;
+
+    // Entity template spawning helpers
+    AZ::EntityId SpawnEntityFromTemplate(const char* entityName, const AZ::ComponentTypeList& componentTypes);
+    QWidget* CreateAddEntityMenuButton();
 
     // Context menu handlers.
     void ContextMenu_NewEntity();

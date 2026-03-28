@@ -80,9 +80,13 @@
 
 #include <QMenu>
 #include <QAction>
+#include <QToolButton>
 #include <QWidgetAction>
 #include <QHBoxLayout>
 #include "MainWindow.h"
+
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
 
 #include <AzCore/std/algorithm.h>
 
@@ -969,4 +973,140 @@ void SandboxIntegrationManager::CloseViewPane(const char* paneName)
 void SandboxIntegrationManager::BrowseForAssets(AssetSelectionModel& selection)
 {
     AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, GetMainWindow());
+}
+
+// ─── Entity Template Toolbar ─────────────────────────────────────────────────
+
+void SandboxIntegrationManager::OnWidgetActionRegistrationHook()
+{
+    auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+    if (!actionManagerInterface)
+    {
+        return;
+    }
+
+    AzToolsFramework::WidgetActionProperties widgetActionProperties;
+    widgetActionProperties.m_name = "Add Entity Template";
+    widgetActionProperties.m_category = "Entity";
+
+    actionManagerInterface->RegisterWidgetAction(
+        "o3de.widgetAction.entity.addTemplate",
+        widgetActionProperties,
+        [this]() -> QWidget*
+        {
+            return CreateAddEntityMenuButton();
+        }
+    );
+}
+
+void SandboxIntegrationManager::OnToolBarBindingHook()
+{
+    auto toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
+    if (!toolBarManagerInterface)
+    {
+        return;
+    }
+
+    toolBarManagerInterface->AddWidgetToToolBar(
+        EditorIdentifiers::ToolsToolBarIdentifier,
+        "o3de.widgetAction.entity.addTemplate",
+        1);
+}
+
+QWidget* SandboxIntegrationManager::CreateAddEntityMenuButton()
+{
+    auto* button = new QToolButton();
+    button->setIcon(QIcon(":/res/Add.svg"));
+    button->setToolTip(QObject::tr("Add an entity or light to the scene"));
+    button->setPopupMode(QToolButton::InstantPopup);
+    button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+
+    auto* menu = new QMenu(button);
+
+    // ─── Basic Shapes ───────────────────────────────────────────────────────
+    menu->addSection(QObject::tr("Basic Shapes"));
+
+    auto* emptyAction = menu->addAction(QObject::tr("Empty Entity"));
+    QObject::connect(emptyAction, &QAction::triggered, [this]()
+    {
+        CreateNewEntityAtPosition(GetWorldPositionAtViewportCenter());
+    });
+
+    auto* cubeAction = menu->addAction(QObject::tr("Cube"));
+    QObject::connect(cubeAction, &QAction::triggered, [this]()
+    {
+        // EditorBoxShapeComponentTypeId
+        SpawnEntityFromTemplate("Cube", { AZ::TypeId("{2ADD9043-48E8-4263-859A-72E0024372BF}") });
+    });
+
+    auto* sphereAction = menu->addAction(QObject::tr("Sphere"));
+    QObject::connect(sphereAction, &QAction::triggered, [this]()
+    {
+        // EditorSphereShapeComponentTypeId
+        SpawnEntityFromTemplate("Sphere", { AZ::TypeId("{2EA56CBF-63C8-41D9-84D5-0EC2BECE748E}") });
+    });
+
+    // ─── Lights ─────────────────────────────────────────────────────────────
+    menu->addSection(QObject::tr("Lights"));
+
+    auto* dirLightAction = menu->addAction(QObject::tr("Directional Light"));
+    QObject::connect(dirLightAction, &QAction::triggered, [this]()
+    {
+        // EditorDirectionalLightComponentTypeId
+        SpawnEntityFromTemplate("Directional Light", { AZ::TypeId("{45B97527-6E72-411B-BC23-00068CF01580}") });
+    });
+
+    auto* pointLightAction = menu->addAction(QObject::tr("Point Light"));
+    QObject::connect(pointLightAction, &QAction::triggered, [this]()
+    {
+        // EditorAreaLightComponentTypeId (used for point/spot/area lights)
+        SpawnEntityFromTemplate("Point Light", { AZ::TypeId("{8B605C0C-9027-4E0B-BA8C-19E396F8F262}") });
+    });
+
+    // ─── Camera ─────────────────────────────────────────────────────────────
+    menu->addSection(QObject::tr("Camera"));
+
+    auto* cameraAction = menu->addAction(QObject::tr("Camera"));
+    QObject::connect(cameraAction, &QAction::triggered, [this]()
+    {
+        // EditorCameraComponentTypeId (defined as macro in AzFramework/Components/CameraBus.h)
+        SpawnEntityFromTemplate("Camera", { AZ::TypeId("{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D}") });
+    });
+
+    button->setMenu(menu);
+    return button;
+}
+
+AZ::EntityId SandboxIntegrationManager::SpawnEntityFromTemplate(
+    const char* entityName, const AZ::ComponentTypeList& componentTypes)
+{
+    const AZ::Vector3 position = GetWorldPositionAtViewportCenter();
+    const AZ::EntityId entityId = CreateNewEntityAtPosition(position, AZ::EntityId());
+    if (!entityId.IsValid())
+    {
+        return entityId;
+    }
+
+    // Add the requested components
+    if (!componentTypes.empty())
+    {
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+            &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities,
+            AzToolsFramework::EntityIdList{ entityId },
+            componentTypes);
+    }
+
+    // Rename the entity to reflect the template
+    AZ::Entity* entity = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(
+        entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+    if (entity)
+    {
+        AzToolsFramework::ScopedUndoBatch undoBatch("Set Entity Name");
+        entity->SetName(entityName);
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, entityId);
+    }
+
+    return entityId;
 }
