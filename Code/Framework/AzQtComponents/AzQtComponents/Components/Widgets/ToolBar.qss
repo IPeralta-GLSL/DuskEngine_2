@@ -41,7 +41,7 @@ AzQtComponents--DockMainWindow QToolBar
 QToolBar.MainToolBar
 {
     qproperty-iconSize: 20px 20px;
-    padding: 5px;
+    padding: 8px;
 }
 
 QToolBar.IconNormal,

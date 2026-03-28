@@ -453,6 +453,7 @@ void AzAssetBrowserWindow::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions options;
     options.preferedDockingArea = Qt::BottomDockWidgetArea;
+    options.toolbarIcon = ":/Menu/assets_manager.svg";
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
 
     options.showInMenu = false;

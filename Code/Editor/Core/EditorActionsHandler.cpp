@@ -2125,7 +2125,7 @@ void EditorActionsHandler::OnPostActionManagerRegistrationHook()
             {
                 AzQtComponents::ToolBar::addMainToolBarStyle(toolbar);
                 AzQtComponents::ToolBar::setToolBarIconSize(toolbar, AzQtComponents::ToolBar::ToolBarIconSize::IconLarge);
-                toolbar->setIconSize(QSize(32, 32));
+                toolbar->setIconSize(QSize(40, 40));
                 break;
             }
         }
