@@ -2117,20 +2117,8 @@ void EditorActionsHandler::OnPostActionManagerRegistrationHook()
     // Initialize the Toolbox Macro actions
     RefreshToolboxMacroActions();
 
-    {
-        const QList<QToolBar*> toolbars = m_mainWindow->findChildren<QToolBar*>();
-        for (QToolBar* toolbar : toolbars)
-        {
-            if (toolbar->windowTitle() == "Tools")
-            {
-                AzQtComponents::ToolBar::addMainToolBarStyle(toolbar);
-                AzQtComponents::ToolBar::setToolBarIconSize(toolbar, AzQtComponents::ToolBar::ToolBarIconSize::IconLarge);
-                toolbar->setIconSize(QSize(40, 40));
-                break;
-            }
-        }
-    }
 }
+
 
 QWidget* EditorActionsHandler::CreateExpander()
 {

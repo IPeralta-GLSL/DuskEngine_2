@@ -13,8 +13,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/ToolBar.h>
 
 #include <QMainWindow>
+#include <QToolBar>
 
 namespace AzToolsFramework
 {
@@ -67,6 +69,9 @@ namespace AzToolsFramework
                 if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(toolBarIdentifier))
                 {
                     m_mainWindow->addToolBar(m_toolBarArea, toolBar);
+                    AzQtComponents::ToolBar::addMainToolBarStyle(toolBar);
+                    AzQtComponents::ToolBar::setToolBarIconSize(toolBar, AzQtComponents::ToolBar::ToolBarIconSize::IconLarge);
+                    toolBar->setIconSize(QSize(32, 32));
                     AzQtComponents::StyleManager::repolishStyleSheet(toolBar);
                     m_toolBarsCache.push_back(toolBar);
                 }
