@@ -941,6 +941,27 @@ namespace AzToolsFramework
         prevModifiers = action.m_modifiers;
     }
 
+    static void StartTranslationTrail(AZStd::vector<AZ::Vector3>& trail, const AZ::Vector3& position)
+    {
+        trail.clear();
+        trail.push_back(position);
+    }
+
+    static void UpdateTranslationTrail(AZStd::vector<AZ::Vector3>& trail, const AZ::Vector3& position)
+    {
+        constexpr size_t MaxTrailPoints = 96;
+
+        if (trail.empty() || !trail.back().IsClose(position))
+        {
+            trail.push_back(position);
+
+            if (trail.size() > MaxTrailPoints)
+            {
+                trail.erase(trail.begin());
+            }
+        }
+    }
+
     void HandleAccents(
         const AZ::EntityId currentEntityIdUnderCursor,
         AZ::EntityId& hoveredEntityIdUnderCursor,
@@ -1335,6 +1356,7 @@ namespace AzToolsFramework
 
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+                StartTranslationTrail(m_translationTrail, m_axisPreview.m_translation);
 
                 // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
@@ -1347,6 +1369,10 @@ namespace AzToolsFramework
                 UpdateTranslationManipulator(
                     action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
                     m_transformChangedInternally, m_spaceCluster.m_spaceLock);
+                if (m_entityIdManipulators.m_manipulators)
+                {
+                    UpdateTranslationTrail(m_translationTrail, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation());
+                }
             });
 
         translationManipulators->InstallLinearManipulatorMouseUpCallback(
@@ -1357,6 +1383,7 @@ namespace AzToolsFramework
                     manipulatorEntityIds->m_entityIds);
 
                 EndRecordManipulatorCommand();
+                m_translationTrail.clear();
                 RefreshManipulators(RefreshType::All);
             });
 
@@ -1371,6 +1398,7 @@ namespace AzToolsFramework
 
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+                StartTranslationTrail(m_translationTrail, m_axisPreview.m_translation);
 
                 // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
@@ -1382,6 +1410,10 @@ namespace AzToolsFramework
                 UpdateTranslationManipulator(
                     action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
                     m_transformChangedInternally, m_spaceCluster.m_spaceLock);
+                if (m_entityIdManipulators.m_manipulators)
+                {
+                    UpdateTranslationTrail(m_translationTrail, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation());
+                }
             });
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
@@ -1392,6 +1424,7 @@ namespace AzToolsFramework
                     manipulatorEntityIds->m_entityIds);
 
                 EndRecordManipulatorCommand();
+                m_translationTrail.clear();
                 RefreshManipulators(RefreshType::All);
             });
 
@@ -1405,6 +1438,7 @@ namespace AzToolsFramework
 
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+                StartTranslationTrail(m_translationTrail, m_axisPreview.m_translation);
 
                 // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
@@ -1416,6 +1450,10 @@ namespace AzToolsFramework
                 UpdateTranslationManipulator(
                     action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
                     m_transformChangedInternally, m_spaceCluster.m_spaceLock);
+                if (m_entityIdManipulators.m_manipulators)
+                {
+                    UpdateTranslationTrail(m_translationTrail, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation());
+                }
             });
 
         translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
@@ -1426,6 +1464,7 @@ namespace AzToolsFramework
                     manipulatorEntityIds->m_entityIds);
 
                 EndRecordManipulatorCommand();
+                m_translationTrail.clear();
                 RefreshManipulators(RefreshType::All);
             });
 
@@ -1488,6 +1527,9 @@ namespace AzToolsFramework
 
                 m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
                 m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
+                m_rotationLabelPosition = m_axisPreview.m_translation;
+                m_rotationDeltaDegrees = 0.0f;
+                m_rotationActive = true;
 
                 // see comment [ref 1.] above
                 BeginRecordManipulatorCommand();
@@ -1514,6 +1556,9 @@ namespace AzToolsFramework
                     m_entityIdManipulators.m_manipulators->SetLocalTransform(AZ::Transform::CreateFromQuaternionAndTranslation(
                         manipulatorOrientation, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation()));
                 }
+
+                m_rotationLabelPosition = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
+                m_rotationDeltaDegrees = AZ::RadToDeg(action.m_current.m_deltaRadians);
 
                 // save state if we change the type of rotation we're doing to to prevent snapping
                 if (prevModifiers != action.m_modifiers)
@@ -1593,6 +1638,8 @@ namespace AzToolsFramework
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
                     sharedRotationState->m_entityIds);
 
+                m_rotationActive = false;
+                m_rotationDeltaDegrees = 0.0f;
                 EndRecordManipulatorCommand();
                 RefreshManipulators(RefreshType::All);
             });
@@ -1782,6 +1829,9 @@ namespace AzToolsFramework
                     UpdateInitialTransform(m_entityIdManipulators);
                     m_axisPreview.m_translation = rotManipPtr->GetLocalTransform().GetTranslation();
                     m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(rotManipPtr->GetLocalTransform());
+                    m_rotationLabelPosition = m_axisPreview.m_translation;
+                    m_rotationDeltaDegrees = 0.0f;
+                    m_rotationActive = true;
                     BeginRecordManipulatorCommand();
                 });
 
@@ -1810,6 +1860,9 @@ namespace AzToolsFramework
                                     manipulatorOrientation, m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation()));
                         }
                     }
+
+                    m_rotationLabelPosition = rotManipPtr->GetLocalTransform().GetTranslation();
+                    m_rotationDeltaDegrees = AZ::RadToDeg(action.m_current.m_deltaRadians);
 
                     if (prevModifiers != action.m_modifiers)
                     {
@@ -1875,6 +1928,8 @@ namespace AzToolsFramework
                     AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                         &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
                         sharedRotationState->m_entityIds);
+                    m_rotationActive = false;
+                    m_rotationDeltaDegrees = 0.0f;
                     EndRecordManipulatorCommand();
                     RefreshManipulators(RefreshType::All);
                 });
@@ -3640,6 +3695,10 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        m_translationTrail.clear();
+        m_rotationDeltaDegrees = 0.0f;
+        m_rotationActive = false;
+
         // do not create manipulators for the container entity of the focused prefab.
         if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
         {
@@ -4604,7 +4663,20 @@ namespace AzToolsFramework
             {
                 if (auto entityIndex = m_entityDataCache->GetVisibleEntityIndexFromId(entityId))
                 {
-                    const AZ::Transform& worldFromLocal = m_entityDataCache->GetVisibleEntityTransform(*entityIndex);
+                    const bool isBeingManipulated = m_entityIdManipulators.m_manipulators &&
+                        m_entityIdManipulators.m_manipulators->PerformingAction() &&
+                        m_entityIdManipulators.m_lookups.find(entityId) != m_entityIdManipulators.m_lookups.end();
+                    AZ::Transform liveWorldFromLocal;
+                    if (isBeingManipulated)
+                    {
+                        AZ::TransformBus::EventResult(
+                            liveWorldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+                    }
+                    else
+                    {
+                        liveWorldFromLocal = m_entityDataCache->GetVisibleEntityTransform(*entityIndex);
+                    }
+                    const AZ::Transform& worldFromLocal = liveWorldFromLocal;
                     const bool hidden = !m_entityDataCache->IsVisibleEntityVisible(*entityIndex);
                     const bool locked = m_entityDataCache->IsVisibleEntityLocked(*entityIndex);
 
@@ -4657,6 +4729,40 @@ namespace AzToolsFramework
                     debugDisplay,
                     AZ::Transform::CreateFromQuaternionAndTranslation(m_axisPreview.m_orientation, m_axisPreview.m_translation),
                     adjustedLineLength, cameraState);
+
+                if (m_mode == Mode::Translation || m_mode == Mode::Universal)
+                {
+                    if (m_translationTrail.size() > 1)
+                    {
+                        debugDisplay.DepthTestOff();
+                        debugDisplay.DepthWriteOff();
+                        debugDisplay.SetLineWidth(2.0f);
+                        debugDisplay.SetColor(AZ::Color(1.0f, 1.0f, 1.0f, 0.85f));
+                        for (size_t pointIndex = 1; pointIndex < m_translationTrail.size(); ++pointIndex)
+                        {
+                            debugDisplay.DrawLine(m_translationTrail[pointIndex - 1], m_translationTrail[pointIndex]);
+                        }
+
+                        const AZ::Vector3 trailStart = m_translationTrail.front();
+                        const AZ::Vector3 trailEnd = m_translationTrail.back();
+                        const float dragDistance = (trailEnd - trailStart).GetLength();
+
+                        char distText[32];
+                        snprintf(distText, sizeof(distText), "%.3f m", dragDistance);
+                        debugDisplay.DrawTextLabel((trailStart + trailEnd) * 0.5f, 1.4f, distText, true);
+
+                        debugDisplay.SetLineWidth(1.0f);
+                        debugDisplay.DepthWriteOn();
+                        debugDisplay.DepthTestOn();
+                    }
+                }
+
+                if (m_rotationActive)
+                {
+                    char rotationText[32];
+                    snprintf(rotationText, sizeof(rotationText), "%.1f deg", m_rotationDeltaDegrees);
+                    debugDisplay.DrawTextLabel(m_rotationLabelPosition, 1.4f, rotationText, true);
+                }
             }
         }
 

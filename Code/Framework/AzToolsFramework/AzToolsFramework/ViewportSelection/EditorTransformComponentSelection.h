@@ -333,6 +333,10 @@ namespace AzToolsFramework
         EditorBoxSelect m_boxSelect; //!< Type responsible for handling box select.
         //! Track adjustments to manipulator translation and orientation (during mouse press/move).
         AZStd::unique_ptr<EntityManipulatorCommand> m_manipulatorMoveCommand;
+        AZStd::vector<AZ::Vector3> m_translationTrail;
+        AZ::Vector3 m_rotationLabelPosition = AZ::Vector3::CreateZero();
+        float m_rotationDeltaDegrees = 0.0f;
+        bool m_rotationActive = false;
         AZStd::vector<AZStd::unique_ptr<QAction>> m_actions; //!< What actions are tied to this handler.
         ViewportInteraction::KeyboardModifiers m_previousModifiers; //!< What modifiers were held last frame.
         EditorContextMenu m_contextMenu; //!< Viewport right click context menu.
