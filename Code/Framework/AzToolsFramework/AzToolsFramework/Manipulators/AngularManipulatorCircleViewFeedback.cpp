@@ -115,18 +115,16 @@ namespace AzToolsFramework
         debugDisplay.DepthTestOn();
         debugDisplay.CullOff();
 
-        // Draw the accumulated rotation angle as a white text label (Blender-style)
         const float angleAbsDeg = AZ::RadToDeg(AZStd::abs(angle));
         if (angleAbsDeg > 0.01f)
         {
             const auto currentDirection = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, angle).TransformVector(initialPointToCenter);
-            // Place text slightly outside the arc endpoint in world space
             const AZ::Vector3 textWorldPos = worldFromLocalWithOrientation.TransformPoint(
                 manipulatorState.m_localPosition + currentDirection * view->m_radius * viewScale * 1.35f);
 
             debugDisplay.SetColor(AZ::Color::CreateOne()); // white
             char angleText[32];
-            snprintf(angleText, sizeof(angleText), "%.1f deg", angleAbsDeg);
+            snprintf(angleText, sizeof(angleText), "%+.1f deg", AZ::RadToDeg(angle));
             debugDisplay.DrawTextLabel(textWorldPos, 1.5f, angleText, true);
         }
     }
