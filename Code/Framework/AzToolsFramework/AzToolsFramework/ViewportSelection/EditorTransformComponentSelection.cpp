@@ -3662,12 +3662,8 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        if (m_selectedEntityIds.empty())
-        {
-            return;
-        }
-
-        // Destroy any secondary manipulators from a previous Universal mode session
+        // Destroy any secondary manipulators from a previous Universal mode session.
+        // Must happen before the early return so they are hidden when selection is cleared.
         if (m_universalRotationManipulators)
         {
             m_universalRotationManipulators->Unregister();
@@ -3677,6 +3673,11 @@ namespace AzToolsFramework
         {
             m_universalScaleManipulators->Unregister();
             m_universalScaleManipulators.reset();
+        }
+
+        if (m_selectedEntityIds.empty())
+        {
+            return;
         }
 
         switch (m_mode)
