@@ -20,8 +20,8 @@
 #include <QCloseEvent>
 #include <QLayout>
 #include <QApplication>
+#include <QScreen>
 #include <QRect>
-#include <QDesktopWidget>
 #include <QMessageBox>
 #include <QRubberBand>
 #include <QCursor>
@@ -724,8 +724,14 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
                     pane->m_dockWidgetInstances.removeAll(newDockWidget);
                 }
 
-                AzToolsFramework::EditorEventsBus::Broadcast(
-                    &AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, pane->m_name.toUtf8().data());
+                // Guard against the pane having been unregistered before this
+                // destroyed signal fires — accessing pane->m_name when pane is
+                // null would crash.
+                if (pane)
+                {
+                    AzToolsFramework::EditorEventsBus::Broadcast(
+                        &AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, pane->m_name.toUtf8().data());
+                }
             });
 
             // only set the single instance of the dock widget on the pane if this
@@ -786,7 +792,8 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
 
     // If the dock widget is off screen (e.g. second monitor was disconnected),
     // restore its default state
-    if (QApplication::desktop()->screenNumber(newDockWidget) == -1)
+    // QApplication::desktop() is deprecated since Qt 5.13; use QGuiApplication::screenAt() instead.
+    if (QGuiApplication::screenAt(newDockWidget->mapToGlobal(newDockWidget->rect().center())) == nullptr)
     {
         const bool forceToDefault = true;
         newDockWidget->RestoreState(forceToDefault);
@@ -1122,10 +1129,16 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         // before doing anything else, its height and width won't update until after this has all
         // been processed, so we need to resize the panes based on what the main window
         // height and width WILL be after maximized
-        int screenWidth = QApplication::desktop()->screenGeometry(m_mainWindow).width();
-        int screenHeight = QApplication::desktop()->screenGeometry(m_mainWindow).height();
+        // Use the screen containing the main window — QApplication::desktop() is deprecated since Qt 5.13.
+        QScreen* activeScreen = QGuiApplication::screenAt(m_mainWindow->mapToGlobal(m_mainWindow->rect().center()));
+        if (!activeScreen)
+        {
+            activeScreen = QGuiApplication::primaryScreen();
+        }
+        int screenWidth = activeScreen->geometry().width();
+        int screenHeight = activeScreen->geometry().height();
 
-        if (assetBrowserViewPane)
+        if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
         {
             m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
             assetBrowserViewPane->m_dockWidget->setFloating(false);
@@ -1135,7 +1148,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { newHeight }, Qt::Vertical);
         }
 
-        if (InspectorViewPane)
+        if (InspectorViewPane && InspectorViewPane->m_dockWidget)
         {
             m_mainWindow->addDockWidget(Qt::RightDockWidgetArea, InspectorViewPane->m_dockWidget);
             InspectorViewPane->m_dockWidget->setFloating(false);
@@ -1143,7 +1156,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             static const float tabWidgetWidthPercentage = 0.2f;
             int newWidth = static_cast<int>((float)screenWidth * tabWidgetWidthPercentage);
 
-            if (levelInspectorPane)
+            if (levelInspectorPane && levelInspectorPane->m_dockWidget)
             {
                 // Tab the entity inspector with the level Inspector so that when they are
                 // tabbed they will be given the default width, and move the entity inspector
@@ -1164,7 +1177,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             }
         }
 
-        if (entityOutlinerViewPane)
+        if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
         {
             m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, entityOutlinerViewPane->m_dockWidget);
             entityOutlinerViewPane->m_dockWidget->setFloating(false);
