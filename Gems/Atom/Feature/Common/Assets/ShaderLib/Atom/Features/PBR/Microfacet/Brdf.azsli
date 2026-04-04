@@ -28,6 +28,22 @@ real3 DiffuseLambertian(real3 albedo, real3 normal, real3 dirToLight, real3 diff
     return albedo * NdotL * INV_PI * diffuseResponse;
 }
 
+//! Roughness-aware diffuse BRDF (Hammon, GDC 2017).
+real3 DiffuseChan(real roughnessA, real3 albedo, real3 normal, real3 dirToLight, real3 dirToCamera, real3 diffuseResponse)
+{
+    real NdotL = saturate(dot(normal, dirToLight));
+    real NdotV = saturate(dot(normal, dirToCamera));
+    real LdotV = dot(dirToLight, dirToCamera);
+    real LplusV_LenSq = 2.0 + 2.0 * LdotV;
+    real NdotH = (NdotL + NdotV) * rsqrt(max(LplusV_LenSq, 1e-5));
+    real facing = LplusV_LenSq * 0.25;
+    real rough = facing * (0.9 - 0.4 * facing) * ((0.5 + NdotH) / max(NdotH, 1e-5));
+    real smooth = 1.05 * (1.0 - pow(1.0 - NdotL, 5.0)) * (1.0 - pow(1.0 - NdotV, 5.0));
+    real single = INV_PI * lerp(smooth, rough, roughnessA);
+    real multi = 0.1159 * roughnessA;
+    return albedo * (single + albedo * multi) * NdotL * diffuseResponse;
+}
+
 // Normalized Disney diffuse function taken from Frostbite's PBR course notes (page 10):
 // https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
 real3 NormalizedDisneyDiffuse(real3 albedo, real3 normal, real3 dirToCamera, real3 dirToLight, real roughnessLinear)

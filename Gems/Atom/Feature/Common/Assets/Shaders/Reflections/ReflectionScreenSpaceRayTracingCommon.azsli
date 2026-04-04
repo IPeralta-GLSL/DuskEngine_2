@@ -52,6 +52,7 @@ struct RayTracingLightingData
     float3 m_worldPosition;
     float3 m_normal;
     float3 m_vertexNormal;
+    float  m_roughnessA;
     float  m_roughnessA2;
 
     // view
@@ -110,7 +111,7 @@ void ApplyDirectionalLight(DirectionalLight light, RayTracingLightingData lighti
         return;
     }
 
-    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * light.m_rgbIntensityLux;
+    diffuse += DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) * light.m_rgbIntensityLux;
 
     if (applySpecular)
     {
@@ -143,7 +144,7 @@ void ApplySimplePointLight(SimplePointLight light, RayTracingLightingData lighti
     d2 = max(0.001f * 0.001f, d2);
     float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
-    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+    diffuse += DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) * lightIntensity;
 
     if (applySpecular)
     {
@@ -181,7 +182,7 @@ void ApplySimpleSpotLight(SimpleSpotLight light, RayTracingLightingData lighting
     d2 = max(0.001f * 0.001f, d2);
     float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
-    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+    diffuse += DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) * lightIntensity;
 
     if (applySpecular)
     {
@@ -214,7 +215,7 @@ void ApplyPointLight(PointLight light, RayTracingLightingData lightingData, bool
     d2 = max(0.001f * 0.001f, d2);
     float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
-    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+    diffuse += DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) * lightIntensity;
 
     if (applySpecular)
     {
@@ -270,7 +271,7 @@ void ApplyDiskLight(DiskLight light, RayTracingLightingData lightingData, bool a
     // 0 radius disks are unaffected.
     lightIntensity /= ((light.m_diskRadius / distanceToPlane) + 1.0f);
 
-    diffuse += DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_diffuseResponse) * lightIntensity;
+    diffuse += DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, dirToLight, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) * lightIntensity;
 
     if (applySpecular)
     {
@@ -523,10 +524,10 @@ void ApplyQuadLight(QuadLight light, RayTracingLightingData lightingData, bool a
 
     diffuse += 
     (
-        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p0, lightingData.m_diffuseResponse) +
-        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p1, lightingData.m_diffuseResponse) +
-        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p2, lightingData.m_diffuseResponse) +
-        DiffuseLambertian(lightingData.m_albedo, lightingData.m_normal, p3, lightingData.m_diffuseResponse)
+        DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, p0, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) +
+        DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, p1, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) +
+        DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, p2, lightingData.m_dirToCamera, lightingData.m_diffuseResponse) +
+        DiffuseChan(lightingData.m_roughnessA, lightingData.m_albedo, lightingData.m_normal, p3, lightingData.m_dirToCamera, lightingData.m_diffuseResponse)
     ) * intensity;
 
     if (applySpecular)

@@ -137,6 +137,7 @@ void ScreenSpaceClosestHitImpl(inout PayloadData payload, VsInput vertexData, fl
         rayTracingLightingData.m_worldPosition = positionWS;
         rayTracingLightingData.m_normal = normalWS;
         rayTracingLightingData.m_vertexNormal = vertexNormalWS;
+        rayTracingLightingData.m_roughnessA = roughnessA;
         rayTracingLightingData.m_roughnessA2 = roughnessA2;
         rayTracingLightingData.m_dirToCamera = hitToCamera;
         rayTracingLightingData.m_NdotV = NdotV;

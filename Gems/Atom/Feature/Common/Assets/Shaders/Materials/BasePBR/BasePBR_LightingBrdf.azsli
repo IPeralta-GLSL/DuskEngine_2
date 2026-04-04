@@ -31,7 +31,7 @@
 
 real3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
+    real3 diffuse = DiffuseChan(surface.roughnessA, surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.dirToCamera[0], lightingData.diffuseResponse);
     diffuse *= lightIntensity;
     return diffuse;
 }
