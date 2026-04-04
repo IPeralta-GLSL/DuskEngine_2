@@ -156,7 +156,7 @@ namespace AZ
 
                     if (EditContext* ec = serialize->GetEditContext())
                     {
-                        ec->Class<BootstrapSystemComponent>("Atom RPI", "Atom Renderer")
+                        ec->Class<BootstrapSystemComponent>("Atom RPI", "DuskRender")
                             ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;

@@ -35,7 +35,7 @@ namespace AZ::RHI
 
             if (AZ::EditContext* ec = serializeContext->GetEditContext())
             {
-                ec->Class<FactoryManagerSystemComponent>("Atom RHI Manager", "Atom Renderer")
+                ec->Class<FactoryManagerSystemComponent>("Atom RHI Manager", "DuskRender")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(

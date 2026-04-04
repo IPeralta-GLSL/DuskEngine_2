@@ -67,8 +67,8 @@ CStartupLogoDialog::CStartupLogoDialog(
         break;
     }
 
-    // Draw the Open 3D Engine logo from svg
-    m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));
+    m_ui->m_logo->setPixmap(QPixmap(QStringLiteral(":/StartupLogoDialog/DuskEngine_fixed.png")));
+    m_ui->m_logo->setScaledContents(true);
 }
 
 CStartupLogoDialog::~CStartupLogoDialog()

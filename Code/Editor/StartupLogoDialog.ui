@@ -68,7 +68,7 @@
           <number>24</number>
          </property>
          <item>
-          <widget class="QSvgWidget" name="m_logo" native="true">
+          <widget class="QLabel" name="m_logo">
            <property name="minimumSize">
             <size>
              <width>175</width>
@@ -80,6 +80,12 @@
              <width>175</width>
              <height>66</height>
             </size>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -382,13 +388,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QSvgWidget</class>
-   <extends>QWidget</extends>
-   <header>qsvgwidget.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

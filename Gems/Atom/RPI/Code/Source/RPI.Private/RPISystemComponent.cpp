@@ -51,7 +51,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serializeContext->GetEditContext())
                 {
-                    ec->Class<RPISystemComponent>("Atom RPI", "Atom Renderer")
+                    ec->Class<RPISystemComponent>("Atom RPI", "DuskRender")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemComponent::m_rpiDescriptor, "RPI System Settings", "Settings for create RPI system")
