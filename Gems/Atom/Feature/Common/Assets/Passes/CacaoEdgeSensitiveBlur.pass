@@ -1,0 +1,58 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CacaoEdgeSensitiveBlurTemplate",
+            "PassClass": "SsaoComputePass",
+            "Slots": [
+                {
+                    "Name": "AoPing",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "AoPong",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "AoPong",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "AoPing"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32G32_FLOAT",
+                        "ArraySize": 4
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "AoPong",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "AoPong"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/CacaoEdgeSensitiveBlur.shader"
+                },
+                "FullscreenDispatch": true,
+                "BindViewSrg": false
+            }
+        }
+    }
+}

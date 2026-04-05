@@ -1,0 +1,173 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+#define THREADS 16
+#define NUM_DIRECTIONS 8
+#define NUM_STEPS 6
+#define TANGENT_BIAS 0.1f
+#define EPSILON 1e-5f
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_linearDepth;
+    RWTexture2D<float> m_ssaoOutput;
+
+    struct SsaoConstants
+    {
+        uint2 m_outputSize;
+        float2 m_pixelSize;
+        float2 m_halfPixelSize;
+        float m_strength;
+        float m_samplingRadius;
+    };
+    SsaoConstants m_constants;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float2 GetPixelSize()     { return PassSrg::m_constants.m_pixelSize; }
+float2 GetHalfPixelSize() { return PassSrg::m_constants.m_halfPixelSize; }
+
+float3 ReconstructPosition(float2 uv, float linearDepth)
+{
+    return ViewSrg::GetViewSpacePosition(uv, linearDepth);
+}
+
+float3 ReconstructNormal(float2 uv, float3 centerPos)
+{
+    float2 offX = float2(GetPixelSize().x, 0.0f);
+    float2 offY = float2(0.0f, GetPixelSize().y);
+
+    float dL = PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, uv - offX, 0);
+    float dR = PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, uv + offX, 0);
+    float dU = PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, uv - offY, 0);
+    float dD = PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, uv + offY, 0);
+
+    float3 pL = ReconstructPosition(uv - offX, dL);
+    float3 pR = ReconstructPosition(uv + offX, dR);
+    float3 pU = ReconstructPosition(uv - offY, dU);
+    float3 pD = ReconstructPosition(uv + offY, dD);
+
+    float3 dX = (abs((pR - centerPos).z) < abs((centerPos - pL).z)) ? (pR - centerPos) : (centerPos - pL);
+    float3 dY = (abs((pD - centerPos).z) < abs((centerPos - pU).z)) ? (pD - centerPos) : (centerPos - pU);
+
+    return normalize(cross(dX, dY));
+}
+
+float ComputeHorizonAngle(float3 P, float3 dirVS, float3 N, float2 uv, float2 stepUV)
+{
+    float maxSinTheta = sin(TANGENT_BIAS);
+
+    [unroll]
+    for (int s = 1; s <= NUM_STEPS; ++s)
+    {
+        float2 sampleUV = saturate(uv + stepUV * float(s));
+        float sampleDepth = PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, sampleUV, 0);
+        float3 samplePos = ReconstructPosition(sampleUV, sampleDepth);
+
+        float3 horizonVec = samplePos - P;
+        float lenHorizon = length(horizonVec);
+        if (lenHorizon < EPSILON)
+            continue;
+
+        float sinTheta = horizonVec.z / lenHorizon;
+
+        float falloff = 1.0f - saturate(lenHorizon / max(PassSrg::m_constants.m_samplingRadius * P.z * -1.0f, EPSILON));
+        sinTheta = lerp(sinTheta, -1.0f, falloff * falloff);
+
+        maxSinTheta = max(maxSinTheta, sinTheta);
+    }
+
+    return maxSinTheta;
+}
+
+[numthreads(THREADS, THREADS, 1)]
+void MainCS(uint3 dispatch_id : SV_DispatchThreadID)
+{
+    uint2 outPixel = dispatch_id.xy;
+
+    uint2 outputSize = PassSrg::m_constants.m_outputSize;
+    if (outPixel.x >= outputSize.x || outPixel.y >= outputSize.y)
+    {
+        return;
+    }
+
+    float2 uv = mad(float2(outPixel), GetPixelSize(), GetHalfPixelSize());
+
+    float centerDepth = PassSrg::m_linearDepth.SampleLevel(PassSrg::PointSampler, uv, 0);
+
+    if (centerDepth <= 0.0f)
+    {
+        PassSrg::m_ssaoOutput[outPixel] = 1.0f;
+        return;
+    }
+
+    float3 P = ReconstructPosition(uv, centerDepth);
+    float3 N = ReconstructNormal(uv, P);
+
+    float radiusPixels = PassSrg::m_constants.m_samplingRadius * float(outputSize.y) / max(-P.z, EPSILON);
+    radiusPixels = max(radiusPixels, float(NUM_STEPS));
+    float2 stepUV = (radiusPixels / float(NUM_STEPS)) * GetPixelSize();
+
+    float ao = 0.0f;
+
+    [unroll]
+    for (int d = 0; d < NUM_DIRECTIONS; ++d)
+    {
+        float angle = (float(d) + 0.5f) * (PI / float(NUM_DIRECTIONS));
+
+        float sinA, cosA;
+        sincos(angle, sinA, cosA);
+
+        float2 dirUV = float2(cosA, sinA);
+
+        float3 dirVS = float3(dirUV * stepUV * float(NUM_STEPS) / GetPixelSize(), 0.0f);
+
+        float sinHorizon1 = ComputeHorizonAngle(P, dirVS, N, uv, dirUV * stepUV);
+        float sinHorizon2 = ComputeHorizonAngle(P, -dirVS, N, uv, -dirUV * stepUV);
+
+        float3 projNormal = N - dot(N, normalize(float3(dirUV, 0.0f))) * normalize(float3(dirUV, 0.0f));
+        float projLen = length(projNormal);
+        float cosGamma = (projLen > EPSILON) ? clamp(dot(projNormal / projLen, N), -1.0f, 1.0f) : 1.0f;
+        float gamma = acos(cosGamma);
+
+        float h1 = asin(clamp(sinHorizon1, -1.0f, 1.0f));
+        float h2 = -asin(clamp(sinHorizon2, -1.0f, 1.0f));
+
+        h1 = gamma + max(h1 - gamma, -HALF_PI);
+        h2 = gamma + max(h2 - gamma, -HALF_PI);
+
+        float bentAngle = (h1 + h2) * 0.5f;
+        float visibility = projLen * ((-cos(2.0f * bentAngle - gamma) + cosGamma + 2.0f * bentAngle * sin(gamma)) * 0.25f);
+
+        ao += visibility;
+    }
+
+    ao /= float(NUM_DIRECTIONS);
+    ao = saturate(1.0f - ao);
+
+    float output = mad(-ao, PassSrg::m_constants.m_strength, 1.0f);
+    output = pow(output, 2.2f);
+
+    PassSrg::m_ssaoOutput[outPixel] = output;
+}

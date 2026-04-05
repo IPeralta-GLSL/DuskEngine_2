@@ -1,0 +1,111 @@
+// CacaoEdgeSensitiveBlur.azsl
+// AMD FidelityFX CACAO - Edge-Sensitive Blur
+//
+// Applies a bilateral 5-tap blur to the deinterleaved AO buffer.
+// Uses packed edge data stored in the .y channel of the input to gate blur
+// weights and preserve AO sharpness at depth discontinuities.
+//
+// Dispatch: total threads = (W/2, H/2, 4) via FullscreenDispatch on the
+//           Texture2DArray output (ArraySize=4).
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+struct CacaoConstants
+{
+    float2 m_ndcToViewMul;
+    float2 m_ndcToViewAdd;
+    float2 m_ssaoBufferInverseDimensions;
+    float2 m_outputBufferInverseDimensions;
+    float m_effectRadius;
+    float m_effectShadowStrength;
+    float m_effectShadowPow;
+    float m_effectShadowClamp;
+    float m_effectFadeOutMul;
+    float m_effectFadeOutAdd;
+    float m_effectHorizonAngleThreshold;
+    float m_effectSamplingRadiusNearLimitRec;
+    float m_negRecEffectRadius;
+    float m_invSharpness;
+    float m_bilateralSigmaSquared;
+    float m_bilateralSimilarityDistanceSigma;
+    float m_detailAOStrength;
+    float m_depthPrecisionOffsetMod;
+    float2 m_pad;
+    float4 m_patternRotScaleMatrices[4][5];
+};
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DArray<float2>      m_aoPing;    // Input:  AO + packed edges (ArraySize=4)
+    RWTexture2DArray<float2>    m_aoPong;    // Output: blurred AO + edges (ArraySize=4)
+
+    Sampler m_linearSampler
+    {
+        MaxAnisotropy = 1;
+        MinFilter     = Linear;
+        MagFilter     = Linear;
+        MipFilter     = Point;
+        AddressU      = Clamp;
+        AddressV      = Clamp;
+        AddressW      = Clamp;
+    };
+
+    CacaoConstants m_constants;
+}
+
+// Unpack 4 edge weights from CACAO's packed float representation
+float4 UnpackEdges(float packedVal)
+{
+    uint i = uint(packedVal * 255.5f);
+    float4 edges;
+    edges.x = saturate(float((i     ) & 3u) / 3.0f + PassSrg::m_constants.m_invSharpness);
+    edges.y = saturate(float((i >> 2) & 3u) / 3.0f + PassSrg::m_constants.m_invSharpness);
+    edges.z = saturate(float((i >> 4) & 3u) / 3.0f + PassSrg::m_constants.m_invSharpness);
+    edges.w = saturate(float((i >> 6) & 3u) / 3.0f + PassSrg::m_constants.m_invSharpness);
+    return edges;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+    uint2 coord   = DTid.xy;
+    uint  layerId = DTid.z;
+
+    // Bounds check
+    uint tw, th, tLayers;
+    PassSrg::m_aoPong.GetDimensions(tw, th, tLayers);
+    if (coord.x >= tw || coord.y >= th || layerId >= tLayers)
+    {
+        return;
+    }
+
+    float2 invDim = PassSrg::m_constants.m_ssaoBufferInverseDimensions;
+    float2 uvC    = (float2(coord) + 0.5f) * invDim;
+    float  uvStepX = invDim.x;
+    float  uvStepY = invDim.y;
+
+    // Sample center and 4 cardinal neighbors (with bilinear to smooth sub-pixel)
+    float2 cVal = PassSrg::m_aoPing.SampleLevel(PassSrg::m_linearSampler, float3(uvC, (float)layerId), 0);
+    float2 lVal = PassSrg::m_aoPing.SampleLevel(PassSrg::m_linearSampler, float3(uvC + float2(-uvStepX, 0), (float)layerId), 0);
+    float2 rVal = PassSrg::m_aoPing.SampleLevel(PassSrg::m_linearSampler, float3(uvC + float2( uvStepX, 0), (float)layerId), 0);
+    float2 tVal = PassSrg::m_aoPing.SampleLevel(PassSrg::m_linearSampler, float3(uvC + float2(0, -uvStepY), (float)layerId), 0);
+    float2 bVal = PassSrg::m_aoPing.SampleLevel(PassSrg::m_linearSampler, float3(uvC + float2(0,  uvStepY), (float)layerId), 0);
+
+    // Unpack edge weights from center (stored by GenerateQ2)
+    // Edge order in PackEdges: x=left, y=right, z=top, w=bottom
+    float4 edges = UnpackEdges(cVal.y);
+
+    // Bilateral blur: center gets weight 0.5, neighbors gated by their edge weight
+    float aoSum    = cVal.x * 0.5f;
+    float weightSum = 0.5f;
+
+    aoSum    += lVal.x * edges.x;  weightSum += edges.x;
+    aoSum    += rVal.x * edges.y;  weightSum += edges.y;
+    aoSum    += tVal.x * edges.z;  weightSum += edges.z;
+    aoSum    += bVal.x * edges.w;  weightSum += edges.w;
+
+    float aoBlurred = aoSum / max(weightSum, 1e-5f);
+
+    // Preserve the packed-edge channel from the source
+    PassSrg::m_aoPong[uint3(coord, layerId)] = float2(aoBlurred, cVal.y);
+}

@@ -305,6 +305,22 @@
                 "Path": "Passes/SsaoCompute.pass"
             },
             {
+                "Name": "CacaoPrepareDepthsTemplate",
+                "Path": "Passes/CacaoPrepareDepths.pass"
+            },
+            {
+                "Name": "CacaoGenerateQ2Template",
+                "Path": "Passes/CacaoGenerateQ2.pass"
+            },
+            {
+                "Name": "CacaoEdgeSensitiveBlurTemplate",
+                "Path": "Passes/CacaoEdgeSensitiveBlur.pass"
+            },
+            {
+                "Name": "CacaoApplyTemplate",
+                "Path": "Passes/CacaoApply.pass"
+            },
+            {
                 "Name": "ReflectionsParentPassTemplate",
                 "Path": "Passes/Reflections.pass"
             },

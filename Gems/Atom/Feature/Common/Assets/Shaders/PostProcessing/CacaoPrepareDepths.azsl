@@ -1,0 +1,41 @@
+// CacaoPrepareDepths.azsl
+// AMD FidelityFX CACAO - Prepare Native Depths
+// Deinterleaves the full-resolution linearized depth into 4 quarter-resolution
+// layers (2x2 pixel deinterleaving).  Layer Z contains the depth sample for
+// the full-res pixel at (2x + Z%2, 2y + Z/2).
+// Dispatch: total threads = (W/2, H/2, 4) via FullscreenDispatch on
+//           the Texture2DArray output (ArraySize=4).
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2D<float>           m_linearDepth;
+    RWTexture2DArray<float>    m_deinterleavedDepths;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+    uint layer = DTid.z;
+    uint2 outCoord = DTid.xy;
+
+    // Bounds check
+    uint tw, th, tLayers;
+    PassSrg::m_deinterleavedDepths.GetDimensions(tw, th, tLayers);
+    if (outCoord.x >= tw || outCoord.y >= th || layer >= tLayers)
+    {
+        return;
+    }
+
+    // Each layer corresponds to a 2x2 interleave pattern:
+    // layer 0: (2x,   2y  )  top-left
+    // layer 1: (2x+1, 2y  )  top-right
+    // layer 2: (2x,   2y+1)  bottom-left
+    // layer 3: (2x+1, 2y+1)  bottom-right
+    uint2 inCoord = uint2(outCoord.x * 2u + (layer & 1u),
+                          outCoord.y * 2u + (layer >> 1u));
+
+    float depth = PassSrg::m_linearDepth[inCoord];
+    PassSrg::m_deinterleavedDepths[uint3(outCoord, layer)] = depth;
+}

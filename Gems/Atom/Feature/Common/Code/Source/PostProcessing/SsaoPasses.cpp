@@ -8,13 +8,13 @@
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcess/Ssao/SsaoSettings.h>
-#include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <PostProcessing/SsaoPasses.h>
 #include <AzCore/Math/MathUtils.h>
 #include <Atom/Feature/PostProcess/Ssao/SsaoConstants.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <cmath>
 
 namespace AZ
 {
@@ -65,55 +65,10 @@ namespace AZ
         void SsaoParentPass::InitializeInternal()
         {
             ParentPass::InitializeInternal();
-
-            m_blurParentPass = FindChildPass(Name("SsaoBlur"))->AsParent();
-            AZ_Assert(m_blurParentPass, "[SsaoParentPass] Could not retrieve parent blur pass.");
-
-            m_blurHorizontalPass = azrtti_cast<FastDepthAwareBlurHorPass*>(m_blurParentPass->FindChildPass(Name("HorizontalBlur")).get());
-            m_blurVerticalPass = azrtti_cast<FastDepthAwareBlurVerPass*>(m_blurParentPass->FindChildPass(Name("VerticalBlur")).get());
-            m_downsamplePass = FindChildPass(Name("DepthDownsample")).get();
-            m_upsamplePass = FindChildPass(Name("Upsample")).get();
-
-            AZ_Assert(m_blurHorizontalPass, "[SsaoParentPass] Could not retrieve horizontal blur pass.");
-            AZ_Assert(m_blurVerticalPass, "[SsaoParentPass] Could not retrieve vertical blur pass.");
-            AZ_Assert(m_downsamplePass, "[SsaoParentPass] Could not retrieve downsample pass.");
-            AZ_Assert(m_upsamplePass, "[SsaoParentPass] Could not retrieve upsample pass.");
         }
 
         void SsaoParentPass::FrameBeginInternal(FramePrepareParams params)
         {
-            RPI::Scene* scene = GetScene();
-            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
-            if (fp)
-            {
-                PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
-                if (postProcessSettings)
-                {
-                    SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
-                    if (ssaoSettings)
-                    {
-                        bool ssaoEnabled = ssaoSettings->GetEnabled();
-                        bool blurEnabled = ssaoEnabled && ssaoSettings->GetEnableBlur();
-                        bool downsampleEnabled = ssaoEnabled && ssaoSettings->GetEnableDownsample();
-
-                        m_blurParentPass->SetEnabled(blurEnabled);
-                        if (blurEnabled)
-                        {
-                            float constFalloff = ssaoSettings->GetBlurConstFalloff();
-                            float depthFalloffThreshold = ssaoSettings->GetBlurDepthFalloffThreshold();
-                            float depthFalloffStrength = ssaoSettings->GetBlurDepthFalloffStrength();
-
-                            m_blurHorizontalPass->SetConstants(constFalloff, depthFalloffThreshold, depthFalloffStrength);
-                            m_blurVerticalPass->SetConstants(constFalloff, depthFalloffThreshold, depthFalloffStrength);
-                        }
-
-                        m_downsamplePass->SetEnabled(downsampleEnabled);
-                        m_upsamplePass->SetEnabled(downsampleEnabled);
-                    }
-                }
-            }
-
             ParentPass::FrameBeginInternal(params);
         }
 
@@ -131,67 +86,141 @@ namespace AZ
 
         void SsaoComputePass::FrameBeginInternal(FramePrepareParams params)
         {
-            // Must match the struct in SsaoCompute.azsl
-            struct SsaoConstants
+            // Must match CacaoConstants in CacaoGenerateQ2.azsl / CacaoEdgeSensitiveBlur.azsl
+            struct alignas(16) CacaoConstants
             {
-                // The texture dimensions of SSAO output
-                AZStd::array<u32, 2> m_outputSize;
+                // NDC-UV → view-space:  viewXY = (uv * Mul + Add) * linearDepth
+                float m_ndcToViewMulX, m_ndcToViewMulY;
+                float m_ndcToViewAddX, m_ndcToViewAddY;
 
-                // The size of a pixel relative to screenspace UV
-                // Calculated by taking the inverse of the texture dimensions
-                AZStd::array<float, 2> m_pixelSize;
+                // Inverse SSAO-buffer (quarter-res) and full-res dimensions
+                float m_ssaoBufInvW, m_ssaoBufInvH;
+                float m_outputBufInvW, m_outputBufInvH;
 
-                // The size of half a pixel relative to screenspace UV
-                AZStd::array<float, 2> m_halfPixelSize;
+                float m_effectRadius;
+                float m_effectShadowStrength;
+                float m_effectShadowPow;
+                float m_effectShadowClamp;
 
-                // The strength of the SSAO effect
-                float m_strength = Ssao::DefaultStrength;
+                float m_effectFadeOutMul;
+                float m_effectFadeOutAdd;
+                float m_effectHorizonAngleThreshold;
+                float m_effectSamplingRadiusNearLimitRec;
 
-                // The sampling radius calculated in screen UV space 
-                float m_samplingRadius = Ssao::DefaultSamplingRadius;
+                float m_negRecEffectRadius;
+                float m_invSharpness;
+                float m_bilateralSigmaSquared;
+                float m_bilateralSimilarityDistanceSigma;
 
-            } ssaoConstants{};
+                float m_detailAOStrength;
+                float m_depthPrecisionOffsetMod;
+                float m_pad0, m_pad1;
 
-            RPI::Scene* scene = GetScene();
-            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
+                // Per-layer, per-subpass rotation+scale matrices (4×5)
+                float m_patternRotScaleMatrices[4][5][4];
+            } c{};
+
+            // --- Retrieve output attachment dimensions (SSAO buffer = W/2 × H/2) ---
+            AZ_Assert(GetOutputCount() > 0, "SsaoComputePass (CACAO): No output bindings!");
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
+            AZ_Assert(outputAttachment != nullptr, "SsaoComputePass (CACAO): Output binding has no attachment!");
+            const RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
+
+            const float ssaoBufW = static_cast<float>(size.m_width);
+            const float ssaoBufH = static_cast<float>(size.m_height);
+            c.m_ssaoBufInvW    = 1.0f / ssaoBufW;
+            c.m_ssaoBufInvH    = 1.0f / ssaoBufH;
+            c.m_outputBufInvW  = 0.5f / ssaoBufW;   // full-res = ssao * 2
+            c.m_outputBufInvH  = 0.5f / ssaoBufH;
+
+            // --- View-dependent constants ---
             AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
-            if (fp)
+            float tanHalfFovX = 1.0f;
+            float tanHalfFovY = 1.0f;
+            if (view)
             {
-                PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
-                if (postProcessSettings)
+                const AZ::Matrix4x4& ctv = view->GetClipToViewMatrix();
+                tanHalfFovX = ctv.GetElement(0, 0);
+                tanHalfFovY = ctv.GetElement(1, 1);
+
+                c.m_ndcToViewMulX =  2.0f * tanHalfFovX;
+                c.m_ndcToViewMulY = -2.0f * tanHalfFovY;
+                c.m_ndcToViewAddX = -tanHalfFovX;
+                c.m_ndcToViewAddY =  tanHalfFovY;
+            }
+
+            // --- CACAO default effect parameters ---
+            const float effectRadius = 1.2f;
+            const float fadeOutFrom  = 50.0f;
+            const float fadeOutTo    = 300.0f;
+
+            c.m_effectRadius                         = effectRadius;
+            c.m_effectShadowStrength                 = 4.3f;
+            c.m_effectShadowPow                      = 1.5f;
+            c.m_effectShadowClamp                    = 0.98f;
+            c.m_effectFadeOutMul                     = -1.0f / (fadeOutTo - fadeOutFrom);
+            c.m_effectFadeOutAdd                     = fadeOutFrom / (fadeOutTo - fadeOutFrom) + 1.0f;
+            c.m_effectHorizonAngleThreshold          = 0.06f;
+            c.m_effectSamplingRadiusNearLimitRec     = tanHalfFovY / (effectRadius * 1.2f);
+            c.m_negRecEffectRadius                   = -1.0f / effectRadius;
+            c.m_depthPrecisionOffsetMod              = 0.9992f;
+            c.m_detailAOStrength                     = 0.5f;
+            c.m_invSharpness                         = 0.0f;
+            c.m_bilateralSigmaSquared                = 5.0f;
+            c.m_bilateralSimilarityDistanceSigma     = 0.1f;
+
+            // --- Override from SsaoSettings if available ---
+            RPI::Scene* scene = GetScene();
+            PostProcessFeatureProcessor* fp = scene ? scene->GetFeatureProcessor<PostProcessFeatureProcessor>() : nullptr;
+            if (fp && view)
+            {
+                PostProcessSettings* pps = fp->GetLevelSettingsFromView(view);
+                if (pps)
                 {
-                    SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
-                    if (ssaoSettings)
+                    SsaoSettings* s = pps->GetSsaoSettings();
+                    if (s)
                     {
-                        if (ssaoSettings->GetEnabled())
+                        if (s->GetEnabled())
                         {
-                            ssaoConstants.m_strength = ssaoSettings->GetStrength();
-                            ssaoConstants.m_samplingRadius = ssaoSettings->GetSamplingRadius();
+                            c.m_effectShadowStrength             = s->GetStrength() * 4.3f;
+                            c.m_bilateralSigmaSquared            = s->GetBlurConstFalloff() * 10.0f;
+                            c.m_bilateralSimilarityDistanceSigma = 1.0f / (s->GetBlurDepthFalloffStrength() + 1.0f);
+                            c.m_invSharpness                     = AZ::GetMax(0.0f, 1.0f - s->GetBlurConstFalloff());
                         }
                         else
                         {
-                            ssaoConstants.m_strength = 0.0f;
+                            c.m_effectShadowStrength = 0.0f;
                         }
                     }
                 }
             }
 
-            AZ_Assert(GetOutputCount() > 0, "SsaoComputePass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
+            // --- PatternRotScaleMatrices: CACAO's sub-pass sample distribution ---
+            // angle = (pass + spmap[sub]/5) * PI/2
+            // scale = 1 + (pass - 1.5 + (spmap[sub] - 2) / 5) * 0.07
+            // matrix = { scale*cos, -scale*sin, scale*sin, -scale*cos }
+            static const int spmap[5] = { 0, 1, 4, 3, 2 };
+            const float piHalf = AZ::Constants::HalfPi;
+            for (int pass = 0; pass < 4; ++pass)
+            {
+                for (int sub = 0; sub < 5; ++sub)
+                {
+                    const float angle = (static_cast<float>(pass) +
+                                         static_cast<float>(spmap[sub]) / 5.0f) * piHalf;
+                    const float scale = 1.0f + (static_cast<float>(pass) - 1.5f +
+                                                (static_cast<float>(spmap[sub]) - 2.0f) / 5.0f) * 0.07f;
+                    float* m = c.m_patternRotScaleMatrices[pass][sub];
+                    m[0] =  scale * cosf(angle);
+                    m[1] = -scale * sinf(angle);
+                    m[2] =  scale * sinf(angle);
+                    m[3] = -scale * cosf(angle);
+                }
+            }
 
-            AZ_Assert(outputAttachment != nullptr, "SsaoComputePass: Output binding has no attachment!");
-            RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
-
-            ssaoConstants.m_outputSize[0] = size.m_width;
-            ssaoConstants.m_outputSize[1] = size.m_height;
-
-            ssaoConstants.m_pixelSize[0] = 1.0f / float(size.m_width);
-            ssaoConstants.m_pixelSize[1] = 1.0f / float(size.m_height);
-
-            ssaoConstants.m_halfPixelSize[0] = 0.5f * ssaoConstants.m_pixelSize[0];
-            ssaoConstants.m_halfPixelSize[1] = 0.5f * ssaoConstants.m_pixelSize[1];
-
-            m_shaderResourceGroup->SetConstant(m_constantsIndex, ssaoConstants);
+            if (m_shaderResourceGroup)
+            {
+                m_shaderResourceGroup->SetConstant(m_constantsIndex, c);
+            }
 
             RPI::ComputePass::FrameBeginInternal(params);
         }

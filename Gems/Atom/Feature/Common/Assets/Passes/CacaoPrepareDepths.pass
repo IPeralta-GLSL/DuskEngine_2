@@ -1,0 +1,62 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CacaoPrepareDepthsTemplate",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "FullResDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DeinterleavedDepths",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DeinterleavedDepths",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "FullResDepth"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_FLOAT",
+                        "ArraySize": 4
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DeinterleavedDepths",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DeinterleavedDepths"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/CacaoPrepareDepths.shader"
+                },
+                "FullscreenDispatch": true,
+                "BindViewSrg": false
+            }
+        }
+    }
+}

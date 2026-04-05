@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <AzCore/Math/Matrix4x4.h>
 
 namespace AZ
 {
@@ -37,13 +38,6 @@ namespace AZ
 
         private:
             SsaoParentPass(const RPI::PassDescriptor& descriptor);
-
-            // Direct pointers to child passes for enable/disable
-            ParentPass* m_blurParentPass = nullptr;
-            FastDepthAwareBlurHorPass* m_blurHorizontalPass = nullptr;
-            FastDepthAwareBlurVerPass* m_blurVerticalPass = nullptr;
-            Pass* m_downsamplePass = nullptr;
-            Pass* m_upsamplePass = nullptr;
         };
 
         // Computer shader pass that calculates SSAO from a linear depth buffer

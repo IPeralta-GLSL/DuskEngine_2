@@ -1,0 +1,289 @@
+// CacaoGenerateQ2.azsl
+// AMD FidelityFX CACAO - Generate Q2 (High Quality) SSAO
+//
+// Implements CACAO quality level 2 using deinterleaved quarter-resolution depth.
+// Features enabled at Q2: depth-based edges, normal-based edges, detail AO,
+// haloing reduction. Depth MIPs are intentionally omitted (mip 0 only).
+//
+// Dispatch: total threads = (W/2, H/2, 4) via FullscreenDispatch on the
+//           Texture2DArray output (ArraySize=4).  DTid.z is the layer ID.
+// Output:   float2 per pixel — x = occlusion (1=fully lit), y = packed edges.
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+// ------------------------------------------------------------------ Constants
+struct CacaoConstants
+{
+    // NDC-UV to view-space conversion: viewXY = (uv * Mul + Add) * linearDepth
+    float2 m_ndcToViewMul;
+    float2 m_ndcToViewAdd;
+
+    // 1 / (bufferWidth/2, bufferHeight/2)  [deinterleaved / SSAO buffer size]
+    float2 m_ssaoBufferInverseDimensions;
+    // 1 / (bufferWidth, bufferHeight)      [full-resolution output size]
+    float2 m_outputBufferInverseDimensions;
+
+    // Effect parameters (matches CACAO CPP component naming)
+    float m_effectRadius;
+    float m_effectShadowStrength;
+    float m_effectShadowPow;
+    float m_effectShadowClamp;
+
+    float m_effectFadeOutMul;
+    float m_effectFadeOutAdd;
+    float m_effectHorizonAngleThreshold;
+    float m_effectSamplingRadiusNearLimitRec;
+
+    float m_negRecEffectRadius;          // = -1 / effectRadius
+    float m_invSharpness;
+    float m_bilateralSigmaSquared;
+    float m_bilateralSimilarityDistanceSigma;
+
+    float m_detailAOStrength;
+    float m_depthPrecisionOffsetMod;     // ~0.9992
+    float2 m_pad;                        // 16-byte alignment for float4 array
+
+    // Per-layer, per-sub-pass rotation + scale matrices
+    // dimension [4 passes][5 sub-passes], each float4 = (ca, -sa, sa, -ca) * scale
+    float4 m_patternRotScaleMatrices[4][5];
+};
+
+// --------------------------------------------------------------- SRG bindings
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DArray<float>       m_deinterleavedDepths;   // quarter-res, ArraySize=4
+    RWTexture2DArray<float2>    m_aoBuffer;              // quarter-res, ArraySize=4
+
+    Sampler m_pointSampler
+    {
+        MaxAnisotropy = 1;
+        MinFilter     = Point;
+        MagFilter     = Point;
+        MipFilter     = Point;
+        AddressU      = Clamp;
+        AddressV      = Clamp;
+        AddressW      = Clamp;
+    };
+
+    CacaoConstants m_constants;
+}
+
+// Sample pattern for Q2 quality — first 12 entries of CACAO's 32-tap pattern.
+// Components: xy = sample direction, z = weight modifier, w = log2(length) for mip.
+static const float4 g_SamplePattern[12] =
+{
+    { 0.78488064f,  0.56661671f,  1.500000f, -0.126083f },
+    { 0.26022232f, -0.29575172f,  1.500000f, -1.064030f },
+    { 0.10459357f,  0.08372527f,  1.110000f, -2.730563f },
+    {-0.68286800f,  0.04963045f,  1.090000f, -0.498827f },
+    {-0.13570161f, -0.64190155f,  1.250000f, -0.532765f },
+    {-0.26193795f, -0.08205118f,  0.670000f, -1.783245f },
+    {-0.61177456f,  0.66664219f,  0.710000f, -0.044234f },
+    { 0.43675563f,  0.25119025f,  0.610000f, -1.167283f },
+    { 0.07884444f,  0.86618668f,  0.640000f, -0.459002f },
+    {-0.12790935f, -0.29869005f,  0.600000f, -1.729424f },
+    {-0.04031125f,  0.02413622f,  0.600000f, -4.792042f },
+    { 0.16201244f, -0.52851415f,  0.790000f, -1.067055f }
+};
+
+// ------------------------------------------------------------------ Functions
+
+// Convert screen-UV (0..1) + linear depth -> view-space position (Z-forward)
+float3 NDCToViewSpace(float2 uv, float linearDepth)
+{
+    float2 mul = PassSrg::m_constants.m_ndcToViewMul;
+    float2 add = PassSrg::m_constants.m_ndcToViewAdd;
+    return float3((uv * mul + add) * linearDepth, linearDepth);
+}
+
+// Pack 4 edge weights (0..1 each) into a single normalised float (CACAO scheme)
+float PackEdges(float4 edgesLRTB)
+{
+    uint4 e = uint4(saturate(edgesLRTB) * 2.9999f);
+    uint packed = e.x | (e.y << 2u) | (e.z << 4u) | (e.w << 6u);
+    return float(packed) / 255.0f;
+}
+
+// Depth-based edge weights (1 = no edge, approaches 0 at sharp depth discontinuities)
+float4 CalculateEdges(float cZ, float lZ, float rZ, float tZ, float bZ)
+{
+    float4 dif = abs(float4(lZ, rZ, tZ, bZ) - cZ);
+    return saturate(1.3f - dif / (cZ * 0.040f + 0.001f));
+}
+
+// Load a single depth sample from the deinterleaved array
+float LoadDepth(int2 coord, uint layer)
+{
+    return PassSrg::m_deinterleavedDepths.Load(int4(coord.x, coord.y, (int)layer, 0));
+}
+
+// Bilinear depth sample at arbitrary UV
+float SampleDepth(float2 uv, uint layer)
+{
+    return PassSrg::m_deinterleavedDepths.SampleLevel(
+        PassSrg::m_pointSampler, float3(uv, (float)layer), 0).x;
+}
+
+// Reconstruct view-space normal from three deinterleaved depth samples
+float3 ReconstructNormal(int2 coord, uint layer)
+{
+    float2 invDim = PassSrg::m_constants.m_ssaoBufferInverseDimensions;
+    float dc = LoadDepth(coord,              layer);
+    float dr = LoadDepth(coord + int2(1, 0), layer);
+    float db = LoadDepth(coord + int2(0, 1), layer);
+
+    float3 p  = NDCToViewSpace((float2(coord)              + 0.5f) * invDim, dc);
+    float3 pr = NDCToViewSpace((float2(coord + int2(1, 0)) + 0.5f) * invDim, dr);
+    float3 pb = NDCToViewSpace((float2(coord + int2(0, 1)) + 0.5f) * invDim, db);
+
+    return normalize(cross(pr - p, pb - p));
+}
+
+// Obscurance contribution from a single hit with haloing reduction
+float EvaluateSample(float3 pixCenterPos, float3 pixelNormal, float2 sampleUV,
+                     uint layer, float falloffMulSq)
+{
+    CacaoConstants c = PassSrg::m_constants;
+    float sampledDepth = SampleDepth(sampleUV, layer);
+    float3 hitPos      = NDCToViewSpace(sampleUV, sampledDepth);
+    float3 hitDelta    = hitPos - pixCenterPos;
+
+    float lenSq   = dot(hitDelta, hitDelta);
+    float NdotD   = dot(pixelNormal, hitDelta) / sqrt(max(lenSq, 1e-6f));
+    float falloff = max(0.0f, lenSq * falloffMulSq + 1.0f);
+    float occ     = max(0.0f, NdotD - c.m_effectHorizonAngleThreshold) * falloff;
+
+    // Haloing reduction: downweight samples that are "behind" the surface
+    float reduct = max(0.0f, -hitDelta.z);
+    reduct = saturate(reduct * c.m_negRecEffectRadius + 2.0f);
+    float weight = (0.6f * reduct + 0.4f);
+
+    return occ * weight;
+}
+
+// --------------------------------------------------------------- Main compute
+[numthreads(8, 8, 1)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+    CacaoConstants c = PassSrg::m_constants;
+
+    uint2 coord   = DTid.xy;
+    uint  layerId = DTid.z;
+
+    // Bounds check
+    uint tw, th, tLayers;
+    PassSrg::m_aoBuffer.GetDimensions(tw, th, tLayers);
+    if (coord.x >= tw || coord.y >= th || layerId >= tLayers)
+    {
+        return;
+    }
+
+    float2 invDim  = c.m_ssaoBufferInverseDimensions;
+    float2 uvCenter = (float2(coord) + 0.5f) * invDim;
+
+    // Load center + 4-neighbor depths for edge detection
+    int2 iCoord = (int2)coord;
+    float pixZ  = LoadDepth(iCoord,              layerId);
+    float pixLZ = LoadDepth(iCoord + int2(-1, 0), layerId);
+    float pixRZ = LoadDepth(iCoord + int2( 1, 0), layerId);
+    float pixTZ = LoadDepth(iCoord + int2( 0,-1), layerId);
+    float pixBZ = LoadDepth(iCoord + int2( 0, 1), layerId);
+
+    // View-space center position (apply tiny depth offset to fight precision artifacts)
+    float3 pixCenterPos = NDCToViewSpace(uvCenter, pixZ) * c.m_depthPrecisionOffsetMod;
+
+    // Surface normal reconstructed from deinterleaved depth
+    float3 pixelNormal = ReconstructNormal(iCoord, layerId);
+
+    // View-space pixel footprint (how large one texel is at this depth)
+    float2 pixFootprint = pixCenterPos.z * c.m_ndcToViewMul * invDim;
+
+    // Depth-based edge weights
+    float4 edgesLRTB = CalculateEdges(pixZ, pixLZ, pixRZ, pixTZ, pixBZ);
+
+    // Normal-based edge weights (sharpens creases, Q2 feature)
+    {
+        float3 nL = ReconstructNormal(iCoord + int2(-1, 0), layerId);
+        float3 nR = ReconstructNormal(iCoord + int2( 1, 0), layerId);
+        float3 nT = ReconstructNormal(iCoord + int2( 0,-1), layerId);
+        float3 nB = ReconstructNormal(iCoord + int2( 0, 1), layerId);
+        const float kDotThreshold = 0.5f;
+        float4 normalEdges = float4(
+            saturate(dot(pixelNormal, nL) + kDotThreshold),
+            saturate(dot(pixelNormal, nR) + kDotThreshold),
+            saturate(dot(pixelNormal, nT) + kDotThreshold),
+            saturate(dot(pixelNormal, nB) + kDotThreshold));
+        edgesLRTB *= normalEdges;
+    }
+
+    // Detail AO from immediate neighbors (Q2 high-frequency contribution)
+    float3 viewDir = float3(pixCenterPos.xy / pixCenterPos.z, 1.0f);
+    float3 dL = float3(-pixFootprint.x, 0, 0) + viewDir * (pixLZ - pixCenterPos.z);
+    float3 dR = float3( pixFootprint.x, 0, 0) + viewDir * (pixRZ - pixCenterPos.z);
+    float3 dT = float3(0,  pixFootprint.y, 0) + viewDir * (pixTZ - pixCenterPos.z);
+    float3 dB = float3(0, -pixFootprint.y, 0) + viewDir * (pixBZ - pixCenterPos.z);
+    float  detailFalloffMulSq = 4.0f / -(c.m_effectRadius * c.m_effectRadius);
+    float4 detailOcc;
+    detailOcc.x = max(0.0f, dot(pixelNormal, dL) / sqrt(dot(dL,dL)) - c.m_effectHorizonAngleThreshold) * max(0.0f, dot(dL,dL) * detailFalloffMulSq + 1.0f);
+    detailOcc.y = max(0.0f, dot(pixelNormal, dR) / sqrt(dot(dR,dR)) - c.m_effectHorizonAngleThreshold) * max(0.0f, dot(dR,dR) * detailFalloffMulSq + 1.0f);
+    detailOcc.z = max(0.0f, dot(pixelNormal, dT) / sqrt(dot(dT,dT)) - c.m_effectHorizonAngleThreshold) * max(0.0f, dot(dT,dT) * detailFalloffMulSq + 1.0f);
+    detailOcc.w = max(0.0f, dot(pixelNormal, dB) / sqrt(dot(dB,dB)) - c.m_effectHorizonAngleThreshold) * max(0.0f, dot(dB,dB) * detailFalloffMulSq + 1.0f);
+    float obscuranceSum = c.m_detailAOStrength * dot(detailOcc, edgesLRTB);
+    float weightSum     = 0.0f;
+
+    // Effective radius and falloff
+    float pixCenterLen   = length(pixCenterPos);
+    float tooCloseMod    = saturate(pixCenterLen * c.m_effectSamplingRadiusNearLimitRec) * 0.8f + 0.2f;
+    float effectRadius   = c.m_effectRadius * tooCloseMod;
+    float lookupRadiusMod = (0.85f * effectRadius) / max(pixFootprint.x, 1e-6f);
+    float falloffMulSq   = -1.0f / (effectRadius * effectRadius);
+
+    // Pseudo-random rotation matrix for this pixel (5-pattern rotation per layer)
+    uint pseudoRandIdx = (coord.y * 2u + coord.x) % 5u;
+    float4 rs          = c.m_patternRotScaleMatrices[layerId][pseudoRandIdx];
+    float2x2 rotScale  = float2x2(
+        rs.x * lookupRadiusMod, rs.y * lookupRadiusMod,
+        rs.z * lookupRadiusMod, rs.w * lookupRadiusMod);
+
+    // Main 12-tap sample loop (CACAO Q2: 12 taps -> 24 directional samples)
+    [unroll]
+    for (int i = 0; i < 12; ++i)
+    {
+        float4 tap      = g_SamplePattern[i];
+        float  tapWeight = tap.z;
+
+        // Rotate and snap sample offset to nearest pixel
+        float2 sampleOffset = round(mul(rotScale, tap.xy));
+
+        // Forward tap
+        float2 fwdUV = sampleOffset * invDim + uvCenter;
+        obscuranceSum += tapWeight * EvaluateSample(pixCenterPos, pixelNormal, fwdUV, layerId, falloffMulSq);
+        weightSum     += tapWeight;
+
+        // Mirrored tap (doubles angular coverage, reduces noise)
+        float2 mirUV = (-sampleOffset) * invDim + uvCenter;
+        obscuranceSum += tapWeight * EvaluateSample(pixCenterPos, pixelNormal, mirUV, layerId, falloffMulSq);
+        weightSum     += tapWeight;
+    }
+
+    // Weighted average
+    float obscurance = (weightSum > 1e-5f) ? (obscuranceSum / weightSum) : 0.0f;
+
+    // Distance fade (1=close/full effect, 0=far/no effect)
+    float fadeOut = saturate(pixCenterPos.z * c.m_effectFadeOutMul + c.m_effectFadeOutAdd);
+
+    // Edge-based fade (reduces fringing at depth discontinuities)
+    float edgeFade = saturate((1.0f - edgesLRTB.x - edgesLRTB.y) * 0.35f)
+                   + saturate((1.0f - edgesLRTB.z - edgesLRTB.w) * 0.35f);
+    fadeOut *= saturate(1.0f - edgeFade);
+
+    // Strength, clamp, fade
+    obscurance  = c.m_effectShadowStrength * obscurance;
+    obscurance  = min(obscurance, c.m_effectShadowClamp);
+    obscurance *= fadeOut;
+
+    // Convert obscurance -> occlusion (1 = fully lit, 0 = fully occluded)
+    float occlusion = pow(saturate(1.0f - obscurance), c.m_effectShadowPow);
+
+    PassSrg::m_aoBuffer[uint3(coord, layerId)] = float2(occlusion, PackEdges(edgesLRTB));
+}

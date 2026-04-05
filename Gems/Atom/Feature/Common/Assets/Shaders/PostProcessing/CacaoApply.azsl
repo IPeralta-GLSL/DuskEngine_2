@@ -1,0 +1,69 @@
+// CacaoApply.azsl
+// AMD FidelityFX CACAO - Non-Smart Apply
+//
+// Reconstructs a full-resolution ambient occlusion value from 4 deinterleaved
+// quarter-resolution AO layers by averaging their .x (AO) components.
+//
+// Dispatch: full-res (W, H, 1) — output is a plain Texture2D (no ArraySize).
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DArray<float2>  m_blurredAo;    // (W/2 x H/2 x 4) AO + packed edges
+    RWTexture2D<float>      m_output;       // (W x H) final AO mask
+
+    Sampler m_linearSampler
+    {
+        MaxAnisotropy = 1;
+        MinFilter     = Linear;
+        MagFilter     = Linear;
+        MipFilter     = Point;
+        AddressU      = Clamp;
+        AddressV      = Clamp;
+        AddressW      = Clamp;
+    };
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+    uint2 fullCoord = DTid.xy;
+
+    uint outW, outH;
+    PassSrg::m_output.GetDimensions(outW, outH);
+    if (fullCoord.x >= outW || fullCoord.y >= outH)
+    {
+        return;
+    }
+
+    // UV at the centre of this full-res pixel.
+    // The quarter-res (deinterleaved) layers live at half resolution.
+    // Each layer stores the sample that belongs to one of the 4 sub-pixel
+    // positions in the 2x2 full-res neighbourhood, so the quarter-res texel
+    // for layer L that feeds full-res pixel (px, py) is at:
+    //   quarterCoord = (px/2, py/2)
+    //   layer = (py%2)*2 + (px%2)   (matches PrepareDepths packing)
+    //
+    // NonSmartApply simply averages all 4 layers at the bilinear centre of
+    // the neighbouring texels, which is equivalent to a 2x box upsample.
+
+    uint2 halfCoord = fullCoord >> 1u;
+
+    // Bilinear UV covering the 4 quarter-res texels that surround this pixel
+    uint halfW, halfH, numLayers;
+    PassSrg::m_blurredAo.GetDimensions(halfW, halfH, numLayers);
+
+    float2 invHalf = rcp(float2(halfW, halfH));
+    float2 uvBase  = (float2(halfCoord) + 0.5f) * invHalf;
+
+    // Average AO over the 4 deinterleaved layers
+    float ao = 0.0f;
+    ao += PassSrg::m_blurredAo.SampleLevel(PassSrg::m_linearSampler, float3(uvBase, 0), 0).x;
+    ao += PassSrg::m_blurredAo.SampleLevel(PassSrg::m_linearSampler, float3(uvBase, 1), 0).x;
+    ao += PassSrg::m_blurredAo.SampleLevel(PassSrg::m_linearSampler, float3(uvBase, 2), 0).x;
+    ao += PassSrg::m_blurredAo.SampleLevel(PassSrg::m_linearSampler, float3(uvBase, 3), 0).x;
+    ao *= 0.25f;
+
+    PassSrg::m_output[fullCoord] = saturate(ao);
+}

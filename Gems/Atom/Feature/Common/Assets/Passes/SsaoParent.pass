@@ -34,8 +34,8 @@
             ],
             "PassRequests": [
                 {
-                    "Name": "DepthDownsample",
-                    "TemplateName": "DepthDownsampleTemplate",
+                    "Name": "CacaoPrepareDepths",
+                    "TemplateName": "CacaoPrepareDepthsTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -48,63 +48,43 @@
                     ]
                 },
                 {
-                    "Name": "SsaoCompute",
-                    "TemplateName": "SsaoComputeTemplate",
+                    "Name": "CacaoGenerateQ2",
+                    "TemplateName": "CacaoGenerateQ2Template",
+                    "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "LinearDepth",
+                            "LocalSlot": "DeinterleavedDepths",
                             "AttachmentRef": {
-                                "Pass": "DepthDownsample",
-                                "Attachment": "HalfResDepth"
+                                "Pass": "CacaoPrepareDepths",
+                                "Attachment": "DeinterleavedDepths"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "SsaoBlur",
-                    "TemplateName": "FastDepthAwareBlurTemplate",
+                    "Name": "CacaoEdgeSensitiveBlur",
+                    "TemplateName": "CacaoEdgeSensitiveBlurTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "LinearDepth",
+                            "LocalSlot": "AoPing",
                             "AttachmentRef": {
-                                "Pass": "DepthDownsample",
-                                "Attachment": "HalfResDepth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "BlurSource",
-                            "AttachmentRef": {
-                                "Pass": "SsaoCompute",
-                                "Attachment": "Output"
+                                "Pass": "CacaoGenerateQ2",
+                                "Attachment": "AoPing"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "Upsample",
-                    "TemplateName": "DepthUpsampleTemplate",
+                    "Name": "CacaoApply",
+                    "TemplateName": "CacaoApplyTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "FullResDepth",
+                            "LocalSlot": "BlurredAo",
                             "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
-                        {
-                            "LocalSlot": "HalfResDepth",
-                            "AttachmentRef": {
-                                "Pass": "DepthDownsample",
-                                "Attachment": "HalfResDepth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "HalfResSource",
-                            "AttachmentRef": {
-                                "Pass": "SsaoBlur",
-                                "Attachment": "Output"
+                                "Pass": "CacaoEdgeSensitiveBlur",
+                                "Attachment": "AoPong"
                             }
                         }
                     ]
@@ -117,7 +97,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "Upsample",
+                                "Pass": "CacaoApply",
                                 "Attachment": "Output"
                             }
                         },

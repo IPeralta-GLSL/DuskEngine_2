@@ -1,0 +1,58 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "CacaoGenerateQ2Template",
+            "PassClass": "SsaoComputePass",
+            "Slots": [
+                {
+                    "Name": "DeinterleavedDepths",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "AoPing",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "AoPing",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DeinterleavedDepths"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32G32_FLOAT",
+                        "ArraySize": 4
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "AoPing",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "AoPing"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/CacaoGenerateQ2.shader"
+                },
+                "FullscreenDispatch": true,
+                "BindViewSrg": false
+            }
+        }
+    }
+}
