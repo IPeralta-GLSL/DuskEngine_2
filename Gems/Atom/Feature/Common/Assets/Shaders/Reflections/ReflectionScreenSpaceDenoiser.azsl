@@ -1,0 +1,334 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ */
+
+// Reflection Screen Space Denoiser
+//
+// Implements FFX-inspired temporal denoising with:
+//   - Spatial 3x3 bilateral prefilter (edge-stopping on depth/normals)
+//   - YCoCg-space AABB temporal clamping (prevents ghosting)
+//   - Sample-count based exponential moving average accumulation
+//
+// Replaces ReflectionScreenSpaceBlurPass + FilterPass in the pipeline.
+// Works with the existing ReflectionScreenSpaceFilterPass C++ class.
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/RPI/Math.azsli>
+
+// ============================================================
+// SRG – declaration ORDER must match pass template slot order
+// (AutoBind maps slots to SRG entries sequentially)
+// ============================================================
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Slot 0: DepthStencilTextureInput – full-res MSAA depth
+    Texture2DMS<float>  m_depth;
+
+    // Slot 1: NormalInput – full-res MSAA normals (RGB10 SignedOctahedron)
+    Texture2DMS<float4> m_normal;
+
+    // Slot 2: SpecularF0Input – full-res MSAA specularF0 (roughness in .a)
+    Texture2DMS<float4> m_specularF0;
+
+    // Slot 3: ScreenSpaceReflectionInputOutput – half-res RT trace
+    //         .rgb = radiance, .a = ray confidence (0 = no reflection)
+    Texture2D<float4>   m_traceReflection;
+
+    // Slot 4: History – half-res denoised history from previous frame
+    //         .rgb = accumulated radiance, .a = sampleCount / MAX_SAMPLE_COUNT
+    Texture2D<float4>   m_history;
+
+    // ---- Constants set by ReflectionScreenSpaceFilterPass ----
+    // Note: C++ safely skips constants not present in the SRG layout.
+
+    // Scale from half-res output to full-res (e.g. 2.0 at 0.5x output scale)
+    float m_invOutputScale;
+
+    // Half-res output dimensions
+    uint  m_outputWidth;
+    uint  m_outputHeight;
+
+    // Temporal blend strength – higher value = less temporal weight (more responsive)
+    // Mapped from SpecularReflections::SSROptions::m_temporalFilteringStrength
+    float m_invTemporalFilteringStrength;
+
+    // Skip denoising for pixels with roughness above this threshold
+    float m_maxRoughness;
+
+    // Feature flags / extra constants (declared to prevent "not found" warnings)
+    bool  m_temporalFiltering;
+    bool  m_coneTracing;       // unused
+    bool  m_rayTracing;        // unused
+    float m_roughnessBias;     // unused
+    bool  m_luminanceClamp;
+    float m_maxLuminance;
+    uint  m_mipLevels;         // unused
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+}
+
+// ============================================================
+// Constants
+// ============================================================
+
+// Maximum number of accumulated samples before clamping (higher = more stable but slower adaptation)
+static const float MAX_SAMPLE_COUNT = 32.0;
+
+// Edge-stopping weights for the spatial bilateral filter
+static const float DEPTH_SIGMA  = 4.0;
+static const float NORMAL_SIGMA = 32.0;
+
+// Maximum temporal blend factor (prevents full lock-in of history)
+static const float TEMPORAL_MAX_WEIGHT = 0.95;
+
+// ============================================================
+// Color space utilities
+// ============================================================
+
+float3 RGBToYCoCg(float3 c)
+{
+    return float3(
+         0.25 * c.r + 0.5 * c.g + 0.25 * c.b,  // Y
+         0.5  * c.r              - 0.5  * c.b,  // Co
+        -0.25 * c.r + 0.5 * c.g - 0.25 * c.b   // Cg
+    );
+}
+
+float3 YCoCgToRGB(float3 y)
+{
+    return float3(
+        y.x + y.y - y.z,  // R = Y + Co - Cg
+        y.x        + y.z, // G = Y + Cg
+        y.x - y.y - y.z   // B = Y - Co - Cg
+    );
+}
+
+// Clip 'histValue' into the axis-aligned bounding box [minAABB, maxAABB].
+// Returns the closest point inside or on the AABB boundary.
+float3 ClipAABB(float3 minAABB, float3 maxAABB, float3 histValue)
+{
+    float3 center  = 0.5 * (minAABB + maxAABB);
+    float3 extents = 0.5 * (maxAABB - minAABB) + 1e-4;
+    float3 d       = histValue - center;
+    float3 scale   = abs(d) / extents;
+    float  maxSc   = max(max(scale.x, scale.y), scale.z);
+    if (maxSc > 1.0)
+    {
+        return center + d / maxSc;
+    }
+    return histValue;
+}
+
+// Linearize a non-linear (hardware) depth value.
+// Returns positive view-space linear depth (camera-relative distance along -Z).
+float LinearDepth(float hwDepth)
+{
+    // Reconstruct view-space Z via the inverse projection matrix.
+    // Works for both normal-Z and reversed-Z conventions.
+    float4 v = mul(ViewSrg::m_projectionMatrixInverse, float4(0.0, 0.0, hwDepth, 1.0));
+    return abs(v.z / v.w);
+}
+
+// ============================================================
+// Main pass
+// ============================================================
+
+PSOutput MainPS(VSOutput IN)
+{
+    // ---- Pixel coordinates ----
+    // IN.m_position.xy are half-res pixel coordinates (0..outputWidth-1)
+    int2  icoords = int2(IN.m_position.xy);
+    float2 uv     = IN.m_texCoord.xy;         // 0..1 UV
+
+    // Full-res pixel centre (floor to integer; invOutputScale is e.g. 2.0)
+    int2  fsCoords = int2(float2(icoords) * PassSrg::m_invOutputScale);
+
+    // ---- Early-out: no trace data ----
+    float4 traceCenter = PassSrg::m_traceReflection.Load(uint3(icoords, 0));
+    if (traceCenter.a <= 0.0)
+    {
+        discard;
+    }
+
+    // ---- Early-out: high roughness ----
+    float roughness = PassSrg::m_specularF0.Load(fsCoords, 0).a;
+    if (roughness > PassSrg::m_maxRoughness)
+    {
+        discard;
+    }
+
+    // ---- Center G-buffer data (full-res sample 0) ----
+    float  hwDepthCenter     = PassSrg::m_depth.Load(fsCoords, 0).r;
+    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(fsCoords, 0).rgb);
+    float  linearDepthCenter = LinearDepth(hwDepthCenter);
+
+    // ---- Spatial 3x3 bilateral prefilter ----
+    // Iterates all 9 neighbors (including center) in half-res space.
+    // Edge-stopping weights constructed from full-res depth + normals.
+    float3 accumRadiance = float3(0.0, 0.0, 0.0);
+    float  accumWeight   = 0.0;
+
+    // Radiance values from valid neighbors – used for local AABB.
+    float3 neighborRadiance[9];
+    int    neighborCount = 0;
+
+    // Minimum and maximum radiance over neighborhood (for AABB in RGB space)
+    float3 rgbMin = traceCenter.rgb;
+    float3 rgbMax = traceCenter.rgb;
+
+    for (int dy = -1; dy <= 1; ++dy)
+    {
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            int2 nc = icoords + int2(dx, dy);
+
+            // Boundary check
+            if (nc.x < 0 || nc.y < 0 ||
+                nc.x >= int(PassSrg::m_outputWidth) ||
+                nc.y >= int(PassSrg::m_outputHeight))
+            {
+                continue;
+            }
+
+            float4 neighborTrace = PassSrg::m_traceReflection.Load(uint3(nc, 0));
+            if (neighborTrace.a <= 0.0)
+            {
+                continue;
+            }
+
+            // Full-res coords for this half-res neighbor
+            int2  ncFs      = int2(float2(nc) * PassSrg::m_invOutputScale);
+            float  hwDepthN  = PassSrg::m_depth.Load(ncFs, 0).r;
+            float3 normalN   = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(ncFs, 0).rgb);
+            float  linDepthN = LinearDepth(hwDepthN);
+
+            // Depth weight: Gaussian in linear depth space
+            float depthDiff   = abs(linearDepthCenter - linDepthN) * linearDepthCenter;
+            float depthWeight = exp(-depthDiff * DEPTH_SIGMA);
+
+            // Normal weight: cosine power
+            float normalWeight = pow(saturate(dot(normalCenter, normalN)), NORMAL_SIGMA);
+
+            float w = depthWeight * normalWeight;
+
+            accumRadiance += neighborTrace.rgb * w;
+            accumWeight   += w;
+
+            // Track range for AABB construction
+            rgbMin = min(rgbMin, neighborTrace.rgb);
+            rgbMax = max(rgbMax, neighborTrace.rgb);
+
+            neighborRadiance[neighborCount++] = neighborTrace.rgb;
+        }
+    }
+
+    // Normalize
+    float3 filteredRadiance = (accumWeight > 1e-5)
+                            ? (accumRadiance / accumWeight)
+                            : traceCenter.rgb;
+
+    // ---- Temporal reprojection ----
+    float4 historySample = float4(0.0, 0.0, 0.0, 0.0);
+    bool   validHistory  = false;
+
+    if (PassSrg::m_temporalFiltering)
+    {
+        // Reconstruct world-space position from half-res UV + full-res depth
+        float2 ndc      = float2(uv.x, 1.0 - uv.y) * 2.0 - 1.0;
+        float4 projPos  = float4(ndc, hwDepthCenter, 1.0);
+        float4 viewPos  = mul(ViewSrg::m_projectionMatrixInverse, projPos);
+        viewPos /= viewPos.w;
+        float4 worldPos = mul(ViewSrg::m_viewMatrixInverse, viewPos);
+
+        // Project to previous-frame clip space
+        float4 prevClip = mul(ViewSrg::m_viewProjectionPrevMatrix, worldPos);
+        prevClip /= prevClip.w;
+
+        // Clip-to-UV (O3DE NDC Y-axis is flipped relative to texture UV)
+        float2 prevUV = float2(prevClip.x * 0.5 + 0.5, -prevClip.y * 0.5 + 0.5);
+
+        if (prevUV.x >= 0.0 && prevUV.x <= 1.0 &&
+            prevUV.y >= 0.0 && prevUV.y <= 1.0)
+        {
+            historySample = PassSrg::m_history.SampleLevel(PassSrg::LinearSampler, prevUV, 0);
+            validHistory  = (historySample.a > 0.0);
+        }
+    }
+
+    // ---- AABB temporal clamping (YCoCg space) ----
+    // Build AABB with a small slack to prevent over-clamping
+    float3 yMin = RGBToYCoCg(rgbMin);
+    float3 yMax = RGBToYCoCg(rgbMax);
+    float3 slack = max((yMax - yMin) * 0.1, float3(0.001, 0.001, 0.001));
+    yMin -= slack;
+    yMax += slack;
+
+    // ---- Temporal blend ----
+    float sampleCount  = validHistory ? (historySample.a * MAX_SAMPLE_COUNT) : 0.0;
+    float3 finalRadiance = filteredRadiance;
+
+    if (validHistory)
+    {
+        // Clip history into current-frame AABB
+        float3 historyY  = RGBToYCoCg(historySample.rgb);
+        float3 clippedY  = ClipAABB(yMin, yMax, historyY);
+        float3 clippedHist = YCoCgToRGB(clippedY);
+
+        // Blend weight increases toward TEMPORAL_MAX_WEIGHT as samples accumulate
+        float blendWeight = 1.0 - (1.0 / max(sampleCount + 1.0, 1.0));
+        blendWeight = min(blendWeight, TEMPORAL_MAX_WEIGHT);
+
+        // Allow the user-configurable "temporal filtering strength" to reduce history weight.
+        // m_invTemporalFilteringStrength = 1/strength, so higher strength = lower inverse = less reduction.
+        // Scale: 0 → full history weight, 1 → half history weight, 2 → no history.
+        float userScale = saturate(1.0 - PassSrg::m_invTemporalFilteringStrength * 0.5);
+        blendWeight *= userScale;
+
+        finalRadiance = lerp(filteredRadiance, clippedHist, blendWeight);
+    }
+
+    // Clamp negative values that can arise from YCoCg→RGB
+    finalRadiance = max(finalRadiance, float3(0.0, 0.0, 0.0));
+
+    // ---- Firefly rejection ----
+    if (PassSrg::m_luminanceClamp)
+    {
+        float luminance = dot(finalRadiance, float3(0.2126, 0.7152, 0.0722));
+        if (luminance > PassSrg::m_maxLuminance && luminance > 0.0)
+        {
+            finalRadiance *= (PassSrg::m_maxLuminance / luminance);
+        }
+    }
+
+    // ---- Update accumulated sample count ----
+    float newSampleCount = min(sampleCount + 1.0, MAX_SAMPLE_COUNT);
+
+    PSOutput OUT;
+    OUT.m_color = float4(finalRadiance, newSampleCount / MAX_SAMPLE_COUNT);
+    return OUT;
+}

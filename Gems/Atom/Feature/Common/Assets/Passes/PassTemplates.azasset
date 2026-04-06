@@ -389,6 +389,10 @@
                 "Path": "Passes/ReflectionScreenSpaceCopyHistory.pass"
             },
             {
+                "Name": "ReflectionDenoiserPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceDenoiser.pass"
+            },
+            {
                 "Name": "ReflectionScreenSpaceCompositePassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceComposite.pass"
             },
@@ -515,6 +519,10 @@
             {
                 "Name": "RayTracingShadowsPassTemplate",
                 "Path": "Passes/RayTracingShadows.pass"
+            },
+            {
+                "Name": "ShadowDenoiserPassTemplate",
+                "Path": "Passes/ShadowDenoiserFilter.pass"
             },
             {
                 "Name": "RayTracingEmissivePassTemplate",

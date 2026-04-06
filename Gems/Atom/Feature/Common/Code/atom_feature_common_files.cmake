@@ -296,6 +296,8 @@ set(FILES
     Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.cpp
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h
+    Source/ShadowDenoiser/ShadowDenoiserPass.cpp
+    Source/ShadowDenoiser/ShadowDenoiserPass.h
     Source/ScreenSpace/DeferredFogSettings.cpp
     Source/ScreenSpace/DeferredFogSettings.h
     Source/ScreenSpace/DeferredFogPass.cpp

@@ -232,28 +232,8 @@
                     ]
                 },
                 {
-                    "Name": "ReflectionScreenSpaceBlurPass",
-                    "TemplateName": "ReflectionScreenSpaceBlurPassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "ScreenSpaceReflectionInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceTracePass",
-                                "Attachment": "ScreenSpaceReflectionOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DownsampledDepthLinear",
-                            "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceDownsampleDepthLinearPass",
-                                "Attachment": "DownsampledDepthLinearInputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "ReflectionScreenSpaceFilterPass",
-                    "TemplateName": "ReflectionScreenSpaceFilterPassTemplate",
+                    "Name": "ReflectionDenoiserPass",
+                    "TemplateName": "ReflectionDenoiserPassTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "DepthStencilTextureInput",
@@ -282,13 +262,6 @@
                                 "Pass": "ReflectionScreenSpaceTracePass",
                                 "Attachment": "ScreenSpaceReflectionOutput"
                             }
-                        },
-                        {
-                            "LocalSlot": "TraceCoordsInput",
-                            "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceTracePass",
-                                "Attachment": "TraceCoordsOutput"
-                            }
                         }
                     ]
                 },
@@ -299,14 +272,14 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceFilterPass",
+                                "Pass": "ReflectionDenoiserPass",
                                 "Attachment": "Output"
                             }
                         },
                         {
                             "LocalSlot": "Output",
                             "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceFilterPass",
+                                "Pass": "ReflectionDenoiserPass",
                                 "Attachment": "History"
                             }
                         }
@@ -319,7 +292,7 @@
                         {
                             "LocalSlot": "ReflectionInput",
                             "AttachmentRef": {
-                                "Pass": "ReflectionScreenSpaceFilterPass",
+                                "Pass": "ReflectionDenoiserPass",
                                 "Attachment": "Output"
                             }
                         },

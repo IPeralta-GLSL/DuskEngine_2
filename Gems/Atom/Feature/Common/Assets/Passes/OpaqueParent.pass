@@ -294,6 +294,54 @@
                     ]
                 },
                 {
+                    "Name": "ShadowDenoiserFilterPass",
+                    "TemplateName": "ShadowDenoiserPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Forward",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "Forward",
+                                "Attachment": "NormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ShadowInput",
+                            "AttachmentRef": {
+                                "Pass": "RayTracingShadowsPass",
+                                "Attachment": "ShadowOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ShadowDenoiserCopyHistoryPass",
+                    "TemplateName": "ReflectionScreenSpaceCopyHistoryPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ShadowDenoiserFilterPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "ShadowDenoiserFilterPass",
+                                "Attachment": "History"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "RayTracingEmissivePass",
                     "TemplateName": "RayTracingEmissivePassTemplate",
                     "Enabled": true,

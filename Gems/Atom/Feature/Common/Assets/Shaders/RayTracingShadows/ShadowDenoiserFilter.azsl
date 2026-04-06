@@ -1,0 +1,180 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ */
+
+// Shadow Denoiser
+//
+// Applies temporal + spatial denoising to ray-traced shadow data.
+// Algorithm:
+//   1. Spatial cross-bilateral filter on current-frame shadow (edge-stopping on depth/normals)
+//   2. Temporal reprojection via ViewSrg matrices + AABB clamping
+//   3. Sample-count based exponential moving average accumulation
+//
+// SRG slot order (AutoBind sequential mapping):
+//   0 – m_depth      (DepthStencilTextureInput)
+//   1 – m_normal     (NormalInput)
+//   2 – m_shadow     (ShadowInput – R32_FLOAT RT shadow from RayTracingShadowsPass)
+//   3 – m_history    (History – R16_FLOAT persistent denoised shadow from prev frame)
+// Output:
+//   Render target – R16G16B16A16_FLOAT (.r = denoised shadow, .a = sampleCount/MAX)
+//
+// Output: R16G16B16A16_FLOAT render target (shadow in .r, history via .r channel)
+// The CopyHistoryPass captures .r into R16_FLOAT history for next-frame temporal use.
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/RPI/Math.azsli>
+
+// ============================================================
+// SRG
+// ============================================================
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Slot 0: DepthStencilTextureInput – full-res MSAA depth
+    Texture2DMS<float>  m_depth;
+
+    // Slot 1: NormalInput – full-res MSAA normals (RGB10 SignedOctahedron)
+    Texture2DMS<float4> m_normal;
+
+    // Slot 2: ShadowInput – full-res R32_FLOAT shadow (1=lit, 0=shadowed)
+    Texture2D<float>    m_shadow;
+
+    // Slot 3: History – full-res R16G16B16A16_FLOAT; .r = denoised shadow from previous frame
+    Texture2D<float4>   m_history;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+}
+
+// ============================================================
+// Constants
+// ============================================================
+
+static const float MAX_SAMPLE_COUNT = 32.0;
+static const float DEPTH_SIGMA      = 4.0;
+static const float NORMAL_SIGMA     = 32.0;
+static const float TEMPORAL_MAX_W   = 0.95;
+
+// ============================================================
+// Helpers
+// ============================================================
+
+float LinearDepth(float hwDepth)
+{
+    float4 v = mul(ViewSrg::m_projectionMatrixInverse, float4(0.0, 0.0, hwDepth, 1.0));
+    return abs(v.z / v.w);
+}
+
+// ============================================================
+// Main
+// ============================================================
+
+PSOutput MainPS(VSOutput IN)
+{
+    int2   icoords = int2(IN.m_position.xy);
+    float2 uv      = IN.m_texCoord.xy;
+
+    // Sample center shadow; skip background pixels (depth = 0/1 at far plane)
+    float shadowCenter = PassSrg::m_shadow.Load(int3(icoords, 0));
+
+    // Load center depth and normal (MSAA sample 0)
+    float  hwDepthCenter     = PassSrg::m_depth.Load(icoords, 0).r;
+    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(icoords, 0).rgb);
+    float  linearDepthCenter = LinearDepth(hwDepthCenter);
+
+    // ---- Spatial 3x3 bilateral filter ----
+    float accumShadow = 0.0;
+    float accumWeight = 0.0;
+    float shadowMin   = shadowCenter;
+    float shadowMax   = shadowCenter;
+
+    for (int dy = -1; dy <= 1; ++dy)
+    {
+        for (int dx = -1; dx <= 1; ++dx)
+        {
+            int2  nc        = icoords + int2(dx, dy);
+            float neighborS = PassSrg::m_shadow.Load(int3(nc, 0));
+
+            float hwDepthN  = PassSrg::m_depth.Load(nc, 0).r;
+            float3 normalN  = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(nc, 0).rgb);
+            float linDepthN = LinearDepth(hwDepthN);
+
+            float depthDiff   = abs(linearDepthCenter - linDepthN) * linearDepthCenter;
+            float depthWeight = exp(-depthDiff * DEPTH_SIGMA);
+            float normalWeight= pow(saturate(dot(normalCenter, normalN)), NORMAL_SIGMA);
+
+            float w = depthWeight * normalWeight;
+            accumShadow += neighborS * w;
+            accumWeight += w;
+
+            shadowMin = min(shadowMin, neighborS);
+            shadowMax = max(shadowMax, neighborS);
+        }
+    }
+
+    float filteredShadow = (accumWeight > 1e-5) ? (accumShadow / accumWeight) : shadowCenter;
+
+    // ---- Temporal reprojection ----
+    float histSample  = 0.0;
+    bool  validHist   = false;
+    float histCount   = 0.0;
+
+    // Reconstruct world position and reproject to previous frame
+    float2 ndc     = float2(uv.x, 1.0 - uv.y) * 2.0 - 1.0;
+    float4 projPos = float4(ndc, hwDepthCenter, 1.0);
+    float4 viewPos = mul(ViewSrg::m_projectionMatrixInverse, projPos);
+    viewPos /= viewPos.w;
+    float4 worldPos = mul(ViewSrg::m_viewMatrixInverse, viewPos);
+
+    float4 prevClip = mul(ViewSrg::m_viewProjectionPrevMatrix, worldPos);
+    prevClip /= prevClip.w;
+    float2 prevUV = float2(prevClip.x * 0.5 + 0.5, -prevClip.y * 0.5 + 0.5);
+
+    if (prevUV.x >= 0.0 && prevUV.x <= 1.0 &&
+        prevUV.y >= 0.0 && prevUV.y <= 1.0)
+    {
+        // History stores the denoised shadow value from the previous frame in .r
+        histSample = PassSrg::m_history.SampleLevel(PassSrg::LinearSampler, prevUV, 0).r;
+        // Use a fixed sample-count proxy: equivalent to a ~10-frame EMA
+        histCount  = 10.0;
+        validHist  = true;
+    }
+
+    // ---- AABB temporal clamping ----
+    float slack    = (shadowMax - shadowMin) * 0.1 + 0.01;
+    float aabbMin  = shadowMin - slack;
+    float aabbMax  = shadowMax + slack;
+
+    // ---- Temporal blend ----
+    float finalShadow = filteredShadow;
+
+    if (validHist)
+    {
+        // Clip history into current-frame 1D AABB
+        float clippedHist = clamp(histSample, aabbMin, aabbMax);
+
+        float blendWeight = 1.0 - (1.0 / max(histCount + 1.0, 1.0));
+        blendWeight = min(blendWeight, TEMPORAL_MAX_W);
+
+        finalShadow = lerp(filteredShadow, clippedHist, blendWeight);
+    }
+
+    PSOutput OUT;
+    // Store denoised shadow in .r so the history copy pass can capture it via R16_FLOAT.
+    // .rgb = shadow value (greyscale), .a = 1.0 (fully valid)
+    OUT.m_color = float4(finalShadow, finalShadow, finalShadow, 1.0);
+    return OUT;
+}
