@@ -420,29 +420,48 @@ class BuildWorker(QThread):
     output_line = pyqtSignal(str)
     finished = pyqtSignal(bool)
 
-    def __init__(self, project_path: str, build_path: str):
+    def __init__(self, project_path: str, project_name: str):
         super().__init__()
         self._project_path = project_path
-        self._build_path = build_path
+        self._project_name = project_name
+
+    def _run_cmd(self, cmd: list) -> int:
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, bufsize=1
+        )
+        for line in proc.stdout:
+            self.output_line.emit(line.rstrip())
+        proc.wait()
+        return proc.returncode
 
     def run(self):
         import multiprocessing
         j = multiprocessing.cpu_count()
-        cmd = [
-            "cmake", "--build", self._build_path,
-            "--config", "profile",
-            "--target", "Editor",
-            "--", f"-j{j}"
+        engine_build = str(BUILD_PATH)
+        engine_src = str(ENGINE_PATH)
+
+        configure_cmd = [
+            "cmake", "-B", engine_build, "-S", engine_src,
+            f"-DLY_PROJECTS={self._project_path}"
         ]
         try:
-            proc = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                text=True, bufsize=1
-            )
-            for line in proc.stdout:
-                self.output_line.emit(line.rstrip())
-            proc.wait()
-            self.finished.emit(proc.returncode == 0)
+            self.output_line.emit("=== Configuring project ===")
+            rc = self._run_cmd(configure_cmd)
+            if rc != 0:
+                self.finished.emit(False)
+                return
+
+            launcher_target = f"{self._project_name}.GameLauncher"
+            build_cmd = [
+                "cmake", "--build", engine_build,
+                "--config", "profile",
+                "--target", launcher_target, "Editor",
+                "--", f"-j{j}"
+            ]
+            self.output_line.emit("=== Building targets ===")
+            rc = self._run_cmd(build_cmd)
+            self.finished.emit(rc == 0)
         except Exception as e:
             self.output_line.emit(f"Error: {e}")
             self.finished.emit(False)
@@ -1292,16 +1311,18 @@ class ProjectManagerLite(QMainWindow):
                                     "This project is already being built.")
             return
 
-        project_build_path = str(Path(path) / "build" / "linux")
-        if not Path(project_build_path).exists():
-            project_build_path = str(BUILD_PATH)
+        project_json_path = Path(path) / "project.json"
+        try:
+            project_name = json.loads(project_json_path.read_text())["project_name"]
+        except Exception:
+            project_name = project.get("name", "")
 
         self._building_paths.add(path)
         row = self._find_row(path)
         if row:
             row.set_status("building")
 
-        worker = BuildWorker(path, project_build_path)
+        worker = BuildWorker(path, project_name)
         self._build_workers[path] = worker
         worker.finished.connect(lambda ok, p=path: self._on_build_finished(p, ok))
         worker.start()

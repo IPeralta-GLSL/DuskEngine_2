@@ -48,8 +48,7 @@ CStartupLogoDialog::CStartupLogoDialog(
         m_ui->m_pages->setCurrentIndex(0);
         setWindowTitle(tr("Starting Open 3D Engine Editor"));
         m_ui->m_TransparentConfidential->setObjectName("copyrightNotice");
-        m_ui->m_TransparentConfidential->setTextFormat(Qt::RichText);
-        m_ui->m_TransparentConfidential->setText(richTextCopyrightNotice);
+        m_ui->m_TransparentConfidential->hide();
         m_ui->m_TransparentVersion->setText(versionText);
         setStyleSheet("QLabel { background: transparent; color: 'white' }\
                             QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");

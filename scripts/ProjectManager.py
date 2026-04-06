@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
     QListWidget, QListWidgetItem, QCheckBox, QSplitter, QTextEdit
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QProcess, QTimer, QSize
-from PyQt5.QtGui import QFont, QFontDatabase, QIcon, QCursor
+from PyQt5.QtGui import QFont, QFontDatabase, QIcon, QCursor, QColor, QTextCharFormat, QTextCursor
 
 ENGINE_PATH = Path(__file__).parent.parent.resolve()
 BUILD_PATH = ENGINE_PATH / "build" / "linux"
@@ -334,6 +334,21 @@ QDialog QLineEdit {
 QDialog QDialogButtonBox QPushButton {
     min-width: 90px;
 }
+
+QTextEdit#buildLog {
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #cccccc;
+    font-family: "Monospace";
+    font-size: 9pt;
+    padding: 6px;
+}
+
+QLabel#buildStatusLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: #FFB74D;
+}
 """
 
 
@@ -420,32 +435,144 @@ class BuildWorker(QThread):
     output_line = pyqtSignal(str)
     finished = pyqtSignal(bool)
 
-    def __init__(self, project_path: str, build_path: str):
+    def __init__(self, project_path: str, project_name: str):
         super().__init__()
         self._project_path = project_path
-        self._build_path = build_path
+        self._project_name = project_name
+        self._current_proc = None
+        self._cancelled = False
+
+    def cancel(self):
+        self._cancelled = True
+        if self._current_proc and self._current_proc.poll() is None:
+            self._current_proc.terminate()
+
+    def _run_cmd(self, cmd: list) -> int:
+        self._current_proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, bufsize=1
+        )
+        for line in self._current_proc.stdout:
+            if self._cancelled:
+                break
+            self.output_line.emit(line.rstrip())
+        self._current_proc.wait()
+        return self._current_proc.returncode
 
     def run(self):
         import multiprocessing
         j = multiprocessing.cpu_count()
-        cmd = [
-            "cmake", "--build", self._build_path,
-            "--config", "profile",
-            "--target", "Editor",
-            "--", f"-j{j}"
+        engine_build = str(BUILD_PATH)
+        engine_src = str(ENGINE_PATH)
+
+        configure_cmd = [
+            "cmake", "-B", engine_build, "-S", engine_src,
+            f"-DLY_PROJECTS={self._project_path}"
         ]
         try:
-            proc = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                text=True, bufsize=1
-            )
-            for line in proc.stdout:
-                self.output_line.emit(line.rstrip())
-            proc.wait()
-            self.finished.emit(proc.returncode == 0)
+            self.output_line.emit("=== Configuring project ===")
+            rc = self._run_cmd(configure_cmd)
+            if rc != 0 or self._cancelled:
+                self.finished.emit(False)
+                return
+
+            launcher_target = f"{self._project_name}.GameLauncher"
+            build_cmd = [
+                "cmake", "--build", engine_build,
+                "--config", "profile",
+                "--target", launcher_target, "Editor",
+                "--", f"-j{j}"
+            ]
+            self.output_line.emit("=== Building targets ===")
+            rc = self._run_cmd(build_cmd)
+            self.finished.emit(rc == 0 and not self._cancelled)
         except Exception as e:
             self.output_line.emit(f"Error: {e}")
             self.finished.emit(False)
+
+
+class BuildOutputDialog(QDialog):
+    def __init__(self, project_name: str, worker: 'BuildWorker', parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"Building — {project_name}")
+        self.setMinimumSize(QSize(860, 520))
+        self.setModal(False)
+        self._worker = worker
+        self._finished = False
+
+        root = QVBoxLayout(self)
+        root.setSpacing(10)
+        root.setContentsMargins(16, 14, 16, 14)
+
+        header = QHBoxLayout()
+        self._status_lbl = QLabel("Configuring…")
+        self._status_lbl.setObjectName("buildStatusLabel")
+        header.addWidget(self._status_lbl)
+        header.addStretch()
+        root.addLayout(header)
+
+        self._log = QTextEdit()
+        self._log.setReadOnly(True)
+        self._log.setObjectName("buildLog")
+        self._log.setFont(QFont("Monospace", 9))
+        root.addWidget(self._log)
+
+        footer = QHBoxLayout()
+        footer.addStretch()
+        self._stop_btn = QPushButton("Stop Build")
+        self._stop_btn.setObjectName("dangerButton")
+        self._stop_btn.clicked.connect(self._cancel)
+        footer.addWidget(self._stop_btn)
+        self._close_btn = QPushButton("Close")
+        self._close_btn.setEnabled(False)
+        self._close_btn.clicked.connect(self.accept)
+        footer.addWidget(self._close_btn)
+        root.addLayout(footer)
+
+        worker.output_line.connect(self.append_line)
+        worker.finished.connect(self._on_finished)
+
+    def append_line(self, line: str):
+        cursor = self._log.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        fmt = QTextCharFormat()
+        low = line.lower()
+        if line.startswith("==="):
+            fmt.setForeground(QColor("#4CAF50"))
+        elif "error:" in low or low.startswith("error"):
+            fmt.setForeground(QColor("#ef5350"))
+        elif "warning:" in low:
+            fmt.setForeground(QColor("#FFA726"))
+        else:
+            fmt.setForeground(QColor("#cccccc"))
+        cursor.setCharFormat(fmt)
+        cursor.insertText(line + "\n")
+        self._log.setTextCursor(cursor)
+        self._log.ensureCursorVisible()
+        if "=== Building" in line:
+            self._status_lbl.setText("Building…")
+
+    def _on_finished(self, success: bool):
+        self._finished = True
+        self._stop_btn.setEnabled(False)
+        self._close_btn.setEnabled(True)
+        if success:
+            self._status_lbl.setText("Build complete ✓")
+            self._status_lbl.setStyleSheet("color: #4CAF50;")
+        else:
+            self._status_lbl.setText("Build failed ✗")
+            self._status_lbl.setStyleSheet("color: #ef5350;")
+
+    def _cancel(self):
+        self._stop_btn.setEnabled(False)
+        self._status_lbl.setText("Cancelling…")
+        self._worker.cancel()
+
+    def closeEvent(self, event):
+        if not self._finished:
+            event.ignore()
+        else:
+            super().closeEvent(event)
 
 
 def get_all_available_gems() -> list[dict]:
@@ -1292,18 +1419,24 @@ class ProjectManagerLite(QMainWindow):
                                     "This project is already being built.")
             return
 
-        project_build_path = str(Path(path) / "build" / "linux")
-        if not Path(project_build_path).exists():
-            project_build_path = str(BUILD_PATH)
+        project_json_path = Path(path) / "project.json"
+        try:
+            project_name = json.loads(project_json_path.read_text())["project_name"]
+        except Exception:
+            project_name = project.get("name", "")
 
         self._building_paths.add(path)
         row = self._find_row(path)
         if row:
             row.set_status("building")
 
-        worker = BuildWorker(path, project_build_path)
+        worker = BuildWorker(path, project_name)
         self._build_workers[path] = worker
         worker.finished.connect(lambda ok, p=path: self._on_build_finished(p, ok))
+
+        dlg = BuildOutputDialog(project_name, worker, self)
+        dlg.show()
+
         worker.start()
 
     def _on_build_finished(self, project_path: str, success: bool):
@@ -1312,12 +1445,6 @@ class ProjectManagerLite(QMainWindow):
         row = self._find_row(project_path)
         if row:
             row.set_status("ready" if success else "failed")
-        if success:
-            QMessageBox.information(self, "Build Complete", "Project built successfully.")
-        else:
-            QMessageBox.warning(self, "Build Failed",
-                                "The build finished with errors.\n"
-                                "Check the terminal output for details.")
 
     def _handle_edit_settings(self, project: dict):
         pjson = Path(project["path"]) / "project.json"
