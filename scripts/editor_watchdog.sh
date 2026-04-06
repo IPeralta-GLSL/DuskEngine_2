@@ -3,7 +3,7 @@
 #  O3DE Editor Watchdog  —  Linux
 #  Similar to Unreal Engine's CrashReporter subprocess.
 #
-#  Lanza el Editor y lo monitorea en segundo plano:
+#  Lanza el ProjectManager y el Editor y los monitorea en segundo plano:
 #    • Si el Editor se CRASEA  (exit code != 0): guarda Editor.log + info
 #    • Si el Editor se FREEZEA (heartbeat > FREEZE_TIMEOUT seg sin actualizar):
 #        - Captura backtrace con GDB si está disponible
@@ -113,11 +113,27 @@ capture_gdb_backtrace() {
     fi
 }
 
-# ── Lanzar Editor ─────────────────────────────────────────────────────────────
+PM_SCRIPT="$(dirname "$0")/ProjectManager.py"
+
+# ── Sin proyecto: solo lanzar ProjectManager y terminar ──────────────────────
+if [[ -z "$PROJECT_PATH" ]]; then
+    if [[ -f "$PM_SCRIPT" ]] && command -v python3 &>/dev/null; then
+        echo "================================================"
+        echo "  Dusk Engine — Project Manager"
+        echo "================================================"
+        python3 "$PM_SCRIPT"
+        exit 0
+    else
+        echo "[Watchdog] ProjectManager no encontrado: $PM_SCRIPT"
+        exit 1
+    fi
+fi
+
+# ── Con proyecto: lanzar Editor con monitoreo ────────────────────────────────
 echo "================================================"
 echo "  O3DE Editor Watchdog"
 echo "  Editor  : $EDITOR_BIN"
-echo "  Proyecto: ${PROJECT_PATH:-'(no especificado)'}"
+echo "  Proyecto: $PROJECT_PATH"
 echo "  Freeze timeout: ${FREEZE_TIMEOUT}s"
 echo "  Logs en : $LOG_DIR"
 echo "================================================"
@@ -177,7 +193,6 @@ echo ""
 if $FREEZE_DETECTED; then
     echo "══ RESULTADO: FREEZE (proceso terminado por watchdog) ══"
 elif [[ $EXIT_CODE -ne 0 && $EXIT_CODE -ne 2 ]]; then
-    # exit code 2 = ProjectManager lanzado (normal)
     echo "╔══════════════════════════════════════════╗"
     echo "║  ✖  CRASH DETECTADO  (exit code: $EXIT_CODE)   ║"
     echo "╚══════════════════════════════════════════╝"
@@ -197,7 +212,6 @@ elif [[ $EXIT_CODE -ne 0 && $EXIT_CODE -ne 2 ]]; then
 
     echo "[Watchdog] Reporte guardado en: ${LOG_PREFIX}_crash_report.txt"
 
-    # Analizar core dump con GDB via systemd-coredump
     LATEST_CORE=$(ls -t "$CORE_DIR"/core.o3de.* /tmp/core.* "$LOG_DIR"/core.* core core."$EDITOR_PID" 2>/dev/null | head -1 || true)
     if command -v coredumpctl &>/dev/null; then
         echo "[Watchdog] Extrayendo core dump via coredumpctl (PID $EDITOR_PID)..."
