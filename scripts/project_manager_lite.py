@@ -651,7 +651,7 @@ class BuildOutputDialog(QDialog):
 
     def _on_finished(self, success: bool):
         self._finished = True
-        self._stop_btn.setEnabled(False)
+        self._stop_btn.hide()
         self._close_btn.setEnabled(True)
         if success:
             self._status_lbl.setText("Build complete ✓")
@@ -662,6 +662,7 @@ class BuildOutputDialog(QDialog):
 
     def _cancel(self):
         self._stop_btn.setEnabled(False)
+        self._stop_btn.hide()
         self._status_lbl.setText("Cancelling…")
         self._worker.cancel()
 

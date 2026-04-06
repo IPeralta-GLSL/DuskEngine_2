@@ -1044,12 +1044,12 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
             {
                 isLevelNameValid = false;
                 doLevelNeedLoading = true;
-                if (gSettings.bShowDashboardAtStartup
+                if (false && gSettings.bShowDashboardAtStartup
                     && !runningPythonScript
                     && !m_bConsoleMode
                     && !m_bSkipWelcomeScreenDialog
                     && !m_bPreviewMode
-                    && !autoloadLastLevel)
+                    && !autoloadLastLevel) // Welcome screen disabled
                 {
                     levelName = ShowWelcomeDialog();
                 }
