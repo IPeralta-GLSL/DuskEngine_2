@@ -104,7 +104,7 @@ SEditorSettings::SEditorSettings()
     bSettingsManagerMode = false;
 
     undoLevels = 50;
-    bShowDashboardAtStartup = true;
+    bShowDashboardAtStartup = false;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
 

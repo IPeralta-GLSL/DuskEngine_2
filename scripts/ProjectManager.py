@@ -547,6 +547,47 @@ class BuildWorker(QThread):
             self.finished.emit(False)
 
 
+class EngineBuildWorker(QThread):
+    output_line = pyqtSignal(str)
+    finished = pyqtSignal(bool)
+
+    def __init__(self, targets: list = None):
+        super().__init__()
+        self._targets = targets or ["Editor", "AssetProcessor"]
+        self._current_proc = None
+        self._cancelled = False
+
+    def cancel(self):
+        self._cancelled = True
+        if self._current_proc and self._current_proc.poll() is None:
+            self._current_proc.terminate()
+
+    def run(self):
+        import multiprocessing
+        j = multiprocessing.cpu_count()
+        build_cmd = [
+            "cmake", "--build", str(BUILD_PATH),
+            "--config", "profile",
+            "--target", *self._targets,
+            "--", f"-j{j}"
+        ]
+        try:
+            self.output_line.emit(f"=== Building Engine ({', '.join(self._targets)}) ===")
+            self._current_proc = subprocess.Popen(
+                build_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1
+            )
+            for line in self._current_proc.stdout:
+                if self._cancelled:
+                    break
+                self.output_line.emit(line.rstrip())
+            self._current_proc.wait()
+            self.finished.emit(self._current_proc.returncode == 0 and not self._cancelled)
+        except Exception as e:
+            self.output_line.emit(f"Error: {e}")
+            self.finished.emit(False)
+
+
 class BuildOutputDialog(QDialog):
     def __init__(self, project_name: str, worker: 'BuildWorker', parent=None):
         super().__init__(parent)
@@ -1373,16 +1414,35 @@ class ProjectManagerLite(QMainWindow):
 
         outer.addLayout(left, 1)
 
-        remove_btn = QPushButton("Remove")
-        if not is_current:
-            remove_btn.setObjectName("dangerButton")
-        remove_btn.setEnabled(not is_current)
-        remove_btn.setToolTip(
-            "Cannot remove the active engine" if is_current else "Remove from registry"
-        )
-        remove_btn.clicked.connect(lambda _=False, ep=engine_path: self._handle_remove_engine(ep))
-        outer.addWidget(remove_btn)
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(8)
 
+        if is_current:
+            build_menu = QMenu()
+            build_menu.addAction("Editor + AssetProcessor",
+                lambda: self._handle_build_engine(["Editor", "AssetProcessor"]))
+            build_menu.addAction("Editor only",
+                lambda: self._handle_build_engine(["Editor"]))
+            build_menu.addAction("AssetProcessor only",
+                lambda: self._handle_build_engine(["AssetProcessor"]))
+            build_btn = QPushButton("Build Engine  ▾")
+            build_btn.setObjectName("menuButton")
+            build_btn.setMenu(build_menu)
+            build_btn.setFixedHeight(30)
+            btn_row.addWidget(build_btn)
+
+        more_btn = QPushButton("⋯")
+        more_btn.setObjectName("iconButton")
+        more_btn.setToolTip("More options")
+        ep_capture = engine_path
+        is_current_capture = is_current
+        more_btn.clicked.connect(
+            lambda _=False, ep=ep_capture, active=is_current_capture:
+                self._show_engine_menu(ep, active)
+        )
+        btn_row.addWidget(more_btn)
+
+        outer.addLayout(btn_row)
         return row
 
     def _handle_add_engine(self):
@@ -1403,6 +1463,31 @@ class ProjectManagerLite(QMainWindow):
             manifest["engines"] = engines
             write_manifest(manifest)
         self._load_engines()
+
+    def _handle_build_engine(self, targets: list):
+        worker = EngineBuildWorker(targets)
+        dlg = BuildOutputDialog("Dusk Engine", worker, self)
+        dlg.setWindowTitle(f"Building Engine — {', '.join(targets)}")
+        dlg.show()
+        worker.start()
+
+    def _show_engine_menu(self, engine_path: str, is_current: bool):
+        menu = QMenu(self)
+        if is_current:
+            build_sub = menu.addMenu("Build Engine")
+            build_sub.addAction("Editor + AssetProcessor",
+                lambda: self._handle_build_engine(["Editor", "AssetProcessor"]))
+            build_sub.addAction("Editor only",
+                lambda: self._handle_build_engine(["Editor"]))
+            build_sub.addAction("AssetProcessor only",
+                lambda: self._handle_build_engine(["AssetProcessor"]))
+            menu.addSeparator()
+            open_folder = menu.addAction("Open Engine Folder…")
+            open_folder.triggered.connect(lambda: subprocess.Popen(["xdg-open", engine_path]))
+        else:
+            remove_act = menu.addAction("Remove from registry")
+            remove_act.triggered.connect(lambda: self._handle_remove_engine(engine_path))
+        menu.exec_(QCursor.pos())
 
     def _handle_remove_engine(self, engine_path: str):
         reply = QMessageBox.question(
