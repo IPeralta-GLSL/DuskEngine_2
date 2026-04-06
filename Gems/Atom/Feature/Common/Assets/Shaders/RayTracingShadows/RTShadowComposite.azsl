@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// RTShadowComposite.azsl
+//
+// Shadow-replacement compositing pass: runs after SSAO and before DiffuseSpecularMerge.
+// Blends the RT-denoised directional shadow into the diffuse buffer using a
+// multiplicative NdotL-weighted ratio: diffuseOut = diffuseIn * lerp(1, rtShadow/csmShadow, NdotL).
+// This requires no albedo buffer and is stable when csmShadow approaches zero.
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Resolved (non-MSAA) diffuse buffer, output of Ssao pass
+    Texture2D<float4>   m_diffuse;
+
+    // MSAA forward normal buffer (R10G10B10A2_UNORM, SignedOctahedral)
+    Texture2DMS<float4> m_normal;
+
+    // CSM precomputed fullscreen shadow (R8_UNORM, 1=lit 0=shadow)
+    Texture2D<float>    m_csmShadow;
+
+    // RT denoised shadow (R16G16B16A16_FLOAT, .r = visibility, 1=lit 0=shadow)
+    Texture2D<float4>   m_rtShadow;
+}
+
+float4 MainPS(VSOutput IN) : SV_Target0
+{
+    int2 coord = int2(IN.m_position.xy);
+
+    float3 diffuse  = PassSrg::m_diffuse.Load(int3(coord, 0)).rgb;
+    float csmShadow = PassSrg::m_csmShadow.Load(int3(coord, 0)).r;
+    float rtShadow  = PassSrg::m_rtShadow.Load(int3(coord, 0)).r;
+
+    if (abs(rtShadow - csmShadow) > 0.01f && SceneSrg::m_directionalLightCount > 0)
+    {
+        float3 encodedNormal = PassSrg::m_normal.Load(coord, 0).rgb;
+        float3 normal = DecodeNormalSignedOctahedron(encodedNormal);
+        float3 dirToLight = -normalize(SceneSrg::m_directionalLights[0].m_direction);
+        float NdotL = saturate(dot(normal, dirToLight));
+
+        if (NdotL > 0.01f)
+        {
+            // Scale diffuse by rtShadow/csmShadow, weighted by NdotL.
+            // Clamp ratio to 2× to prevent over-brightening very dark CSM pixels.
+            float ratio = clamp(rtShadow / max(csmShadow, 0.001f), 0.0f, 2.0f);
+            float blendWeight = saturate(NdotL * 2.0f);
+            float correction = lerp(1.0f, ratio, blendWeight);
+            diffuse *= correction;
+        }
+    }
+
+    return float4(diffuse, 1.0f);
+}

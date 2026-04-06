@@ -1,0 +1,78 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "RTShadowCompositePassTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                // Inputs
+                {
+                    "Name": "DiffuseInput",
+                    "ShaderInputName": "m_diffuse",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "NormalInput",
+                    "ShaderInputName": "m_normal",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "FullscreenShadow",
+                    "ShaderInputName": "m_csmShadow",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DenoisedRTShadow",
+                    "ShaderInputName": "m_rtShadow",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                // Output
+                {
+                    "Name": "DiffuseOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "RTShadowCompositedDiffuse",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DiffuseInput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DiffuseOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "RTShadowCompositedDiffuse"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/RayTracingShadows/RTShadowComposite.shader"
+                },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

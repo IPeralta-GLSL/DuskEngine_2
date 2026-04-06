@@ -1196,6 +1196,13 @@ namespace AssetUtilities
             return 0;
         }
 
+        // Directories cannot be read as files; attempting to do so asserts on Linux
+        // (open(O_RDONLY) succeeds on a directory but read() returns EISDIR).
+        if (QFileInfo(filePath).isDir())
+        {
+            return 0;
+        }
+
         AZ::u64 hash = 0;
         if(!force)
         {

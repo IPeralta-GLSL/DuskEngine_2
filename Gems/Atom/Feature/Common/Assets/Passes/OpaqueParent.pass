@@ -591,14 +591,49 @@
                     ]
                 },
                 {
+                    "Name": "RTShadowCompositePass",
+                    "TemplateName": "RTShadowCompositePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DiffuseInput",
+                            "AttachmentRef": {
+                                "Pass": "Ssao",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalInput",
+                            "AttachmentRef": {
+                                "Pass": "Forward",
+                                "Attachment": "NormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "FullscreenShadow",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "FullscreenShadowBuffer"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DenoisedRTShadow",
+                            "AttachmentRef": {
+                                "Pass": "ShadowDenoiserFilterPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "DiffuseSpecularMergePass",
                     "TemplateName": "DiffuseSpecularMergeTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "InputDiffuse",
                             "AttachmentRef": {
-                                "Pass": "Ssao",
-                                "Attachment": "Output"
+                                "Pass": "RTShadowCompositePass",
+                                "Attachment": "DiffuseOutput"
                             }
                         },
                         {

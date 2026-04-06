@@ -525,6 +525,10 @@
                 "Path": "Passes/ShadowDenoiserFilter.pass"
             },
             {
+                "Name": "RTShadowCompositePassTemplate",
+                "Path": "Passes/RTShadowComposite.pass"
+            },
+            {
                 "Name": "RayTracingEmissivePassTemplate",
                 "Path": "Passes/RayTracingEmissive.pass"
             },
