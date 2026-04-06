@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
     QListWidget, QListWidgetItem, QCheckBox, QSplitter, QTextEdit
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QProcess, QTimer, QSize
-from PyQt5.QtGui import QFont, QFontDatabase, QIcon, QCursor
+from PyQt5.QtGui import QFont, QFontDatabase, QIcon, QCursor, QColor, QTextCharFormat, QTextCursor
 
 ENGINE_PATH = Path(__file__).parent.parent.resolve()
 BUILD_PATH = ENGINE_PATH / "build" / "linux"
@@ -334,6 +334,77 @@ QDialog QLineEdit {
 QDialog QDialogButtonBox QPushButton {
     min-width: 90px;
 }
+
+QTextEdit#buildLog {
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #cccccc;
+    font-family: "Monospace";
+    font-size: 9pt;
+    padding: 6px;
+}
+
+QLabel#buildStatusLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: #FFB74D;
+}
+
+QWidget#tabBar {
+    background: #131313;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+QPushButton#tabButton {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666666;
+    border-radius: 0;
+    margin-bottom: -1px;
+}
+QPushButton#tabButton:hover {
+    color: #aaaaaa;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 3px solid rgba(255,255,255,0.15);
+}
+QPushButton#tabButton[active=true] {
+    color: #ffffff;
+    border-bottom: 3px solid #4CAF50;
+}
+
+QFrame#engineRow {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+QFrame#engineRow:hover {
+    background: #222222;
+    border: 1px solid rgba(255,255,255,0.10);
+}
+QLabel#engineName {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+}
+QLabel#engineVersion {
+    font-size: 11px;
+    color: #81C784;
+    padding: 2px 8px;
+    background: rgba(76,175,80,0.12);
+}
+QLabel#enginePath {
+    font-size: 11px;
+    color: #888888;
+}
+QLabel#engineActiveBadge {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64B5F6;
+    padding: 2px 8px;
+    background: rgba(100,181,246,0.12);
+}
 """
 
 
@@ -424,16 +495,25 @@ class BuildWorker(QThread):
         super().__init__()
         self._project_path = project_path
         self._project_name = project_name
+        self._current_proc = None
+        self._cancelled = False
+
+    def cancel(self):
+        self._cancelled = True
+        if self._current_proc and self._current_proc.poll() is None:
+            self._current_proc.terminate()
 
     def _run_cmd(self, cmd: list) -> int:
-        proc = subprocess.Popen(
+        self._current_proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, bufsize=1
         )
-        for line in proc.stdout:
+        for line in self._current_proc.stdout:
+            if self._cancelled:
+                break
             self.output_line.emit(line.rstrip())
-        proc.wait()
-        return proc.returncode
+        self._current_proc.wait()
+        return self._current_proc.returncode
 
     def run(self):
         import multiprocessing
@@ -448,7 +528,7 @@ class BuildWorker(QThread):
         try:
             self.output_line.emit("=== Configuring project ===")
             rc = self._run_cmd(configure_cmd)
-            if rc != 0:
+            if rc != 0 or self._cancelled:
                 self.finished.emit(False)
                 return
 
@@ -461,10 +541,94 @@ class BuildWorker(QThread):
             ]
             self.output_line.emit("=== Building targets ===")
             rc = self._run_cmd(build_cmd)
-            self.finished.emit(rc == 0)
+            self.finished.emit(rc == 0 and not self._cancelled)
         except Exception as e:
             self.output_line.emit(f"Error: {e}")
             self.finished.emit(False)
+
+
+class BuildOutputDialog(QDialog):
+    def __init__(self, project_name: str, worker: 'BuildWorker', parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"Building — {project_name}")
+        self.setMinimumSize(QSize(860, 520))
+        self.setModal(False)
+        self._worker = worker
+        self._finished = False
+
+        root = QVBoxLayout(self)
+        root.setSpacing(10)
+        root.setContentsMargins(16, 14, 16, 14)
+
+        header = QHBoxLayout()
+        self._status_lbl = QLabel("Configuring…")
+        self._status_lbl.setObjectName("buildStatusLabel")
+        header.addWidget(self._status_lbl)
+        header.addStretch()
+        root.addLayout(header)
+
+        self._log = QTextEdit()
+        self._log.setReadOnly(True)
+        self._log.setObjectName("buildLog")
+        self._log.setFont(QFont("Monospace", 9))
+        root.addWidget(self._log)
+
+        footer = QHBoxLayout()
+        footer.addStretch()
+        self._stop_btn = QPushButton("Stop Build")
+        self._stop_btn.setObjectName("dangerButton")
+        self._stop_btn.clicked.connect(self._cancel)
+        footer.addWidget(self._stop_btn)
+        self._close_btn = QPushButton("Close")
+        self._close_btn.setEnabled(False)
+        self._close_btn.clicked.connect(self.accept)
+        footer.addWidget(self._close_btn)
+        root.addLayout(footer)
+
+        worker.output_line.connect(self.append_line)
+        worker.finished.connect(self._on_finished)
+
+    def append_line(self, line: str):
+        cursor = self._log.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        fmt = QTextCharFormat()
+        low = line.lower()
+        if line.startswith("==="):
+            fmt.setForeground(QColor("#4CAF50"))
+        elif "error:" in low or low.startswith("error"):
+            fmt.setForeground(QColor("#ef5350"))
+        elif "warning:" in low:
+            fmt.setForeground(QColor("#FFA726"))
+        else:
+            fmt.setForeground(QColor("#cccccc"))
+        cursor.setCharFormat(fmt)
+        cursor.insertText(line + "\n")
+        self._log.setTextCursor(cursor)
+        self._log.ensureCursorVisible()
+        if "=== Building" in line:
+            self._status_lbl.setText("Building…")
+
+    def _on_finished(self, success: bool):
+        self._finished = True
+        self._stop_btn.setEnabled(False)
+        self._close_btn.setEnabled(True)
+        if success:
+            self._status_lbl.setText("Build complete ✓")
+            self._status_lbl.setStyleSheet("color: #4CAF50;")
+        else:
+            self._status_lbl.setText("Build failed ✗")
+            self._status_lbl.setStyleSheet("color: #ef5350;")
+
+    def _cancel(self):
+        self._stop_btn.setEnabled(False)
+        self._status_lbl.setText("Cancelling…")
+        self._worker.cancel()
+
+    def closeEvent(self, event):
+        if not self._finished:
+            event.ignore()
+        else:
+            super().closeEvent(event)
 
 
 def get_all_available_gems() -> list[dict]:
@@ -1036,20 +1200,223 @@ class ProjectManagerLite(QMainWindow):
         self.setCentralWidget(central)
 
         root = QVBoxLayout(central)
-        root.setContentsMargins(48, 32, 48, 24)
+        root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        root.addWidget(self._build_header())
-        root.addSpacing(20)
+        root.addWidget(self._build_tab_bar())
+
+        self._tab_stack = QStackedWidget()
+
+        # ── Projects tab ──────────────────────────────────────────────
+        projects_tab = QWidget()
+        projects_tab.setObjectName("centralWidget")
+        ptab_layout = QVBoxLayout(projects_tab)
+        ptab_layout.setContentsMargins(48, 32, 48, 24)
+        ptab_layout.setSpacing(0)
+        ptab_layout.addWidget(self._build_header())
+        ptab_layout.addSpacing(20)
 
         self._stack = QStackedWidget()
         self._empty_page = self._build_empty_page()
         self._projects_page = self._build_projects_page()
         self._stack.addWidget(self._empty_page)
         self._stack.addWidget(self._projects_page)
-        root.addWidget(self._stack)
+        ptab_layout.addWidget(self._stack)
+
+        # ── Engine tab ────────────────────────────────────────────────
+        engine_tab = self._build_engine_page()
+
+        self._tab_stack.addWidget(projects_tab)   # index 0
+        self._tab_stack.addWidget(engine_tab)     # index 1
+        root.addWidget(self._tab_stack)
 
         self._load_projects()
+
+    def _build_tab_bar(self) -> QWidget:
+        bar = QWidget()
+        bar.setObjectName("tabBar")
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(48, 0, 48, 0)
+        layout.setSpacing(0)
+
+        self._tab_projects_btn = QPushButton("Projects")
+        self._tab_projects_btn.setObjectName("tabButton")
+        self._tab_projects_btn.setProperty("active", True)
+        self._tab_projects_btn.setFixedHeight(44)
+        self._tab_projects_btn.clicked.connect(lambda: self._switch_tab(0))
+        layout.addWidget(self._tab_projects_btn)
+
+        self._tab_engine_btn = QPushButton("Engine")
+        self._tab_engine_btn.setObjectName("tabButton")
+        self._tab_engine_btn.setProperty("active", False)
+        self._tab_engine_btn.setFixedHeight(44)
+        self._tab_engine_btn.clicked.connect(lambda: self._switch_tab(1))
+        layout.addWidget(self._tab_engine_btn)
+
+        layout.addStretch()
+        return bar
+
+    def _switch_tab(self, index: int):
+        self._tab_stack.setCurrentIndex(index)
+        self._tab_projects_btn.setProperty("active", index == 0)
+        self._tab_engine_btn.setProperty("active", index == 1)
+        for btn in (self._tab_projects_btn, self._tab_engine_btn):
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+        if index == 1:
+            self._load_engines()
+
+    def _build_engine_page(self) -> QWidget:
+        page = QWidget()
+        page.setObjectName("centralWidget")
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(48, 32, 48, 24)
+        layout.setSpacing(0)
+
+        # Header
+        header = QWidget()
+        hlayout = QHBoxLayout(header)
+        hlayout.setContentsMargins(0, 0, 0, 0)
+        hlayout.setSpacing(16)
+        title = QLabel("Engines")
+        title.setObjectName("sectionTitle")
+        hlayout.addWidget(title)
+        hlayout.addStretch()
+        add_btn = QPushButton("Add Engine")
+        add_btn.setObjectName("primaryButton")
+        add_btn.setFixedHeight(34)
+        add_btn.clicked.connect(self._handle_add_engine)
+        hlayout.addWidget(add_btn)
+        layout.addWidget(header)
+        layout.addSpacing(20)
+
+        # Scrollable engine list
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._engines_list_widget = QWidget()
+        self._engines_list_widget.setObjectName("scrollContent")
+        self._engines_list_layout = QVBoxLayout(self._engines_list_widget)
+        self._engines_list_layout.setSpacing(4)
+        self._engines_list_layout.setContentsMargins(0, 0, 0, 0)
+        self._engines_list_layout.setAlignment(Qt.AlignTop)
+        scroll.setWidget(self._engines_list_widget)
+        layout.addWidget(scroll)
+
+        return page
+
+    def _load_engines(self):
+        while self._engines_list_layout.count():
+            item = self._engines_list_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        manifest = read_manifest()
+        engines = manifest.get("engines", [])
+
+        if not engines:
+            empty = QLabel(
+                "No engines registered.\n\n"
+                "Click 'Add Engine' to register an engine installation."
+            )
+            empty.setAlignment(Qt.AlignCenter)
+            empty.setStyleSheet("color: #555555; font-size: 14px; padding: 48px;")
+            self._engines_list_layout.addWidget(empty)
+            return
+
+        for epath in engines:
+            self._engines_list_layout.addWidget(self._build_engine_row(epath))
+
+    def _build_engine_row(self, engine_path: str) -> QFrame:
+        row = QFrame()
+        row.setObjectName("engineRow")
+        row.setMinimumHeight(80)
+
+        outer = QHBoxLayout(row)
+        outer.setContentsMargins(16, 14, 12, 14)
+        outer.setSpacing(12)
+
+        left = QVBoxLayout()
+        left.setSpacing(4)
+
+        # Name + badges row
+        name_row = QHBoxLayout()
+        name_row.setSpacing(10)
+        name_row.setContentsMargins(0, 0, 0, 0)
+
+        edata = read_engine_json(Path(engine_path))
+        name = edata.get("engine_name", Path(engine_path).name)
+        version = edata.get("version", "")
+        is_current = Path(engine_path).resolve() == ENGINE_PATH.resolve()
+
+        name_lbl = QLabel(name)
+        name_lbl.setObjectName("engineName")
+        name_row.addWidget(name_lbl)
+
+        if version:
+            ver_lbl = QLabel(f"v{version}")
+            ver_lbl.setObjectName("engineVersion")
+            name_row.addWidget(ver_lbl)
+
+        if is_current:
+            active_lbl = QLabel("Active")
+            active_lbl.setObjectName("engineActiveBadge")
+            name_row.addWidget(active_lbl)
+
+        name_row.addStretch()
+        left.addLayout(name_row)
+
+        path_lbl = QLabel(engine_path)
+        path_lbl.setObjectName("enginePath")
+        path_lbl.setToolTip(engine_path)
+        left.addWidget(path_lbl)
+
+        outer.addLayout(left, 1)
+
+        remove_btn = QPushButton("Remove")
+        if not is_current:
+            remove_btn.setObjectName("dangerButton")
+        remove_btn.setEnabled(not is_current)
+        remove_btn.setToolTip(
+            "Cannot remove the active engine" if is_current else "Remove from registry"
+        )
+        remove_btn.clicked.connect(lambda _=False, ep=engine_path: self._handle_remove_engine(ep))
+        outer.addWidget(remove_btn)
+
+        return row
+
+    def _handle_add_engine(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Engine Folder")
+        if not folder:
+            return
+        if not (Path(folder) / "engine.json").exists():
+            QMessageBox.warning(
+                self, "Not an Engine",
+                "No engine.json found in the selected folder.\n\n"
+                "Please select the root directory of an O3DE/Dusk Engine installation."
+            )
+            return
+        manifest = read_manifest()
+        engines = manifest.get("engines", [])
+        if folder not in engines:
+            engines.append(folder)
+            manifest["engines"] = engines
+            write_manifest(manifest)
+        self._load_engines()
+
+    def _handle_remove_engine(self, engine_path: str):
+        reply = QMessageBox.question(
+            self, "Remove Engine",
+            f"Remove this engine from the registry?\n\nPath: {engine_path}\n\n"
+            "The engine files will NOT be deleted.",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if reply != QMessageBox.Yes:
+            return
+        manifest = read_manifest()
+        manifest["engines"] = [e for e in manifest.get("engines", []) if e != engine_path]
+        write_manifest(manifest)
+        self._load_engines()
 
     def _build_header(self) -> QWidget:
         w = QWidget()
@@ -1325,6 +1692,10 @@ class ProjectManagerLite(QMainWindow):
         worker = BuildWorker(path, project_name)
         self._build_workers[path] = worker
         worker.finished.connect(lambda ok, p=path: self._on_build_finished(p, ok))
+
+        dlg = BuildOutputDialog(project_name, worker, self)
+        dlg.show()
+
         worker.start()
 
     def _on_build_finished(self, project_path: str, success: bool):
@@ -1333,12 +1704,6 @@ class ProjectManagerLite(QMainWindow):
         row = self._find_row(project_path)
         if row:
             row.set_status("ready" if success else "failed")
-        if success:
-            QMessageBox.information(self, "Build Complete", "Project built successfully.")
-        else:
-            QMessageBox.warning(self, "Build Failed",
-                                "The build finished with errors.\n"
-                                "Check the terminal output for details.")
 
     def _handle_edit_settings(self, project: dict):
         pjson = Path(project["path"]) / "project.json"

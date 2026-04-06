@@ -349,6 +349,62 @@ QLabel#buildStatusLabel {
     font-weight: 600;
     color: #FFB74D;
 }
+
+QWidget#tabBar {
+    background: #131313;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+QPushButton#tabButton {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666666;
+    border-radius: 0;
+    margin-bottom: -1px;
+}
+QPushButton#tabButton:hover {
+    color: #aaaaaa;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 3px solid rgba(255,255,255,0.15);
+}
+QPushButton#tabButton[active=true] {
+    color: #ffffff;
+    border-bottom: 3px solid #4CAF50;
+}
+
+QFrame#engineRow {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+QFrame#engineRow:hover {
+    background: #222222;
+    border: 1px solid rgba(255,255,255,0.10);
+}
+QLabel#engineName {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+}
+QLabel#engineVersion {
+    font-size: 11px;
+    color: #81C784;
+    padding: 2px 8px;
+    background: rgba(76,175,80,0.12);
+}
+QLabel#enginePath {
+    font-size: 11px;
+    color: #888888;
+}
+QLabel#engineActiveBadge {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64B5F6;
+    padding: 2px 8px;
+    background: rgba(100,181,246,0.12);
+}
 """
 
 
@@ -1144,20 +1200,223 @@ class ProjectManagerLite(QMainWindow):
         self.setCentralWidget(central)
 
         root = QVBoxLayout(central)
-        root.setContentsMargins(48, 32, 48, 24)
+        root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        root.addWidget(self._build_header())
-        root.addSpacing(20)
+        root.addWidget(self._build_tab_bar())
+
+        self._tab_stack = QStackedWidget()
+
+        # ── Projects tab ──────────────────────────────────────────────
+        projects_tab = QWidget()
+        projects_tab.setObjectName("centralWidget")
+        ptab_layout = QVBoxLayout(projects_tab)
+        ptab_layout.setContentsMargins(48, 32, 48, 24)
+        ptab_layout.setSpacing(0)
+        ptab_layout.addWidget(self._build_header())
+        ptab_layout.addSpacing(20)
 
         self._stack = QStackedWidget()
         self._empty_page = self._build_empty_page()
         self._projects_page = self._build_projects_page()
         self._stack.addWidget(self._empty_page)
         self._stack.addWidget(self._projects_page)
-        root.addWidget(self._stack)
+        ptab_layout.addWidget(self._stack)
+
+        # ── Engine tab ────────────────────────────────────────────────
+        engine_tab = self._build_engine_page()
+
+        self._tab_stack.addWidget(projects_tab)   # index 0
+        self._tab_stack.addWidget(engine_tab)     # index 1
+        root.addWidget(self._tab_stack)
 
         self._load_projects()
+
+    def _build_tab_bar(self) -> QWidget:
+        bar = QWidget()
+        bar.setObjectName("tabBar")
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(48, 0, 48, 0)
+        layout.setSpacing(0)
+
+        self._tab_projects_btn = QPushButton("Projects")
+        self._tab_projects_btn.setObjectName("tabButton")
+        self._tab_projects_btn.setProperty("active", True)
+        self._tab_projects_btn.setFixedHeight(44)
+        self._tab_projects_btn.clicked.connect(lambda: self._switch_tab(0))
+        layout.addWidget(self._tab_projects_btn)
+
+        self._tab_engine_btn = QPushButton("Engine")
+        self._tab_engine_btn.setObjectName("tabButton")
+        self._tab_engine_btn.setProperty("active", False)
+        self._tab_engine_btn.setFixedHeight(44)
+        self._tab_engine_btn.clicked.connect(lambda: self._switch_tab(1))
+        layout.addWidget(self._tab_engine_btn)
+
+        layout.addStretch()
+        return bar
+
+    def _switch_tab(self, index: int):
+        self._tab_stack.setCurrentIndex(index)
+        self._tab_projects_btn.setProperty("active", index == 0)
+        self._tab_engine_btn.setProperty("active", index == 1)
+        for btn in (self._tab_projects_btn, self._tab_engine_btn):
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+        if index == 1:
+            self._load_engines()
+
+    def _build_engine_page(self) -> QWidget:
+        page = QWidget()
+        page.setObjectName("centralWidget")
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(48, 32, 48, 24)
+        layout.setSpacing(0)
+
+        # Header
+        header = QWidget()
+        hlayout = QHBoxLayout(header)
+        hlayout.setContentsMargins(0, 0, 0, 0)
+        hlayout.setSpacing(16)
+        title = QLabel("Engines")
+        title.setObjectName("sectionTitle")
+        hlayout.addWidget(title)
+        hlayout.addStretch()
+        add_btn = QPushButton("Add Engine")
+        add_btn.setObjectName("primaryButton")
+        add_btn.setFixedHeight(34)
+        add_btn.clicked.connect(self._handle_add_engine)
+        hlayout.addWidget(add_btn)
+        layout.addWidget(header)
+        layout.addSpacing(20)
+
+        # Scrollable engine list
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._engines_list_widget = QWidget()
+        self._engines_list_widget.setObjectName("scrollContent")
+        self._engines_list_layout = QVBoxLayout(self._engines_list_widget)
+        self._engines_list_layout.setSpacing(4)
+        self._engines_list_layout.setContentsMargins(0, 0, 0, 0)
+        self._engines_list_layout.setAlignment(Qt.AlignTop)
+        scroll.setWidget(self._engines_list_widget)
+        layout.addWidget(scroll)
+
+        return page
+
+    def _load_engines(self):
+        while self._engines_list_layout.count():
+            item = self._engines_list_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        manifest = read_manifest()
+        engines = manifest.get("engines", [])
+
+        if not engines:
+            empty = QLabel(
+                "No engines registered.\n\n"
+                "Click 'Add Engine' to register an engine installation."
+            )
+            empty.setAlignment(Qt.AlignCenter)
+            empty.setStyleSheet("color: #555555; font-size: 14px; padding: 48px;")
+            self._engines_list_layout.addWidget(empty)
+            return
+
+        for epath in engines:
+            self._engines_list_layout.addWidget(self._build_engine_row(epath))
+
+    def _build_engine_row(self, engine_path: str) -> QFrame:
+        row = QFrame()
+        row.setObjectName("engineRow")
+        row.setMinimumHeight(80)
+
+        outer = QHBoxLayout(row)
+        outer.setContentsMargins(16, 14, 12, 14)
+        outer.setSpacing(12)
+
+        left = QVBoxLayout()
+        left.setSpacing(4)
+
+        # Name + badges row
+        name_row = QHBoxLayout()
+        name_row.setSpacing(10)
+        name_row.setContentsMargins(0, 0, 0, 0)
+
+        edata = read_engine_json(Path(engine_path))
+        name = edata.get("engine_name", Path(engine_path).name)
+        version = edata.get("version", "")
+        is_current = Path(engine_path).resolve() == ENGINE_PATH.resolve()
+
+        name_lbl = QLabel(name)
+        name_lbl.setObjectName("engineName")
+        name_row.addWidget(name_lbl)
+
+        if version:
+            ver_lbl = QLabel(f"v{version}")
+            ver_lbl.setObjectName("engineVersion")
+            name_row.addWidget(ver_lbl)
+
+        if is_current:
+            active_lbl = QLabel("Active")
+            active_lbl.setObjectName("engineActiveBadge")
+            name_row.addWidget(active_lbl)
+
+        name_row.addStretch()
+        left.addLayout(name_row)
+
+        path_lbl = QLabel(engine_path)
+        path_lbl.setObjectName("enginePath")
+        path_lbl.setToolTip(engine_path)
+        left.addWidget(path_lbl)
+
+        outer.addLayout(left, 1)
+
+        remove_btn = QPushButton("Remove")
+        if not is_current:
+            remove_btn.setObjectName("dangerButton")
+        remove_btn.setEnabled(not is_current)
+        remove_btn.setToolTip(
+            "Cannot remove the active engine" if is_current else "Remove from registry"
+        )
+        remove_btn.clicked.connect(lambda _=False, ep=engine_path: self._handle_remove_engine(ep))
+        outer.addWidget(remove_btn)
+
+        return row
+
+    def _handle_add_engine(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Engine Folder")
+        if not folder:
+            return
+        if not (Path(folder) / "engine.json").exists():
+            QMessageBox.warning(
+                self, "Not an Engine",
+                "No engine.json found in the selected folder.\n\n"
+                "Please select the root directory of an O3DE/Dusk Engine installation."
+            )
+            return
+        manifest = read_manifest()
+        engines = manifest.get("engines", [])
+        if folder not in engines:
+            engines.append(folder)
+            manifest["engines"] = engines
+            write_manifest(manifest)
+        self._load_engines()
+
+    def _handle_remove_engine(self, engine_path: str):
+        reply = QMessageBox.question(
+            self, "Remove Engine",
+            f"Remove this engine from the registry?\n\nPath: {engine_path}\n\n"
+            "The engine files will NOT be deleted.",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if reply != QMessageBox.Yes:
+            return
+        manifest = read_manifest()
+        manifest["engines"] = [e for e in manifest.get("engines", []) if e != engine_path]
+        write_manifest(manifest)
+        self._load_engines()
 
     def _build_header(self) -> QWidget:
         w = QWidget()
