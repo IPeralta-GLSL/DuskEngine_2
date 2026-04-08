@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// FidelityFX Contrast Adaptive Sharpening (CAS) — sharpen-only post-process pass.
+// Runs after TAA to restore sharpness lost from temporal accumulation.
+// Based on the CAS algorithm by AMD (MIT license).
+
+#include <scenesrg_all.srgi>
+
+#define TILE_DIM_X 8
+#define TILE_DIM_Y 8
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4>   m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+
+    struct Constants
+    {
+        uint2  m_textureSize;  // Dimensions of the input/output texture in pixels.
+        float  m_sharpness;    // Sharpness in [0, 1]. 0 = weakest, 1 = strongest.
+        float  m_padding;
+    };
+    Constants m_constantData;
+}
+
+// CAS sharpen filter — no scaling, 3x3 neighborhood.
+//
+//  a b c
+//  d e f   <- e is the current pixel
+//  g h i
+//
+// Algorithm:
+//  1. Find the soft min/max of the 4-cross neighbors (b, d, f, h) combined with center (e).
+//  2. Amplify per-channel: how much headroom there is relative to the local max.
+//  3. Apply a peak sharpness weight (negative, so it acts as unsharp mask).
+//  4. Use only the green-channel weight for the blend to avoid chromatic fringing.
+float3 CasFilter(int2 pos, float sharpness)
+{
+    float3 a = PassSrg::m_inputColor[pos + int2(-1, -1)].rgb;
+    float3 b = PassSrg::m_inputColor[pos + int2( 0, -1)].rgb;
+    float3 c = PassSrg::m_inputColor[pos + int2( 1, -1)].rgb;
+    float3 d = PassSrg::m_inputColor[pos + int2(-1,  0)].rgb;
+    float3 e = PassSrg::m_inputColor[pos              ].rgb;
+    float3 f = PassSrg::m_inputColor[pos + int2( 1,  0)].rgb;
+    float3 g = PassSrg::m_inputColor[pos + int2(-1,  1)].rgb;
+    float3 h = PassSrg::m_inputColor[pos + int2( 0,  1)].rgb;
+    float3 i = PassSrg::m_inputColor[pos + int2( 1,  1)].rgb;
+
+    // Soft min/max over the 4-cross (b, d, f, h) + center (e)
+    float3 mn = min(min(min(b, d), min(f, h)), e);
+    float3 mx = max(max(max(b, d), max(f, h)), e);
+
+    // Per-channel adaptive amplification.
+    // amplify = saturate(min(mn, 1 - mx) / mx)
+    float3 rcpMx  = rcp(max(mx, float3(1e-4, 1e-4, 1e-4)));
+    float3 amplify = saturate(min(mn, 1.0 - mx) * rcpMx);
+
+    // Shape the amplification curve with sqrt.
+    amplify = sqrt(amplify);
+
+    // Peak sharpness value: maps [0,1] sharpness to a negative weight in [-1/8, -1/5].
+    float peak = -rcp(lerp(8.0, 5.0, saturate(sharpness)));
+
+    // Apply using the green-channel amplification only, to avoid color fringing.
+    float wg   = amplify.g * peak;
+    float rcpW = rcp(1.0 + 4.0 * wg);
+
+    // Weighted blend: sharpen the center pixel with its 4-cross neighbors.
+    float3 result;
+    result.r = saturate(((b.r + d.r + f.r + h.r) * wg + e.r) * rcpW);
+    result.g = saturate(((b.g + d.g + f.g + h.g) * wg + e.g) * rcpW);
+    result.b = saturate(((b.b + d.b + f.b + h.b) * wg + e.b) * rcpW);
+    return result;
+}
+
+[numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
+{
+    uint2 pixelCoord = dispatchThreadID.xy;
+
+    // Bounds check — extra threads in the last tile must not write out of range.
+    if (pixelCoord.x >= PassSrg::m_constantData.m_textureSize.x ||
+        pixelCoord.y >= PassSrg::m_constantData.m_textureSize.y)
+    {
+        return;
+    }
+
+    float3 sharpened = CasFilter(int2(pixelCoord), PassSrg::m_constantData.m_sharpness);
+    float  alpha     = PassSrg::m_inputColor[pixelCoord].a;
+
+    PassSrg::m_outputColor[pixelCoord] = float4(sharpened, alpha);
+}

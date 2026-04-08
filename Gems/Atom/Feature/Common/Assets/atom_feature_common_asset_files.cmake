@@ -241,6 +241,7 @@ set(FILES
     Passes/SubsurfaceScattering.pass
     Passes/Taa.pass
     Passes/TaaParent.pass
+    Passes/CasPass.pass
     Passes/ToolsPipeline.pass
     Passes/ToolsPipelineRenderToTexture.pass
     Passes/Transparent.pass
@@ -630,6 +631,8 @@ set(FILES
     Shaders/PostProcessing/SsaoCompute.shader
     Shaders/PostProcessing/Taa.azsl
     Shaders/PostProcessing/Taa.shader
+    Shaders/PostProcessing/CasPass.azsl
+    Shaders/PostProcessing/CasPass.shader
     Shaders/PostProcessing/UniformColor.azsl
     Shaders/PostProcessing/UniformColor.shader
     Shaders/PostProcessing/Vignette.azsl

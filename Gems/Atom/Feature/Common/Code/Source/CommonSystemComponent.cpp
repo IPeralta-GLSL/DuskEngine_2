@@ -76,6 +76,7 @@
 #include <PostProcessing/SsaoPasses.h>
 #include <PostProcessing/SubsurfaceScatteringPass.h>
 #include <PostProcessing/TaaPass.h>
+#include <PostProcessing/CasPass.h>
 #include <PostProcessing/VignettePass.h>
 #include <PostProcessing/WhiteBalancePass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
@@ -259,6 +260,9 @@ namespace AZ
             
             // Add Taa Pass
             passSystem->AddPassCreator(Name("TaaPass"), &TaaPass::Create);
+
+            // Add CAS (Contrast Adaptive Sharpening) pass — runs after TAA
+            passSystem->AddPassCreator(Name("CasPass"), &CasPass::Create);
 
             // Add DepthOfField pass
             passSystem->AddPassCreator(Name("DepthOfFieldCompositePass"), &DepthOfFieldCompositePass::Create);
