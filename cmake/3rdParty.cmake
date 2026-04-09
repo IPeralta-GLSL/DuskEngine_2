@@ -45,7 +45,7 @@ function(get_default_third_party_folder output_third_party_path)
         endif()
     endif()
 
-    set(manifest_path ${home_directory}/.o3de/o3de_manifest.json)
+    set(manifest_path ${home_directory}/.duskengine/o3de_manifest.json)
     if(EXISTS ${manifest_path})
         file(READ ${manifest_path} manifest_json)
         string(JSON default_third_party_folder ERROR_VARIABLE json_error GET ${manifest_json} default_third_party_folder)
@@ -57,7 +57,7 @@ function(get_default_third_party_folder output_third_party_path)
     endif()
 
     # 4. Lowest priority, use the home directory as the location for 3rdparty
-    set(${output_third_party_path} ${home_directory}/.o3de/3rdParty PARENT_SCOPE)
+    set(${output_third_party_path} ${home_directory}/.duskengine/3rdParty PARENT_SCOPE)
 
 endfunction()
 

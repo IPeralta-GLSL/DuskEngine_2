@@ -535,7 +535,7 @@ namespace AZ::SettingsRegistryMergeUtils
         {
             // Step 2 Use the user's home directory
             o3deManifestPath = AZ::Utils::GetHomeDirectory();
-            o3deManifestPath /= ".o3de";
+            o3deManifestPath /= ".duskengine";
         }
 
         if (o3deManifestPath.IsRelative())

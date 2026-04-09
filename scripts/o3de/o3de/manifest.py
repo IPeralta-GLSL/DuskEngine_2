@@ -37,13 +37,13 @@ def get_home_folder() -> pathlib.Path:
 
 
 def get_o3de_folder() -> pathlib.Path:
-    o3de_folder = get_home_folder() / '.o3de'
+    o3de_folder = get_home_folder() / '.duskengine'
     o3de_folder.mkdir(parents=True, exist_ok=True)
     return o3de_folder
 
 
 def get_o3de_user_folder() -> pathlib.Path:
-    o3de_user_folder = get_home_folder() / 'O3DE'
+    o3de_user_folder = get_home_folder() / 'DuskEngine'
     o3de_user_folder.mkdir(parents=True, exist_ok=True)
     return o3de_user_folder
 
