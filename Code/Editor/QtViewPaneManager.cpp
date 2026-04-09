@@ -1119,7 +1119,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // after all of the other events have been processed.
     QTimer::singleShot(0, [this, assetBrowserViewPane, InspectorViewPane, entityOutlinerViewPane, consoleViewPane, resetSettings, selectedEntityIds]
     {
-        // Right dock area is absolute so Stage/Attributes are to the right of viewport and console
         m_advancedDockManager->setAbsoluteCornersForDockArea(m_mainWindow, Qt::RightDockWidgetArea);
 
         QScreen* activeScreen = QGuiApplication::screenAt(m_mainWindow->mapToGlobal(m_mainWindow->rect().center()));
@@ -1135,7 +1134,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         int rightWidth = static_cast<int>((float)screenWidth * rightPanelWidthPercentage);
         int bottomHeight = static_cast<int>((float)screenHeight * bottomPanelHeightPercentage);
 
-        // --- Right panel: Stage (top) + Attributes (bottom) ---
         if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
         {
             m_mainWindow->addDockWidget(Qt::RightDockWidgetArea, entityOutlinerViewPane->m_dockWidget);
@@ -1144,7 +1142,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 
         if (InspectorViewPane && InspectorViewPane->m_dockWidget)
         {
-            // Split the right dock vertically: Stage on top, Attributes below
             if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
             {
                 m_mainWindow->splitDockWidget(entityOutlinerViewPane->m_dockWidget, InspectorViewPane->m_dockWidget, Qt::Vertical);
@@ -1156,7 +1153,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             InspectorViewPane->m_dockWidget->setFloating(false);
         }
 
-        // Resize the right panel width
         {
             QList<QDockWidget*> rightDocks;
             if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
@@ -1169,7 +1165,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             }
         }
 
-        // --- Bottom panel: Asset Browser (left) + Console (right) ---
         if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
         {
             m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
@@ -1180,7 +1175,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         {
             if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
             {
-                // Place Console to the right of Asset Browser in the bottom area
                 m_mainWindow->splitDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, Qt::Horizontal);
             }
             else
@@ -1190,28 +1184,24 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             consoleViewPane->m_dockWidget->setFloating(false);
         }
 
-        // Resize bottom panel height
+        if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget &&
+            consoleViewPane && consoleViewPane->m_dockWidget)
         {
-            QList<QDockWidget*> bottomDocks;
-            if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
-            {
-                bottomDocks.push_back(assetBrowserViewPane->m_dockWidget);
-            }
-            if (!bottomDocks.isEmpty())
-            {
-                m_mainWindow->resizeDocks(bottomDocks, { bottomHeight }, Qt::Vertical);
-            }
+            int assetWidth = static_cast<int>((float)screenWidth * 0.3f * (1.0f - rightPanelWidthPercentage));
+            int consoleWidth = static_cast<int>((float)screenWidth * 0.7f * (1.0f - rightPanelWidthPercentage));
+            m_mainWindow->resizeDocks(
+                { assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget },
+                { assetWidth, consoleWidth },
+                Qt::Horizontal);
+            m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { bottomHeight }, Qt::Vertical);
         }
 
-        // Re-enable updates now that we've finished restoring the layout
         m_mainWindow->setUpdatesEnabled(true);
 
-        // Default layout should always be maximized
         m_mainWindow->window()->showMaximized();
 
         if (resetSettings)
         {
-            // Restore selection
             AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
         }
     });
