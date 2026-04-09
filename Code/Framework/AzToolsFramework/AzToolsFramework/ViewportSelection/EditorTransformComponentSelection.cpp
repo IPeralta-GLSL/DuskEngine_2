@@ -558,8 +558,6 @@ namespace AzToolsFramework
 
     void EditorTransformComponentSelection::SetAllViewportUiVisible(const bool visible)
     {
-        // m_transformModeClusterId is intentionally kept hidden (Universal mode always active)
-        // m_spaceCluster is intentionally kept hidden
         SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, visible);
         m_viewportUiVisible = visible;
     }
@@ -1107,9 +1105,6 @@ namespace AzToolsFramework
         ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
         CreateComponentModeSwitcher();
-        CreateTransformModeSelectionCluster();
-        // Universal mode is always active — hide the mode-switching cluster
-        SetViewportUiClusterVisible(m_transformModeClusterId, false);
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
 
@@ -1149,7 +1144,6 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         DestroyManipulators(m_entityIdManipulators);
 
-        DestroyCluster(m_transformModeClusterId);
         DestroyCluster(m_spaceCluster.m_clusterId);
         DestroyCluster(m_snappingCluster.m_clusterId);
 

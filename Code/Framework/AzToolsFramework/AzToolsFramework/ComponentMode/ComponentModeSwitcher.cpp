@@ -90,6 +90,9 @@ namespace AzToolsFramework::ComponentModeFramework
             &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler,
             m_switcherId,
             m_handler);
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, false);
     }
 
     ComponentModeSwitcher::~ComponentModeSwitcher()
@@ -359,6 +362,9 @@ namespace AzToolsFramework::ComponentModeFramework
 
         // send a list of selected and deselected entities to the switcher to deal with updating the switcher view
         UpdateSwitcher(newlySelectedEntities, newlyDeselectedEntities);
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, !m_addedComponents.empty());
     }
 
     void ComponentModeSwitcher::OnImGuiDropDownShown()
@@ -373,20 +379,17 @@ namespace AzToolsFramework::ComponentModeFramework
         if (m_hiddenByImGui)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
-            // reset hiddenByImGui variable
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, !m_addedComponents.empty());
             m_hiddenByImGui = false;
         }
     }
 
     void ComponentModeSwitcher::OnImGuiDeactivated()
     {
-        // when the switcher is hidden by the ImGui, if ImGui is deactivated the drop down is still present and the switcher will
-        // remain hidden, this makes the switcher visible while ImGui is deactivated
         if (m_hiddenByImGui)
         {
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, true);
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherVisible, m_switcherId, !m_addedComponents.empty());
         }
     }
 
