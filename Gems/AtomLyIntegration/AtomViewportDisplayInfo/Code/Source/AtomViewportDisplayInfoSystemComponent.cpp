@@ -468,11 +468,10 @@ namespace AZ::Render
 
         const float lineH1 = m_fontDrawInterface->GetTextSize(m_drawParams, fpsStr).GetY();
         const float lineH2 = m_fontDrawInterface->GetTextSize(m_drawParams, frameStr).GetY();
-        const float textW1 = m_fontDrawInterface->GetTextSize(m_drawParams, fpsStr).GetX();
-        const float textW2 = m_fontDrawInterface->GetTextSize(m_drawParams, frameStr).GetX();
         const float blockH = lineH1 + m_lineSpacing + lineH2;
-        const float bgW = AZStd::max(textW1, textW2);
         constexpr float bgPad = 4.f;
+        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        const float bgW = 260.0f * (viewportContext ? viewportContext->GetDpiScalingFactor() : 1.0f);
         DrawBackground(
             m_drawParams.m_position.GetX() - bgPad,
             m_drawParams.m_position.GetY() - bgPad,

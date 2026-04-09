@@ -5084,7 +5084,8 @@ namespace AzToolsFramework
 
         if (m_componentModeSwitcher != nullptr)
         {
-            SetViewportUiSwitcherVisible(m_componentModeSwitcher->GetSwitcherId(), true);
+            SetViewportUiSwitcherVisible(
+                m_componentModeSwitcher->GetSwitcherId(), m_componentModeSwitcher->GetComponentCount() > 0);
         }
     }
 

@@ -30,6 +30,10 @@ namespace AzToolsFramework::ViewportUi::Internal
             ViewportUiOverlayMargin);
         setSpacing(ViewportUiDisplayLayoutSpacing);
 
+        setColumnStretch(0, 1);
+        setColumnStretch(1, 1);
+        setColumnStretch(2, 1);
+
         // create a 3x2 map of sub layouts which will stack widgets according to their mapped alignment
         m_internalLayouts = AZStd::unordered_map<Qt::Alignment, QBoxLayout*>{
             CreateSubLayout(new QVBoxLayout(), 0, 0, Qt::AlignTop | Qt::AlignLeft),
