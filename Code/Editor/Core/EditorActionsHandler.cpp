@@ -1186,7 +1186,10 @@ void EditorActionsHandler::OnActionRegistrationHook()
             actionProperties,
             [this]
             {
-                m_mainWindow->m_viewPaneManager->RestoreDefaultLayout();
+                if (!m_mainWindow->m_viewPaneManager->RestoreLayout(QString("xd2")))
+                {
+                    m_mainWindow->m_viewPaneManager->RestoreDefaultLayout();
+                }
             }
         );
 

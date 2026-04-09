@@ -1088,6 +1088,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         state.viewPanes.push_back(LyViewPane::EntityOutliner);
         state.viewPanes.push_back(LyViewPane::Inspector);
         state.viewPanes.push_back(LyViewPane::AssetBrowser);
+        state.viewPanes.push_back(LyViewPane::Console);
 
         state.mainWindowState = m_defaultMainWindowState;
 
@@ -1111,25 +1112,16 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     const QtViewPane* entityOutlinerViewPane = OpenPane(LyViewPane::EntityOutliner, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* InspectorViewPane = OpenPane(LyViewPane::Inspector, QtViewPane::OpenMode::UseDefaultState);
-
-    const QtViewPane* levelInspectorPane = nullptr;
+    const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
 
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen
     // after all of the other events have been processed.
-    QTimer::singleShot(0, [this, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
+    QTimer::singleShot(0, [this, assetBrowserViewPane, InspectorViewPane, entityOutlinerViewPane, consoleViewPane, resetSettings, selectedEntityIds]
     {
-        // If we are using the new docking, set the right dock area to be absolute
-        // so that the inspector will be to the right of the viewport and console
+        // Right dock area is absolute so Stage/Attributes are to the right of viewport and console
         m_advancedDockManager->setAbsoluteCornersForDockArea(m_mainWindow, Qt::RightDockWidgetArea);
 
-        // Retrieve the width and height of the screen that our main window is on so we can
-        // use it later for resizing our panes. The main window ends up being maximized
-        // when we restore the default layout, but even if we maximize the main window
-        // before doing anything else, its height and width won't update until after this has all
-        // been processed, so we need to resize the panes based on what the main window
-        // height and width WILL be after maximized
-        // Use the screen containing the main window — QApplication::desktop() is deprecated since Qt 5.13.
         QScreen* activeScreen = QGuiApplication::screenAt(m_mainWindow->mapToGlobal(m_mainWindow->rect().center()));
         if (!activeScreen)
         {
@@ -1138,63 +1130,83 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         int screenWidth = activeScreen->geometry().width();
         int screenHeight = activeScreen->geometry().height();
 
-        if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
-        {
-            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
-            assetBrowserViewPane->m_dockWidget->setFloating(false);
+        static const float rightPanelWidthPercentage = 0.2f;
+        static const float bottomPanelHeightPercentage = 0.25f;
+        int rightWidth = static_cast<int>((float)screenWidth * rightPanelWidthPercentage);
+        int bottomHeight = static_cast<int>((float)screenHeight * bottomPanelHeightPercentage);
 
-            static const float bottomTabWidgetPercentage = 0.25f;
-            int newHeight = static_cast<int>((float)screenHeight * bottomTabWidgetPercentage);
-            m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { newHeight }, Qt::Vertical);
+        // --- Right panel: Stage (top) + Attributes (bottom) ---
+        if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
+        {
+            m_mainWindow->addDockWidget(Qt::RightDockWidgetArea, entityOutlinerViewPane->m_dockWidget);
+            entityOutlinerViewPane->m_dockWidget->setFloating(false);
         }
 
         if (InspectorViewPane && InspectorViewPane->m_dockWidget)
         {
-            m_mainWindow->addDockWidget(Qt::RightDockWidgetArea, InspectorViewPane->m_dockWidget);
-            InspectorViewPane->m_dockWidget->setFloating(false);
-
-            static const float tabWidgetWidthPercentage = 0.2f;
-            int newWidth = static_cast<int>((float)screenWidth * tabWidgetWidthPercentage);
-
-            if (levelInspectorPane && levelInspectorPane->m_dockWidget)
+            // Split the right dock vertically: Stage on top, Attributes below
+            if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
             {
-                // Tab the entity inspector with the level Inspector so that when they are
-                // tabbed they will be given the default width, and move the entity inspector
-                // to be the first tab on the left and active
-                AzQtComponents::DockTabWidget* tabWidget = m_advancedDockManager->tabifyDockWidget(levelInspectorPane->m_dockWidget, InspectorViewPane->m_dockWidget, m_mainWindow);
-                if (tabWidget)
-                {
-                    tabWidget->moveTab(1, 0);
-                    tabWidget->setCurrentWidget(InspectorViewPane->m_dockWidget);
-
-                    QDockWidget* tabWidgetParent = qobject_cast<QDockWidget*>(tabWidget->parentWidget());
-                    m_mainWindow->resizeDocks({ tabWidgetParent }, { newWidth }, Qt::Horizontal);
-                }
+                m_mainWindow->splitDockWidget(entityOutlinerViewPane->m_dockWidget, InspectorViewPane->m_dockWidget, Qt::Vertical);
             }
             else
             {
-                m_mainWindow->resizeDocks({ InspectorViewPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
+                m_mainWindow->addDockWidget(Qt::RightDockWidgetArea, InspectorViewPane->m_dockWidget);
+            }
+            InspectorViewPane->m_dockWidget->setFloating(false);
+        }
+
+        // Resize the right panel width
+        {
+            QList<QDockWidget*> rightDocks;
+            if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
+            {
+                rightDocks.push_back(entityOutlinerViewPane->m_dockWidget);
+            }
+            if (!rightDocks.isEmpty())
+            {
+                m_mainWindow->resizeDocks(rightDocks, { rightWidth }, Qt::Horizontal);
             }
         }
 
-        if (entityOutlinerViewPane && entityOutlinerViewPane->m_dockWidget)
+        // --- Bottom panel: Asset Browser (left) + Console (right) ---
+        if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
         {
-            m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, entityOutlinerViewPane->m_dockWidget);
-            entityOutlinerViewPane->m_dockWidget->setFloating(false);
+            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
+            assetBrowserViewPane->m_dockWidget->setFloating(false);
+        }
 
-            // Resize our entity outliner so that it gets an appropriate default width
-            // since the minimum sizes been removed from this widget
-            static const float entityOutlinerWidthPercentage = 0.15f;
-            int newWidth = static_cast<int>((float)screenWidth * entityOutlinerWidthPercentage);
-            m_mainWindow->resizeDocks({ entityOutlinerViewPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
+        if (consoleViewPane && consoleViewPane->m_dockWidget)
+        {
+            if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
+            {
+                // Place Console to the right of Asset Browser in the bottom area
+                m_mainWindow->splitDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, Qt::Horizontal);
+            }
+            else
+            {
+                m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
+            }
+            consoleViewPane->m_dockWidget->setFloating(false);
+        }
+
+        // Resize bottom panel height
+        {
+            QList<QDockWidget*> bottomDocks;
+            if (assetBrowserViewPane && assetBrowserViewPane->m_dockWidget)
+            {
+                bottomDocks.push_back(assetBrowserViewPane->m_dockWidget);
+            }
+            if (!bottomDocks.isEmpty())
+            {
+                m_mainWindow->resizeDocks(bottomDocks, { bottomHeight }, Qt::Vertical);
+            }
         }
 
         // Re-enable updates now that we've finished restoring the layout
         m_mainWindow->setUpdatesEnabled(true);
 
         // Default layout should always be maximized
-        // (use window() because the MainWindow may be wrapped in another window
-        // like a WindowDecoratorWrapper or another QMainWindow for various layout reasons)
         m_mainWindow->window()->showMaximized();
 
         if (resetSettings)
