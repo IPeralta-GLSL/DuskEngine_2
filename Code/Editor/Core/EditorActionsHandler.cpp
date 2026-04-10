@@ -628,6 +628,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "&Undo";
         actionProperties.m_description = "Undo last operation";
         actionProperties.m_category = "Edit";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Back.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -660,6 +661,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         actionProperties.m_name = "&Redo";
         actionProperties.m_description = "Redo last undo operation";
         actionProperties.m_category = "Edit";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Forwards.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -2083,6 +2085,8 @@ void EditorActionsHandler::OnToolBarBindingHook()
     // Play Controls
     {
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.file.saveAll", 5);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.undo", 7);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.redo", 9);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
             EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.play", EditorIdentifiers::PlayGameMenuIdentifier, 200);
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.simulate", 300);
