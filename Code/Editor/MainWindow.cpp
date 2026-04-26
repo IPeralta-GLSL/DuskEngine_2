@@ -779,11 +779,11 @@ void MainWindow::StopAutoSaveTimers()
 {
     if (m_autoSaveTimer)
     {
-        delete m_autoSaveTimer;
+        m_autoSaveTimer->deleteLater();
     }
     if (m_autoRemindTimer)
     {
-        delete m_autoRemindTimer;
+        m_autoRemindTimer->deleteLater();
     }
     m_autoSaveTimer = nullptr;
     m_autoRemindTimer = nullptr;
@@ -837,7 +837,7 @@ void MainWindow::ResetBackgroundUpdateTimer()
 {
     if (m_backgroundUpdateTimer)
     {
-        delete m_backgroundUpdateTimer;
+        m_backgroundUpdateTimer->deleteLater();
         m_backgroundUpdateTimer = nullptr;
     }
 

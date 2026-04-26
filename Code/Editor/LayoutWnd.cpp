@@ -111,9 +111,21 @@ CLayoutWnd::CLayoutWnd(QSettings* settings, QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 CLayoutWnd::~CLayoutWnd()
 {
-    delete m_splitWnd;
-    delete m_splitWnd2;
-    delete m_splitWnd3;
+    if (m_splitWnd)
+    {
+        m_splitWnd->deleteLater();
+        m_splitWnd = nullptr;
+    }
+    if (m_splitWnd2)
+    {
+        m_splitWnd2->deleteLater();
+        m_splitWnd2 = nullptr;
+    }
+    if (m_splitWnd3)
+    {
+        m_splitWnd3->deleteLater();
+        m_splitWnd3 = nullptr;
+    }
 
     OnDestroy();
 }
@@ -260,11 +272,21 @@ void CLayoutWnd::CreateLayout(EViewLayout layout, bool bBindViewports, EViewport
     if (m_splitWnd)
     {
         m_splitWnd->setVisible(false);
-        delete m_splitWnd;
+        m_splitWnd->deleteLater();
+        m_splitWnd = nullptr;
     }
 
-    delete m_splitWnd2;
-    delete m_splitWnd3;
+    if (m_splitWnd2)
+    {
+        m_splitWnd2->deleteLater();
+        m_splitWnd2 = nullptr;
+    }
+
+    if (m_splitWnd3)
+    {
+        m_splitWnd3->deleteLater();
+        m_splitWnd3 = nullptr;
+    }
 
     if (m_maximizedView)
     {
@@ -273,10 +295,10 @@ void CLayoutWnd::CreateLayout(EViewLayout layout, bool bBindViewports, EViewport
 
     QRect rcView = rect();
 
-    // Ensure we delete our old view immediately so it can relinquish its backing ViewportContext
     if (m_maximizedView)
     {
-        delete m_maximizedView;
+        m_maximizedView->deleteLater();
+        m_maximizedView = nullptr;
     }
 
     m_maximizedView = new CLayoutViewPane(this);
@@ -683,7 +705,7 @@ void CLayoutWnd::OnDestroy()
 {
     if (m_maximizedView)
     {
-        delete m_maximizedView;
+        m_maximizedView->deleteLater();
         m_maximizedView = nullptr;
     }
 }
