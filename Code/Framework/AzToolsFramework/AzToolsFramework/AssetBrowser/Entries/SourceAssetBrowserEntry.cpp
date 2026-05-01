@@ -147,8 +147,12 @@ namespace AzToolsFramework
             {
                 disconnect(m_sourceControlThumbnailKey.get(), nullptr, this, nullptr);
             }
+            m_sourceControlThumbnailKey.reset();
             m_sourceControlThumbnailKey = MAKE_TKEY(SourceControlThumbnailKey, m_fullPath.c_str());
-            connect(m_sourceControlThumbnailKey.get(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
+            if (m_sourceControlThumbnailKey)
+            {
+                connect(m_sourceControlThumbnailKey.get(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
+            }
         }
 
         SharedThumbnailKey SourceAssetBrowserEntry::CreateThumbnailKey()

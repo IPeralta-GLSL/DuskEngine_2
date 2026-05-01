@@ -180,8 +180,10 @@ namespace AzQtComponents
         case QEvent::MouseMove:
         case QEvent::MouseButtonRelease:
             {
-                // For these events, make sure FancyDocking is being used or it will disable
-                // Mouse events for the whole Widget
+                if (isFloating())
+                {
+                    return QDockWidget::event(event);
+                }
                 DockMainWindow* parentMainWindow = qobject_cast<DockMainWindow*>(parentWidget());
                 if (parentMainWindow && parentMainWindow->HasFancyDocking())
                 {

@@ -260,7 +260,11 @@ namespace AzToolsFramework
             {
                 entries.push_back(entry->GetName());
                 entry = entry->GetParent();
-            } while (entry->GetParent() != nullptr);
+                if (!entry)
+                {
+                    break;
+                }
+            } while (entry && entry->GetParent() != nullptr);
 
             // Entries are in reverse order, so fix this
             AZStd::reverse(entries.begin(), entries.end());
@@ -272,7 +276,14 @@ namespace AzToolsFramework
             if ((m_attachedThumbnailView && m_attachedThumbnailView->GetThumbnailActiveView()) ||
                 (m_attachedTableView && m_attachedTableView->GetTableViewActive()))
             {
-                lastEntry = aznumeric_cast<uint32_t>(entries.size()) - 2;
+                if (entries.size() >= 2)
+                {
+                    lastEntry = aznumeric_cast<uint32_t>(entries.size()) - 2;
+                }
+                else
+                {
+                    lastEntry = 0;
+                }
             }
 
             SelectEntry(QModelIndex(), entries, lastEntry);
@@ -524,7 +535,11 @@ namespace AzToolsFramework
             {
                 entries.push_back(entry->GetName());
                 entry = entry->GetParent();
-            } while (entry->GetParent() != nullptr);
+                if (!entry)
+                {
+                    break;
+                }
+            } while (entry && entry->GetParent() != nullptr);
 
             AZStd::reverse(entries.begin(), entries.end());
 
@@ -535,7 +550,7 @@ namespace AzToolsFramework
 
         bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t lastFolderIndex, const uint32_t entryPathIndex, bool useDisplayName)
         {
-            if (entries.empty())
+            if (entries.empty() || entryPathIndex >= entries.size())
             {
                 return false;
             }
