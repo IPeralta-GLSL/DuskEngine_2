@@ -103,6 +103,24 @@ namespace AzQtComponents
         m_isShowingWindowControls = show;
     }
 
+    void DockTabBar::cleanupContextMenu()
+    {
+        if (m_contextMenu)
+        {
+            delete m_contextMenu;
+            m_contextMenu = nullptr;
+            m_closeTabMenuAction = nullptr;
+            m_closeTabGroupMenuAction = nullptr;
+            m_undockTabMenuAction = nullptr;
+            m_undockTabGroupMenuAction = nullptr;
+        }
+    }
+
+    DockTabBar::~DockTabBar()
+    {
+        cleanupContextMenu();
+    }
+
     /**
      * Handle resizing appropriately when our parent tab widget is resized,
      * otherwise when there is only one tab it won't know to stretch to the
@@ -308,12 +326,10 @@ namespace AzQtComponents
      */
     void DockTabBar::closeTabGroup()
     {
-        // Close each of the tabs using our signal trigger so they are cleaned
-        // up properly
         int numTabs = count();
-        for (int i = 0; i < numTabs; ++i)
+        for (int i = numTabs - 1; i >= 0; --i)
         {
-            emit closeTab(0);
+            emit closeTab(i);
         }
     }
 

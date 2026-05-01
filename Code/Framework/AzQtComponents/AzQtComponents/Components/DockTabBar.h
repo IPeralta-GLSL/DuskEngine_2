@@ -45,6 +45,8 @@ namespace AzQtComponents
 
         QString tabText(int index) const;
 
+        ~DockTabBar();
+
     Q_SIGNALS:
         void closeTab(int index);
         void undockTab(int index);
@@ -60,6 +62,7 @@ namespace AzQtComponents
         void closeTabGroup();
 
     private:
+        void cleanupContextMenu();
         QWidget* m_tabIndicatorUnderlay;
         QToolButton* m_leftButton;
         QToolButton* m_rightButton;
