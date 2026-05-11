@@ -1148,30 +1148,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
     }
 
-    // -- Tools Actions
-
-    // Lua Editor
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.tools.luaEditor";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Lua Editor";
-        actionProperties.m_category = "Tools";
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::LaunchLuaEditor, nullptr);
-            }
-        );
-
-        // This action is only accessible outside of Component Modes
-        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
-    }
-
     // --- View Actions
 
     // Component Entity Layout

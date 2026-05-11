@@ -483,11 +483,6 @@ IEditor* SandboxIntegrationManager::GetEditor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
-{
-    CCryEditApp::instance()->OpenLUAEditor(files);
-}
-
 bool SandboxIntegrationManager::IsLevelDocumentOpen()
 {
     return (GetIEditor() && GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady());

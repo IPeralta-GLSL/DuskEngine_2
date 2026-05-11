@@ -263,14 +263,6 @@ namespace
             viewportContextRequests->GetDefaultViewportContext()->SetCameraTransform(transform);
         }
     }
-}
-
-namespace
-{
-    void PyLaunchLUAEditor(const char* files)
-    {
-        CCryEditApp::instance()->OpenLUAEditor(files);
-    }
 
     bool PyCheckOutDialogEnableForAll(bool isEnable)
     {
@@ -430,8 +422,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("idle_is_enabled", PyIdleIsEnabled, nullptr, "Returns whether or not idle processing is enabled for the Editor. Primarily used for auto-testing."));
             addLegacyGeneral(behaviorContext->Method("idle_wait", PyIdleWait, nullptr, "Waits idling for a given seconds. Primarily used for auto-testing."));
             addLegacyGeneral(behaviorContext->Method("idle_wait_frames", PyIdleWaitFrames, nullptr, "Waits idling for a frames. Primarily used for auto-testing."));
-
-            addLegacyGeneral(behaviorContext->Method("launch_lua_editor", PyLaunchLUAEditor, nullptr, "Launches the Lua editor, may receive a list of space separate file paths, or an empty string to only open the editor."));
 
             addLegacyGeneral(behaviorContext->Method("attach_debugger", PyAttachDebugger, nullptr, "Prompts for attaching the debugger"));
             addLegacyGeneral(behaviorContext->Method("wait_for_debugger", PyWaitForDebugger, behaviorContext->MakeDefaultValues(-1.f), "Pauses this thread execution until the debugger has been attached"));
