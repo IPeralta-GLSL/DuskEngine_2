@@ -356,6 +356,7 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_rotateButtonId; //!< Id of the Viewport UI button for rotate mode.
         ViewportUi::ButtonId m_scaleButtonId; //!< Id of the Viewport UI button for scale mode.
         ViewportUi::ButtonId m_universalButtonId; //!< Id of the Viewport UI button for universal mode.
+        ViewportUi::ButtonId m_gizmoButtonId; //!< Id of the Viewport UI button for gizmo mode.
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.

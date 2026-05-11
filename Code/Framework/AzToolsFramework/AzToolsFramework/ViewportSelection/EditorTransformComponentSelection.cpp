@@ -192,9 +192,6 @@ namespace AzToolsFramework
     static const char* const DuplicateUndoRedoDesc = DuplicateTitle;
     static const char* const DeleteUndoRedoDesc = DeleteTitle;
 
-    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode (1)";
-    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode (2)";
-    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode (3)";
     static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
     static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
@@ -3418,7 +3415,7 @@ namespace AzToolsFramework
             actionProperties.m_name = "Universal";
             actionProperties.m_description = "Select and move/rotate/scale selected object(s) simultaneously";
             actionProperties.m_category = "Edit";
-            actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
+            actionProperties.m_iconPath = ":/IconosNuevos/gizmo.svg";
 
             actionManager->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -3740,25 +3737,27 @@ namespace AzToolsFramework
             m_transformModeClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopLeft);
 
-        // create and register the buttons (strings correspond to icons even if the values appear different)
         m_translateButtonId = RegisterClusterButton(m_transformModeClusterId, "Move");
         m_rotateButtonId = RegisterClusterButton(m_transformModeClusterId, "Rotate");
         m_scaleButtonId = RegisterClusterButton(m_transformModeClusterId, "Scale");
-        m_universalButtonId = RegisterClusterButton(m_transformModeClusterId, "Scale"); // combined gizmo
+        m_universalButtonId = RegisterClusterButton(m_transformModeClusterId, "Scale");
+        m_gizmoButtonId = RegisterClusterButton(m_transformModeClusterId, "Move");
 
-        // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
-            m_translateButtonId, TransformModeClusterTranslateTooltip);
+            m_translateButtonId, "Transform");
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
-            m_rotateButtonId, TransformModeClusterRotateTooltip);
+            m_rotateButtonId, "Rotation");
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
-            m_scaleButtonId, TransformModeClusterScaleTooltip);
+            m_scaleButtonId, "Scale");
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
-            m_universalButtonId, "Switch to universal mode (4)");
+            m_universalButtonId, "Universal");
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            m_gizmoButtonId, "Gizmo");
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
@@ -3775,6 +3774,10 @@ namespace AzToolsFramework
                 SetTransformMode(Mode::Scale);
             }
             else if (buttonId == m_universalButtonId)
+            {
+                SetTransformMode(Mode::Universal);
+            }
+            else if (buttonId == m_gizmoButtonId)
             {
                 SetTransformMode(Mode::Universal);
             }

@@ -2092,6 +2092,10 @@ void EditorActionsHandler::OnToolBarBindingHook()
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.game.simulate", 300);
         m_toolBarManagerInterface->AddSeparatorToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, 400);
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.editor.captureScreenshot", 500);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.transform.universal", 600);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.transform.move", 700);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.transform.rotate", 800);
+        m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.transform.scale", 900);
     }
 }
 
