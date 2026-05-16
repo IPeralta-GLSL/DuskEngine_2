@@ -252,6 +252,10 @@ namespace AzQtComponents
         QMap<QScreen*, FancyDockingDropZoneWidget*> m_dropZoneWidgets;
         QList<FancyDockingDropZoneWidget*> m_activeDropZoneWidgets;
 
+        // Overlay widget that covers the entire main window for painting the
+        // floating dock indicator without being clipped by individual dock widgets.
+        QWidget* m_dropIndicator = nullptr;
+
         QList<QString> m_orderedFloatingDockWidgetNames;
 
         QString m_floatingWindowIdentifierPrefix;

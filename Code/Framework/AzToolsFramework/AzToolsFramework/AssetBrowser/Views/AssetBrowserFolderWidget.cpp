@@ -115,10 +115,67 @@ namespace AzToolsFramework
                 }
             });
 
-            connect(m_pathView, &AzQtComponents::BreadCrumbs::pathChanged, this, &AssetBrowserFolderWidget::pathChanged);
+            connect(m_pathView, &AzQtComponents::BreadCrumbs::pathChanged, this, [this](const QString& path) {
+                UpdateViewsWithPath(path);
+                emit pathChanged(path);
+            });
         }
 
         AssetBrowserFolderWidget::~AssetBrowserFolderWidget() = default;
+
+        void AssetBrowserFolderWidget::UpdateViewsWithPath(const QString& path)
+        {
+            if (!m_listView->model() || !m_thumbnailView->model())
+            {
+                return;
+            }
+
+            QModelIndex rootIndex = m_listView->model()->index(0, 0, QModelIndex());
+            QModelIndex pathIndex = FindIndexByPath(rootIndex, path);
+
+            if (pathIndex.isValid())
+            {
+                m_listView->setRootIndex(pathIndex);
+                m_thumbnailView->setRootIndex(pathIndex);
+            }
+        }
+
+        QModelIndex AssetBrowserFolderWidget::FindIndexByPath(const QModelIndex& startIndex, const QString& path) const
+        {
+            QAbstractItemModel* model = m_listView->model();
+            if (!model)
+            {
+                return QModelIndex();
+            }
+
+            QStringList pathParts = path.split('/', Qt::SkipEmptyParts);
+            QModelIndex currentIndex = startIndex;
+
+            for (const QString& part : pathParts)
+            {
+                bool found = false;
+                for (int i = 0; i < model->rowCount(currentIndex); ++i)
+                {
+                    QModelIndex childIndex = model->index(i, 0, currentIndex);
+                    if (childIndex.isValid())
+                    {
+                        QString displayName = model->data(childIndex, Qt::DisplayRole).toString();
+                        if (displayName == part)
+                        {
+                            currentIndex = childIndex;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found)
+                {
+                    return QModelIndex();
+                }
+            }
+
+            return currentIndex;
+        }
 
         void AssetBrowserFolderWidget::setModel(QAbstractItemModel* model)
         {

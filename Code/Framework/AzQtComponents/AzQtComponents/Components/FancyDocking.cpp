@@ -139,6 +139,12 @@ namespace AzQtComponents
         // Make sure our placeholder empty widget is hidden by default
         m_emptyWidget->hide();
 
+        m_dropIndicator = new QWidget(m_mainWindow);
+        m_dropIndicator->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_dropIndicator->setAttribute(Qt::WA_TranslucentBackground);
+        m_dropIndicator->setAttribute(Qt::WA_NoSystemBackground);
+        m_dropIndicator->hide();
+
 #if defined(AZ_PLATFORM_LINUX)
         m_linuxDragTimer = new QTimer(this);
         m_linuxDragTimer->setInterval(16);
@@ -1830,8 +1836,6 @@ namespace AzQtComponents
 
     void FancyDocking::SetFloatingPixmapClipping(QWidget* dropOnto, Qt::DockWidgetArea area)
     {
-        // If our drop target isn't a main window, then retrieve the main window
-        // from the dock widget parent
         QMainWindow* mainWindow = qobject_cast<QMainWindow*>(m_dropZoneState.dropOnto());
         if (!mainWindow && m_dropZoneState.dropOnto())
         {
@@ -1840,11 +1844,13 @@ namespace AzQtComponents
 
         if ((mainWindow == m_mainWindow) && (area != Qt::NoDockWidgetArea) && dropOnto)
         {
-            m_ghostWidget->EnableClippingToDockWidgets();
+            m_dropIndicator->setGeometry(m_mainWindow->rect());
+            m_dropIndicator->show();
+            m_dropIndicator->raise();
         }
         else
         {
-            m_ghostWidget->DisableClippingToDockWidgets();
+            m_dropIndicator->hide();
         }
     }
 
@@ -3031,6 +3037,10 @@ namespace AzQtComponents
         {
             bool modifiedKeyPressed = FancyDockingDropZoneWidget::CheckModifierKey();
 
+            m_dropIndicator->setGeometry(m_mainWindow->rect());
+            m_dropIndicator->show();
+            m_dropIndicator->raise();
+
             m_ghostWidget->setWindowOpacity(modifiedKeyPressed ? 1.0f : FancyDockingDropZoneConstants::draggingDockWidgetOpacity);
             m_ghostWidget->setPixmap(m_state.dockWidgetScreenGrab.screenGrab, m_state.placeholder(), m_state.placeholderScreen());
         }
@@ -3598,6 +3608,7 @@ namespace AzQtComponents
             QApplication::restoreOverrideCursor();
         }
 
+        m_dropIndicator->hide();
         m_ghostWidget->hide();
 
 #if defined(AZ_PLATFORM_LINUX)

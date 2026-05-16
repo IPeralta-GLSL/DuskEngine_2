@@ -44,6 +44,8 @@ namespace AzToolsFramework
             void pathChanged(const QString& path);
 
         private:
+            void UpdateViewsWithPath(const QString& path);
+            QModelIndex FindIndexByPath(const QModelIndex& startIndex, const QString& path) const;
             QStackedWidget* m_viewStack;
             AzQtComponents::BreadCrumbs* m_pathView;
             AzQtComponents::AssetFolderListView* m_listView;
