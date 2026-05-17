@@ -242,7 +242,8 @@ private:
     QTimer* m_gpuInfoTimer = nullptr;
     QString m_gpuApiName;
     QString m_gpuDeviceName;
-    QString m_baseTitleStr;
+    QString m_engineDisplayName;
+    QString m_engineVersion;
     double m_currentFps = 0.0;
 
     bool m_connectedToAssetProcessor = false;

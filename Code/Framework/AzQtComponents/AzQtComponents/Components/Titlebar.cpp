@@ -426,12 +426,19 @@ namespace AzQtComponents
 
     void TitleBar::updateTitle()
     {
-        // The configured title needs to be simplified since it could have line breaks or
-        // carriage returns that should be replaced with spaces so that all the text will
-        // be on a single line
         const auto text = drawSimple() ? QApplication::applicationName() : title().simplified();
-        m_label->setText(text);
-        m_tabBar->setTabText(0, text);
+        if (text.contains(QStringLiteral("<span")) || text.contains(QStringLiteral("<div")))
+        {
+            m_label->setTextFormat(Qt::RichText);
+            m_label->setAlignment(Qt::AlignCenter);
+            m_label->setText(text);
+        }
+        else
+        {
+            m_label->setTextFormat(Qt::PlainText);
+            m_label->setText(text);
+        }
+        m_tabBar->setTabText(0, drawSimple() ? QApplication::applicationName() : title().simplified());
     }
 
     void TitleBar::updateTitleBar()

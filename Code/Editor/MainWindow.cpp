@@ -58,6 +58,7 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
 // Editor
@@ -98,6 +99,7 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Time/ITime.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <QLabel>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <Editor/EditorViewportCamera.h>
@@ -474,6 +476,20 @@ void MainWindow::Initialize()
         if (m_gpuApiName.isEmpty()) m_gpuApiName = QStringLiteral("Unknown");
         if (m_gpuDeviceName.isEmpty()) m_gpuDeviceName = QStringLiteral("Unknown");
 
+        auto registry = AZ::SettingsRegistry::Get();
+        if (registry)
+        {
+            AZStd::string engineName;
+            AZStd::string engineVersion;
+            AZStd::string engineRootKey = AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey;
+            registry->Get(engineName, engineRootKey + "/engine_name");
+            registry->Get(engineVersion, engineRootKey + "/version");
+            if (!engineName.empty()) m_engineDisplayName = QString::fromUtf8(engineName.c_str());
+            if (!engineVersion.empty()) m_engineVersion = QString::fromUtf8(engineVersion.c_str());
+        }
+        if (m_engineDisplayName.isEmpty()) m_engineDisplayName = QStringLiteral("Dusk Engine");
+        if (m_engineVersion.isEmpty()) m_engineVersion = QStringLiteral("1.0.0");
+
         m_gpuInfoTimer = new QTimer(this);
         m_gpuInfoTimer->setInterval(250);
         connect(m_gpuInfoTimer, &QTimer::timeout, this, [this]() {
@@ -486,38 +502,16 @@ void MainWindow::Initialize()
                     m_currentFps = 1.0 / deltaSeconds;
                 }
             }
-            QString currentTitle = windowTitle();
-            int sepIdx = currentTitle.indexOf(QStringLiteral("  |  "));
-            if (sepIdx >= 0)
-            {
-                currentTitle = currentTitle.left(sepIdx);
-            }
             QString gpuApiColored = m_gpuApiName;
             if (m_gpuApiName.contains(QStringLiteral("Vulkan"), Qt::CaseInsensitive))
             {
                 gpuApiColored = QStringLiteral("<span style='color: #ff3333;'>%1</span>").arg(m_gpuApiName);
             }
-            QString projectColored = QStringLiteral("<span style='color: #00cc44;'>%1</span>").arg(currentTitle);
-            QString gpuInfo = QString("%1 FPS | %2 | %3")
-                .arg(QString::number(m_currentFps, 'f', 1), gpuApiColored, m_gpuDeviceName);
-            QString richTitle = QString("<div style='text-align: center;'>%1  |  %2</div>")
-                .arg(projectColored, gpuInfo);
-            setWindowTitle(currentTitle + QStringLiteral("  |  ") + gpuInfo);
-            QWidget* wrapper = parentWidget();
-            if (wrapper)
-            {
-                QLabel* titleLabel = wrapper->findChild<QLabel*>(QStringLiteral("titleLabel"));
-                if (!titleLabel)
-                {
-                    titleLabel = wrapper->findChild<QLabel*>();
-                }
-                if (titleLabel)
-                {
-                    titleLabel->setTextFormat(Qt::RichText);
-                    titleLabel->setAlignment(Qt::AlignCenter);
-                    titleLabel->setText(richTitle);
-                }
-            }
+            QString engineDisplay = QStringLiteral("<span style='color: #00cc44;'>%1 v%2</span>")
+                .arg(m_engineDisplayName, m_engineVersion);
+            QString richTitle = QString("<div style='text-align: center;'>%1 | %2 FPS | %3 | %4</div>")
+                .arg(engineDisplay, QString::number(m_currentFps, 'f', 1), gpuApiColored, m_gpuDeviceName);
+            setWindowTitle(richTitle);
         });
         m_gpuInfoTimer->start();
     }
