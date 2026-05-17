@@ -131,11 +131,10 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
-    // If this is being instantiated after the Action Manager was alreadi initialized, add the toolbar.
-    // Else it will be added in OnToolBarRegistrationHook.
     if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
     {
         addToolBar(Qt::TopToolBarArea, toolBar);
+        toolBar->setVisible(false);
     }
 
     m_id = -1;
@@ -208,14 +207,13 @@ void CLayoutViewPane::OnMenuRegistrationHook()
 
 void CLayoutViewPane::OnToolBarRegistrationHook()
 {
-    // Register top viewport toolbar.
     AzToolsFramework::ToolBarProperties toolBarProperties;
     toolBarProperties.m_name = "Viewport ToolBar";
     m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
 
-    // Add toolbar to top of viewport.
     QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier);
     addToolBar(Qt::TopToolBarArea, toolBar);
+    toolBar->setVisible(false);
 }
 
 void CLayoutViewPane::OnActionRegistrationHook()
@@ -807,28 +805,6 @@ void CLayoutViewPane::OnMenuBindingHook()
 void CLayoutViewPane::OnToolBarBindingHook()
 {
     m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
-    m_toolBarManagerInterface->AddWidgetToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);
-    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.goToPosition", EditorIdentifiers::ViewportCameraMenuIdentifier, 500);
-    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", EditorIdentifiers::ViewportDebugInfoMenuIdentifier, 600);
-    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
-    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 800);
-    m_toolBarManagerInterface->AddActionToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.lit", 851);
-    m_toolBarManagerInterface->AddActionToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.unlit", 852);
-    m_toolBarManagerInterface->AddActionToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.normals", 853);
-    m_toolBarManagerInterface->AddActionToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.albedo", 854);
-    m_toolBarManagerInterface->AddActionToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewmode.wireframe", 855);
-    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 900);
 }
 
 //////////////////////////////////////////////////////////////////////////

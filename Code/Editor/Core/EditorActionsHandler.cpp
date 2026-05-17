@@ -2072,6 +2072,28 @@ void EditorActionsHandler::OnToolBarBindingHook()
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.transform.move", 700);
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.transform.rotate", 800);
         m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.edit.transform.scale", 900);
+        m_toolBarManagerInterface->AddWidgetToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 1000);
+        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.view.goToPosition", EditorIdentifiers::ViewportCameraMenuIdentifier, 1100);
+        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.info.toggle", EditorIdentifiers::ViewportDebugInfoMenuIdentifier, 1200);
+        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 1300);
+        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 1400);
+        m_toolBarManagerInterface->AddActionToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.viewmode.lit", 1500);
+        m_toolBarManagerInterface->AddActionToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.viewmode.unlit", 1510);
+        m_toolBarManagerInterface->AddActionToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.viewmode.normals", 1520);
+        m_toolBarManagerInterface->AddActionToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.viewmode.albedo", 1530);
+        m_toolBarManagerInterface->AddActionToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.viewmode.wireframe", 1540);
+        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 1600);
     }
 }
 
