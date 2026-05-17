@@ -3415,7 +3415,7 @@ namespace AzToolsFramework
             actionProperties.m_name = "Universal";
             actionProperties.m_description = "Select and move/rotate/scale selected object(s) simultaneously";
             actionProperties.m_category = "Edit";
-            actionProperties.m_iconPath = ":/IconosNuevos/gizmo.svg";
+            actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Universal.svg";
 
             actionManager->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
