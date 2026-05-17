@@ -61,6 +61,11 @@
                     }
                 }
             ],
+            "PassData": {
+                "$type": "XeSSPassData",
+                "Sharpness": 0.5,
+                "QualityMode": 103
+            },
             "FallbackConnections": [
                 {
                     "Input": "InputColor",

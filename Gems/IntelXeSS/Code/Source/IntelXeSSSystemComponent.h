@@ -24,7 +24,6 @@ namespace AZ::Render
 
     private:
         void LoadPassTemplateMappings();
-
         RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
     };
 } // namespace AZ::Render

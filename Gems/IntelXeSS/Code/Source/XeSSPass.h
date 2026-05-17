@@ -35,6 +35,7 @@ namespace AZ::Render
 
         void SetQualityMode(xess_quality_settings_t mode);
         void SetSharpness(float sharpness);
+        void UpdateOptimalRenderResolution();
 
     protected:
         explicit XeSSPass(const RPI::PassDescriptor& descriptor);
@@ -52,14 +53,14 @@ namespace AZ::Render
         void DestroyXeSSContext();
         void UpdateJitterOffset();
         void DestroyImageViews();
+        bool ImageViewsNeedRecreate(VkImage colorImage, VkImage depthImage, VkImage motionImage, VkImage outputImage) const;
 
-        // Halton sequence helper for jitter
         static float HaltonSequence(int index, int base);
 
         xess_context_handle_t m_xessContext = nullptr;
         bool m_contextCreated = false;
         bool m_needsReset = true;
-        bool m_firstDispatch = false; // reset temporal history on first dispatch after (re)init
+        bool m_firstDispatch = false;
         bool m_xessAvailable = false;
 
         xess_quality_settings_t m_qualityMode = XESS_QUALITY_SETTING_PERFORMANCE;
@@ -70,6 +71,8 @@ namespace AZ::Render
         uint32_t m_displayWidth = 0;
         uint32_t m_displayHeight = 0;
 
+        xess_2d_t m_optimalRenderSize = {};
+
         float m_jitterX = 0.0f;
         float m_jitterY = 0.0f;
         int32_t m_jitterIndex = 0;
@@ -79,13 +82,16 @@ namespace AZ::Render
         RPI::PassAttachmentBinding* m_motionVectorsBinding = nullptr;
         RPI::PassAttachmentBinding* m_outputColorBinding = nullptr;
 
-        // Cached native handles
         const RHI::Image* m_cachedInputColor = nullptr;
         const RHI::Image* m_cachedInputDepth = nullptr;
         const RHI::Image* m_cachedMotionVectors = nullptr;
         const RHI::Image* m_cachedOutputColor = nullptr;
 
-        // Cached VkImageViews (created/destroyed by this pass)
+        VkImage m_cachedColorVkImage = VK_NULL_HANDLE;
+        VkImage m_cachedDepthVkImage = VK_NULL_HANDLE;
+        VkImage m_cachedMotionVkImage = VK_NULL_HANDLE;
+        VkImage m_cachedOutputVkImage = VK_NULL_HANDLE;
+
         VkDevice m_vkDevice = VK_NULL_HANDLE;
         PFN_vkCreateImageView m_pfnCreateImageView = nullptr;
         PFN_vkDestroyImageView m_pfnDestroyImageView = nullptr;

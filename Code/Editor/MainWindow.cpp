@@ -492,9 +492,32 @@ void MainWindow::Initialize()
             {
                 currentTitle = currentTitle.left(sepIdx);
             }
+            QString gpuApiColored = m_gpuApiName;
+            if (m_gpuApiName.contains(QStringLiteral("Vulkan"), Qt::CaseInsensitive))
+            {
+                gpuApiColored = QStringLiteral("<span style='color: #ff3333;'>%1</span>").arg(m_gpuApiName);
+            }
+            QString projectColored = QStringLiteral("<span style='color: #00cc44;'>%1</span>").arg(currentTitle);
             QString gpuInfo = QString("%1 FPS | %2 | %3")
-                .arg(QString::number(m_currentFps, 'f', 1), m_gpuApiName, m_gpuDeviceName);
+                .arg(QString::number(m_currentFps, 'f', 1), gpuApiColored, m_gpuDeviceName);
+            QString richTitle = QString("<div style='text-align: center;'>%1  |  %2</div>")
+                .arg(projectColored, gpuInfo);
             setWindowTitle(currentTitle + QStringLiteral("  |  ") + gpuInfo);
+            QWidget* wrapper = parentWidget();
+            if (wrapper)
+            {
+                QLabel* titleLabel = wrapper->findChild<QLabel*>(QStringLiteral("titleLabel"));
+                if (!titleLabel)
+                {
+                    titleLabel = wrapper->findChild<QLabel*>();
+                }
+                if (titleLabel)
+                {
+                    titleLabel->setTextFormat(Qt::RichText);
+                    titleLabel->setAlignment(Qt::AlignCenter);
+                    titleLabel->setText(richTitle);
+                }
+            }
         });
         m_gpuInfoTimer->start();
     }

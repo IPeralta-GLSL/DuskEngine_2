@@ -20,6 +20,8 @@
 
 #include <QLineEdit>
 #include <QPlainTextEdit>
+#include <QCompleter>
+#include <QStringListModel>
 
 #include <QAbstractTableModel>
 #include <QDialog>
@@ -69,6 +71,9 @@ private:
     QStringList m_history;
     unsigned int m_historyIndex;
     bool m_bReusedHistory;
+    QCompleter* m_completer;
+    QStringListModel* m_completerModel;
+    void UpdateCompletionModel();
 };
 
 class ConsoleVariableItemDelegate

@@ -8,11 +8,9 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 
-AZ_CVAR(float, r_xessSharpness, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "XeSS sharpness (0.0 - 1.0)");
-AZ_CVAR(int, r_xessQualityMode, static_cast<int>(XESS_QUALITY_SETTING_PERFORMANCE), nullptr,
-    AZ::ConsoleFunctorFlags::Null,
-    "XeSS quality mode (100=UltraPerf, 101=Perf, 102=Balanced, 103=Quality, 104=UltraQuality, 105=UltraQuality+, 106=AA)");
+AZ_CVAR(float, r_xessSharpness, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "XeSS sharpness (0.0 - 1.0)");
+AZ_CVAR(int, r_xessQualityMode, static_cast<int>(XESS_QUALITY_SETTING_PERFORMANCE), nullptr, AZ::ConsoleFunctorFlags::Null, "XeSS quality mode");
+AZ_CVAR(bool, r_xessEnabled, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable XeSS upscaling");
 
 namespace AZ::Render
 {
@@ -33,11 +31,7 @@ namespace AZ::Render
     {
     }
 
-    void XeSSFeatureProcessor::AddRenderPasses([[maybe_unused]] RPI::RenderPipeline* pipeline)
-    {
-    }
-
-    void XeSSFeatureProcessor::Simulate([[maybe_unused]] const SimulatePacket& packet)
+    void XeSSFeatureProcessor::Simulate(const SimulatePacket& packet)
     {
         auto* scene = GetParentScene();
         if (!scene)
@@ -54,9 +48,9 @@ namespace AZ::Render
                 auto* xessPass = azrtti_cast<XeSSPass*>(foundPass);
                 if (xessPass)
                 {
+                    foundPass->SetEnabled(r_xessEnabled);
                     xessPass->SetSharpness(r_xessSharpness);
-                    xessPass->SetQualityMode(
-                        static_cast<xess_quality_settings_t>(static_cast<int>(r_xessQualityMode)));
+                    xessPass->SetQualityMode(static_cast<xess_quality_settings_t>(static_cast<int>(r_xessQualityMode)));
                 }
             }
         }

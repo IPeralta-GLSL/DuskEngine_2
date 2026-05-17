@@ -144,7 +144,17 @@ ConsoleLineEdit::ConsoleLineEdit(QWidget* parent)
     : QLineEdit(parent)
     , m_historyIndex(0)
     , m_bReusedHistory(false)
+    , m_completerModel(new QStringListModel(this))
+    , m_completer(new QCompleter(this))
 {
+    m_completer->setModel(m_completerModel);
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+    m_completer->setCompletionMode(QCompleter::PopupCompletion);
+    m_completer->setFilterMode(Qt::MatchContains);
+    m_completer->setMaxVisibleItems(12);
+    setCompleter(m_completer);
+
+    connect(this, &QLineEdit::textEdited, this, &ConsoleLineEdit::UpdateCompletionModel);
 }
 
 void ConsoleLineEdit::mouseDoubleClickEvent([[maybe_unused]] QMouseEvent* ev)
@@ -1411,6 +1421,38 @@ void CConsoleSCB::OnEditorNotifyEvent(EEditorNotifyEvent event)
     default:
         break;
     }
+}
+
+void ConsoleLineEdit::UpdateCompletionModel()
+{
+    IConsole* console = GetIEditor()->GetSystem()->GetIConsole();
+    auto commandManager = GetIEditor()->GetCommandManager();
+
+    QStringList cmdList;
+    AZStd::vector<AZStd::string_view> cmds;
+    cmds.resize(console->GetNumVars());
+    size_t cmdCount = console->GetSortedVars(cmds);
+
+    for (int i = 0; i < cmdCount; i++)
+    {
+        ICVar* pCVar = console->GetCVar(cmds[i].data());
+        if (pCVar)
+        {
+            cmdList.append(QString::fromUtf8(cmds[i].data()));
+        }
+    }
+
+    std::vector<AZStd::string> editorCmds;
+    commandManager->GetCommandList(editorCmds);
+    for (const auto& cmd : editorCmds)
+    {
+        if (!cmdList.contains(QString::fromUtf8(cmd.c_str())))
+        {
+            cmdList.append(QString::fromUtf8(cmd.c_str()));
+        }
+    }
+
+    m_completerModel->setStringList(cmdList);
 }
 
 #include <Controls/moc_ConsoleSCB.cpp>

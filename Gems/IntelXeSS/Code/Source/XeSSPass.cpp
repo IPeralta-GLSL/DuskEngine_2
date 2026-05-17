@@ -22,10 +22,6 @@
 
 namespace AZ::Render
 {
-    // =========================================================================
-    // XeSSPassData
-    // =========================================================================
-
     void XeSSPassData::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -36,10 +32,6 @@ namespace AZ::Render
                 ->Field("QualityMode", &XeSSPassData::m_qualityMode);
         }
     }
-
-    // =========================================================================
-    // XeSSPass - Construction / Destruction
-    // =========================================================================
 
     RPI::Ptr<XeSSPass> XeSSPass::Create(const RPI::PassDescriptor& descriptor)
     {
@@ -66,10 +58,6 @@ namespace AZ::Render
         DestroyImageViews();
     }
 
-    // =========================================================================
-    // XeSSPass - Setters
-    // =========================================================================
-
     void XeSSPass::SetQualityMode(xess_quality_settings_t mode)
     {
         if (m_qualityMode != mode)
@@ -83,10 +71,6 @@ namespace AZ::Render
     {
         m_sharpness = AZ::GetClamp(sharpness, 0.0f, 1.0f);
     }
-
-    // =========================================================================
-    // Halton sequence for jitter (standard temporal AA jitter)
-    // =========================================================================
 
     float XeSSPass::HaltonSequence(int index, int base)
     {
@@ -102,9 +86,28 @@ namespace AZ::Render
         return result;
     }
 
-    // =========================================================================
-    // Context Management
-    // =========================================================================
+    void XeSSPass::UpdateOptimalRenderResolution()
+    {
+        auto& loader = XeSSLoader::Get();
+        if (!m_contextCreated || !loader.xessGetOptimalInputResolution)
+        {
+            return;
+        }
+
+        xess_2d_t displayRes = { m_displayWidth, m_displayHeight };
+        xess_2d_t optimalRender = {};
+        xess_2d_t optimalW = {};
+        xess_2d_t optimalH = {};
+        xess_result_t result = loader.xessGetOptimalInputResolution(
+            m_xessContext, &displayRes, m_qualityMode, &optimalRender, &optimalW, &optimalH);
+
+        if (result == XESS_RESULT_SUCCESS && optimalRender.x > 0 && optimalRender.y > 0)
+        {
+            m_optimalRenderSize = optimalRender;
+            m_renderWidth = optimalRender.x;
+            m_renderHeight = optimalRender.y;
+        }
+    }
 
     void XeSSPass::InitializeXeSSContext()
     {
@@ -137,12 +140,10 @@ namespace AZ::Render
 
         m_vkDevice = vkDevice;
 
-        // Get Vulkan function pointers via device proc addr (GLAD doesn't expose global vk* functions)
         PFN_vkGetDeviceProcAddr deviceProcAddr = AZ::Vulkan::GetDeviceProcAddr(*device);
         m_pfnCreateImageView = reinterpret_cast<PFN_vkCreateImageView>(deviceProcAddr(vkDevice, "vkCreateImageView"));
         m_pfnDestroyImageView = reinterpret_cast<PFN_vkDestroyImageView>(deviceProcAddr(vkDevice, "vkDestroyImageView"));
 
-        // Create XeSS context
         xess_result_t result = loader.xessVKCreateContext(
             vkInstance, vkPhysicalDevice, vkDevice, &m_xessContext);
         if (result != XESS_RESULT_SUCCESS)
@@ -151,14 +152,12 @@ namespace AZ::Render
             return;
         }
 
-        // Set velocity scale to render resolution (pixel-space motion vectors)
         if (loader.xessSetVelocityScale)
         {
             loader.xessSetVelocityScale(m_xessContext,
                 static_cast<float>(m_renderWidth), static_cast<float>(m_renderHeight));
         }
 
-        // Initialize XeSS
         xess_vk_init_params_t initParams{};
         initParams.outputResolution.x = m_displayWidth;
         initParams.outputResolution.y = m_displayHeight;
@@ -184,8 +183,10 @@ namespace AZ::Render
         }
 
         m_contextCreated = true;
-        m_firstDispatch = true; // reset temporal history on first dispatch after context (re)init
+        m_firstDispatch = true;
         m_jitterIndex = 0;
+
+        UpdateOptimalRenderResolution();
 
         AZ_TracePrintf("IntelXeSS", "XeSS context initialized: render=%ux%u display=%ux%u quality=%d\n",
             m_renderWidth, m_renderHeight, m_displayWidth, m_displayHeight, static_cast<int>(m_qualityMode));
@@ -225,25 +226,32 @@ namespace AZ::Render
         DestroyView(m_inputDepthView);
         DestroyView(m_motionVectorsView);
         DestroyView(m_outputColorView);
+
+        m_cachedColorVkImage = VK_NULL_HANDLE;
+        m_cachedDepthVkImage = VK_NULL_HANDLE;
+        m_cachedMotionVkImage = VK_NULL_HANDLE;
+        m_cachedOutputVkImage = VK_NULL_HANDLE;
+    }
+
+    bool XeSSPass::ImageViewsNeedRecreate(VkImage colorImage, VkImage depthImage, VkImage motionImage, VkImage outputImage) const
+    {
+        return m_cachedColorVkImage != colorImage ||
+               m_cachedDepthVkImage != depthImage ||
+               m_cachedMotionVkImage != motionImage ||
+               m_cachedOutputVkImage != outputImage;
     }
 
     void XeSSPass::UpdateJitterOffset()
     {
-        // Use Halton(2,3) sequence, centered to [-0.5, 0.5] as required by XeSS
         m_jitterIndex++;
         m_jitterX = HaltonSequence(m_jitterIndex, 2) - 0.5f;
         m_jitterY = HaltonSequence(m_jitterIndex, 3) - 0.5f;
 
-        // Wrap index to avoid precision issues after thousands of frames
         if (m_jitterIndex > 512)
         {
             m_jitterIndex = 0;
         }
     }
-
-    // =========================================================================
-    // Pass Lifecycle
-    // =========================================================================
 
     void XeSSPass::BuildInternal()
     {
@@ -254,7 +262,6 @@ namespace AZ::Render
         m_motionVectorsBinding = FindAttachmentBinding(Name("MotionVectors"));
         m_outputColorBinding = FindAttachmentBinding(Name("OutputColor"));
 
-        // Prevent the output from inheriting size from a source — we set it to display resolution
         if (m_outputColorBinding)
         {
             for (auto& owned : m_ownedAttachments)
@@ -278,15 +285,21 @@ namespace AZ::Render
 
         if (m_outputColorBinding && m_outputColorBinding->GetAttachment())
         {
-            // Get render resolution from input
             if (m_inputColorBinding && m_inputColorBinding->GetAttachment())
             {
                 auto inputDesc = m_inputColorBinding->GetAttachment()->m_descriptor.m_image;
-                m_renderWidth = inputDesc.m_size.m_width;
-                m_renderHeight = inputDesc.m_size.m_height;
+                if (m_optimalRenderSize.x > 0 && m_optimalRenderSize.y > 0)
+                {
+                    m_renderWidth = m_optimalRenderSize.x;
+                    m_renderHeight = m_optimalRenderSize.y;
+                }
+                else
+                {
+                    m_renderWidth = inputDesc.m_size.m_width;
+                    m_renderHeight = inputDesc.m_size.m_height;
+                }
             }
 
-            // Get display resolution from window
             AzFramework::NativeWindowHandle windowHandle = nullptr;
             AzFramework::WindowSystemRequestBus::BroadcastResult(
                 windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
@@ -317,9 +330,6 @@ namespace AZ::Render
 
         if (m_renderWidth < 2 || m_renderHeight < 2 || m_displayWidth < 2 || m_displayHeight < 2)
         {
-            // Dimensions not ready yet (e.g. during game mode transition the window
-            // temporarily reports 0x0 or 1x1). Skip XeSS init to avoid crashing
-            // inside xessVKInit with invalid outputResolution.
             Base::FrameBeginInternal(params);
             return;
         }
@@ -337,7 +347,6 @@ namespace AZ::Render
             RPI::ViewPtr view = GetView();
             if (view)
             {
-                // Convert [-0.5, 0.5] jitter to NDC [-1, 1] space
                 float jitterXNdc = 2.0f * m_jitterX / static_cast<float>(m_renderWidth);
                 float jitterYNdc = -2.0f * m_jitterY / static_cast<float>(m_renderHeight);
                 view->SetClipSpaceOffset(jitterXNdc, jitterYNdc);
@@ -393,7 +402,6 @@ namespace AZ::Render
 
         int deviceIndex = context.GetDeviceIndex();
 
-        // Helper to get VkImage from RHI::Image
         auto GetVkImage = [&](const RHI::Image* image) -> VkImage
         {
             auto deviceImage = image->GetDeviceImage(deviceIndex);
@@ -415,55 +423,67 @@ namespace AZ::Render
             return;
         }
 
-        // Destroy old image views and create new ones matching current images
-        DestroyImageViews();
-
-        if (!m_pfnCreateImageView)
+        if (ImageViewsNeedRecreate(colorImage, depthImage, motionImage, outputImage))
         {
-            return;
-        }
+            DestroyImageViews();
 
-        auto CreateView = [this](VkImage image, VkFormat format, VkImageAspectFlags aspect,
-                                 uint32_t width, uint32_t height) -> VkImageView
-        {
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = image;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = format;
-            viewInfo.subresourceRange.aspectMask = aspect;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            VkImageView view = VK_NULL_HANDLE;
-            VkResult result = m_pfnCreateImageView(m_vkDevice, &viewInfo, nullptr, &view);
-            if (result != VK_SUCCESS)
+            if (!m_pfnCreateImageView)
             {
-                AZ_Warning("IntelXeSS", false, "Failed to create VkImageView for XeSS: %d", result);
-                return VK_NULL_HANDLE;
+                return;
             }
-            return view;
-        };
 
-        m_inputColorView = CreateView(colorImage, VK_FORMAT_R16G16B16A16_SFLOAT,
-            VK_IMAGE_ASPECT_COLOR_BIT, m_renderWidth, m_renderHeight);
-        m_inputDepthView = CreateView(depthImage, VK_FORMAT_D32_SFLOAT,
-            VK_IMAGE_ASPECT_DEPTH_BIT, m_renderWidth, m_renderHeight);
-        m_motionVectorsView = CreateView(motionImage, VK_FORMAT_R16G16_SFLOAT,
-            VK_IMAGE_ASPECT_COLOR_BIT, m_renderWidth, m_renderHeight);
-        m_outputColorView = CreateView(outputImage, VK_FORMAT_R16G16B16A16_SFLOAT,
-            VK_IMAGE_ASPECT_COLOR_BIT, m_displayWidth, m_displayHeight);
+            auto CreateView = [this](VkImage image, VkFormat format, VkImageAspectFlags aspect,
+                                     uint32_t width, uint32_t height) -> VkImageView
+            {
+                VkImageViewCreateInfo viewInfo{};
+                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo.image = image;
+                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                viewInfo.format = format;
+                viewInfo.subresourceRange.aspectMask = aspect;
+                viewInfo.subresourceRange.baseMipLevel = 0;
+                viewInfo.subresourceRange.levelCount = 1;
+                viewInfo.subresourceRange.baseArrayLayer = 0;
+                viewInfo.subresourceRange.layerCount = 1;
+
+                VkImageView view = VK_NULL_HANDLE;
+                VkResult result = m_pfnCreateImageView(m_vkDevice, &viewInfo, nullptr, &view);
+                if (result != VK_SUCCESS)
+                {
+                    AZ_Warning("IntelXeSS", false, "Failed to create VkImageView for XeSS: %d", result);
+                    return VK_NULL_HANDLE;
+                }
+                return view;
+            };
+
+            m_inputColorView = CreateView(colorImage, VK_FORMAT_R16G16B16A16_SFLOAT,
+                VK_IMAGE_ASPECT_COLOR_BIT, m_renderWidth, m_renderHeight);
+            m_inputDepthView = CreateView(depthImage, VK_FORMAT_D32_SFLOAT,
+                VK_IMAGE_ASPECT_DEPTH_BIT, m_renderWidth, m_renderHeight);
+            m_motionVectorsView = CreateView(motionImage, VK_FORMAT_R16G16_SFLOAT,
+                VK_IMAGE_ASPECT_COLOR_BIT, m_renderWidth, m_renderHeight);
+            m_outputColorView = CreateView(outputImage, VK_FORMAT_R16G16B16A16_SFLOAT,
+                VK_IMAGE_ASPECT_COLOR_BIT, m_displayWidth, m_displayHeight);
+
+            if (m_inputColorView == VK_NULL_HANDLE || m_inputDepthView == VK_NULL_HANDLE ||
+                m_motionVectorsView == VK_NULL_HANDLE || m_outputColorView == VK_NULL_HANDLE)
+            {
+                DestroyImageViews();
+                return;
+            }
+
+            m_cachedColorVkImage = colorImage;
+            m_cachedDepthVkImage = depthImage;
+            m_cachedMotionVkImage = motionImage;
+            m_cachedOutputVkImage = outputImage;
+        }
 
         if (m_inputColorView == VK_NULL_HANDLE || m_inputDepthView == VK_NULL_HANDLE ||
             m_motionVectorsView == VK_NULL_HANDLE || m_outputColorView == VK_NULL_HANDLE)
         {
-            DestroyImageViews();
             return;
         }
 
-        // Build XeSS execute params
         VkImageSubresourceRange colorSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
         VkImageSubresourceRange depthSubresource = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
 
@@ -497,7 +517,6 @@ namespace AZ::Render
         execParams.outputTexture.width = m_displayWidth;
         execParams.outputTexture.height = m_displayHeight;
 
-        // Optional textures — not used
         execParams.exposureScaleTexture.image = VK_NULL_HANDLE;
         execParams.exposureScaleTexture.imageView = VK_NULL_HANDLE;
         execParams.responsivePixelMaskTexture.image = VK_NULL_HANDLE;
@@ -511,7 +530,6 @@ namespace AZ::Render
         execParams.inputWidth = m_renderWidth;
         execParams.inputHeight = m_renderHeight;
 
-        // Execute XeSS upscaling
         xess_result_t result = loader.xessVKExecute(m_xessContext, vkCmdBuffer, &execParams);
         if (result != XESS_RESULT_SUCCESS)
         {

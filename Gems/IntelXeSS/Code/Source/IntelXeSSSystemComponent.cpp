@@ -44,7 +44,6 @@ namespace AZ::Render
 
     void IntelXeSSSystemComponent::Activate()
     {
-        // Initialize the XeSS dynamic loader
         XeSSLoader::Get().Initialize();
 
         auto* passSystem = RPI::PassSystemInterface::Get();

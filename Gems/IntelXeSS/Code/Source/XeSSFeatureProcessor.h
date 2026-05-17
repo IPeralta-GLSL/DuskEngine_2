@@ -15,7 +15,6 @@ namespace AZ::Render
 
         void Activate() override;
         void Deactivate() override;
-        void AddRenderPasses(RPI::RenderPipeline* pipeline) override;
         void Simulate(const SimulatePacket& packet) override;
     };
 } // namespace AZ::Render

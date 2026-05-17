@@ -14,8 +14,9 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Public
-            Gem::Atom_RHI_Vulkan.Interface
-            3rdParty::XeSSSDK
+             Gem::Atom_RHI_Vulkan.Interface
+             3rdParty::XeSSSDK
+             AZ::AzToolsFramework
 )
 
 ly_add_target(
