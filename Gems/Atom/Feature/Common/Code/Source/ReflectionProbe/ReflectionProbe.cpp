@@ -278,6 +278,26 @@ namespace AZ
             m_bakeExposure = bakeExposure;
         }
 
+        void ReflectionProbe::SetMode(ReflectionProbeMode mode)
+        {
+            if (mode == ReflectionProbeMode::AutoSelect)
+            {
+                m_mode = (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices) 
+                    ? ReflectionProbeMode::RealTime 
+                    : ReflectionProbeMode::Baked;
+            }
+            else
+            {
+                m_mode = mode;
+            }
+            m_updateMode = true;
+        }
+
+        bool ReflectionProbe::GetIsVisible() const
+        {
+            return m_isVisible;
+        }
+
         RHI::ConstPtr<RHI::DrawPacket> ReflectionProbe::BuildDrawPacket(
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,

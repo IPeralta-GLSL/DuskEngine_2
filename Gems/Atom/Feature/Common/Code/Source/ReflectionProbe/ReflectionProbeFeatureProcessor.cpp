@@ -137,7 +137,6 @@ namespace AZ
             {
                 AZ_PROFILE_SCOPE(AzRender, "Sort reflection probes");
 
-                // sort the probes by descending inner volume size, so the smallest volumes are rendered last
                 auto sortFn = [](ReflectionProbePtr const& probe1, ReflectionProbePtr const& probe2) -> bool
                 {
                     const Obb& obb1 = probe1->GetInnerObbWs();
@@ -149,6 +148,7 @@ namespace AZ
                 };
 
                 AZStd::sort(m_reflectionProbes.begin(), m_reflectionProbes.end(), sortFn);
+                AZStd::sort(m_realTimeReflectionProbes.begin(), m_realTimeReflectionProbes.end(), sortFn);
                 m_probeSortRequired = false;
                 m_meshFeatureProcessorUpdateRequired = true;
             }
@@ -195,6 +195,8 @@ namespace AZ
             m_reflectionProbes.push_back(reflectionProbe);
             m_reflectionProbeMap[reflectionProbe->GetUuid()] = reflectionProbe;
 
+            UpdateRealTimeList(reflectionProbe);
+
             m_probeSortRequired = true;
 
             return reflectionProbe->GetUuid();
@@ -217,6 +219,36 @@ namespace AZ
 
             m_reflectionProbes.erase(itEntry);
             m_reflectionProbeMap.erase(handle);
+
+            itEntry = AZStd::find_if(m_realTimeReflectionProbes.begin(), m_realTimeReflectionProbes.end(), [&](ReflectionProbePtr const& entry)
+            {
+                return (entry == reflectionProbe);
+            });
+
+            if (itEntry != m_realTimeReflectionProbes.end())
+            {
+                m_realTimeReflectionProbes.erase(itEntry);
+            }
+
+            itEntry = AZStd::find_if(m_visibleReflectionProbes.begin(), m_visibleReflectionProbes.end(), [&](ReflectionProbePtr const& entry)
+            {
+                return (entry == reflectionProbe);
+            });
+
+            if (itEntry != m_visibleReflectionProbes.end())
+            {
+                m_visibleReflectionProbes.erase(itEntry);
+            }
+
+            itEntry = AZStd::find_if(m_visibleRealTimeReflectionProbes.begin(), m_visibleRealTimeReflectionProbes.end(), [&](ReflectionProbePtr const& entry)
+            {
+                return (entry == reflectionProbe);
+            });
+
+            if (itEntry != m_visibleRealTimeReflectionProbes.end())
+            {
+                m_visibleRealTimeReflectionProbes.erase(itEntry);
+            }
 
             m_meshFeatureProcessorUpdateRequired = true;
         }
@@ -529,6 +561,60 @@ namespace AZ
             }
 
             return true;
+        }
+
+        void ReflectionProbeFeatureProcessor::UpdateRealTimeList(const ReflectionProbePtr& reflectionProbe)
+        {
+            if (reflectionProbe->GetMode() == ReflectionProbeMode::RealTime)
+            {
+                auto itEntry = AZStd::find_if(m_realTimeReflectionProbes.begin(), m_realTimeReflectionProbes.end(), [&](ReflectionProbePtr const& entry)
+                {
+                    return (entry == reflectionProbe);
+                });
+
+                if (itEntry == m_realTimeReflectionProbes.end())
+                {
+                    m_realTimeReflectionProbes.push_back(reflectionProbe);
+                }
+            }
+            else
+            {
+                auto itEntry = AZStd::find_if(m_realTimeReflectionProbes.begin(), m_realTimeReflectionProbes.end(), [&](ReflectionProbePtr const& entry)
+                {
+                    return (entry == reflectionProbe);
+                });
+
+                if (itEntry != m_realTimeReflectionProbes.end())
+                {
+                    m_realTimeReflectionProbes.erase(itEntry);
+                }
+            }
+        }
+
+        void ReflectionProbeFeatureProcessor::SetMode(const ReflectionProbeHandle& handle, ReflectionProbeMode mode)
+        {
+            if (!ValidateHandle(handle))
+            {
+                return;
+            }
+
+            ReflectionProbePtr reflectionProbe = m_reflectionProbeMap[handle];
+            reflectionProbe->SetMode(mode);
+
+            UpdateRealTimeList(reflectionProbe);
+
+            m_probeSortRequired = true;
+        }
+
+        ReflectionProbeMode ReflectionProbeFeatureProcessor::GetMode(const ReflectionProbeHandle& handle) const
+        {
+            if (!ValidateHandle(handle))
+            {
+                return ReflectionProbeMode::Baked;
+            }
+
+            ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
+            return it->second->GetMode();
         }
 
         void ReflectionProbeFeatureProcessor::CreateBoxMesh()

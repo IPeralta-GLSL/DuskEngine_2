@@ -15,6 +15,10 @@ namespace AZ
 {
     namespace Render
     {
+        class ReflectionProbe;
+        using ReflectionProbePtr = AZStd::shared_ptr<ReflectionProbe>;
+        using ReflectionProbeVector = AZStd::vector<ReflectionProbePtr>;
+
         class ReflectionProbeFeatureProcessor final
             : public ReflectionProbeFeatureProcessorInterface,
               private Data::AssetBus::MultiHandler
@@ -63,6 +67,14 @@ namespace AZ
             void FindReflectionProbes(const AZ::Vector3& position, ReflectionProbeHandleVector& reflectionProbeHandles) override;
             void FindReflectionProbes(const AZ::Aabb& aabb, ReflectionProbeHandleVector& reflectionProbeHandles) override;
 
+            void SetMode(const ReflectionProbeHandle& handle, ReflectionProbeMode mode) override;
+            ReflectionProbeMode GetMode(const ReflectionProbeHandle& handle) const override;
+
+            ReflectionProbeVector& GetReflectionProbes() { return m_reflectionProbes; }
+            ReflectionProbeVector& GetRealTimeReflectionProbes() { return m_realTimeReflectionProbes; }
+            ReflectionProbeVector& GetVisibleReflectionProbes() { return m_visibleReflectionProbes; }
+            ReflectionProbeVector& GetVisibleRealTimeReflectionProbes() { return m_visibleRealTimeReflectionProbes; }
+
             // FeatureProcessor overrides
             void Activate() override;
             void Deactivate() override;
@@ -73,43 +85,36 @@ namespace AZ
 
             AZ_DISABLE_COPY_MOVE(ReflectionProbeFeatureProcessor);
 
-            // create the box vertex and index streams, which are used to render the probe volumes
             void CreateBoxMesh();
 
-            // load the shader and retrieve pipeline state, shader, Srg Layout, and drawListTag
             void LoadShader(
                 const char* filePath, RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState, Data::Instance<RPI::Shader>& shader,
                 RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, RHI::DrawListTag& drawListTag);
 
-            // RPI::SceneNotificationBus::Handler overrides
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             void UpdatePipelineStates();
 
-            // AssetBus::MultiHandler overrides...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
-            // notifies and removes the notification entry
             void HandleAssetNotification(Data::Asset<Data::AssetData> asset, CubeMapAssetNotificationType notificationType);
 
-            // internal helper for FindReflectionProbes
             void FindReflectionProbesInternal(const AZ::Aabb& aabb, ReflectionProbeHandleVector& reflectionProbes, AZStd::function<bool(const ReflectionProbe*)> filter = {});
 
-            // checks that the ReflectionProbeHandle exists in the ReflectionProbeMap
+            void UpdateRealTimeList(const ReflectionProbePtr& reflectionProbe);
+
             bool ValidateHandle(const ReflectionProbeHandle& handle) const;
 
-            // hash table of reflection probe handles for constant-time lookup
-            using ReflectionProbePtr = AZStd::shared_ptr<ReflectionProbe>;
             using ReflectionProbeMap = AZStd::unordered_map <ReflectionProbeHandle, ReflectionProbePtr>;
             ReflectionProbeMap m_reflectionProbeMap;
 
-            // list of reflection probes, sorted by size for rendering
-            using ReflectionProbeVector = AZStd::vector<ReflectionProbePtr>;
             const size_t InitialProbeAllocationSize = 64;
             ReflectionProbeVector m_reflectionProbes;
+            ReflectionProbeVector m_realTimeReflectionProbes;
+            ReflectionProbeVector m_visibleReflectionProbes;
+            ReflectionProbeVector m_visibleRealTimeReflectionProbes;
 
-            // list of cubemap assets that we need to check during Simulate() to see if they are ready
             struct NotifyCubeMapAssetEntry
             {
                 AZStd::string m_relativePath;
@@ -120,7 +125,6 @@ namespace AZ
             typedef AZStd::vector<NotifyCubeMapAssetEntry> NotifyCubeMapAssetVector;
             NotifyCubeMapAssetVector m_notifyCubeMapAssets;
 
-            // position structure for the box vertices
             struct Position
             {
                 float m_x = 0.0f;
@@ -128,22 +132,16 @@ namespace AZ
                 float m_z = 0.0f;
             };
 
-            // buffer pool for the vertex and index buffers
             RHI::Ptr<RHI::BufferPool> m_bufferPool;
 
-            // box mesh rendering buffers
-            // note that the position and index views are stored in ReflectionRenderData
             AZStd::vector<Position> m_boxPositions;
             AZStd::vector<uint16_t> m_boxIndices;
             RHI::Ptr<RHI::Buffer> m_boxPositionBuffer;
             RHI::Ptr<RHI::Buffer> m_boxIndexBuffer;
             RHI::InputStreamLayout m_boxStreamLayout;
 
-            // contains the rendering data needed by reflection probes
-            // it is loaded by the feature processor and passed to the probes to avoid loading it in each probe
             ReflectionRenderData m_reflectionRenderData;
 
-            // flags
             bool m_probeSortRequired = false;
             bool m_meshFeatureProcessorUpdateRequired = false;
             bool m_needUpdatePipelineStates = false;

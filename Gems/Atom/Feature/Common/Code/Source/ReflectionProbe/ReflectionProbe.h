@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Transform.h>
+#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h>
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RHI/GeometryView.h>
@@ -115,6 +116,13 @@ namespace AZ
             void SetBakeExposure(float bakeExposure);
             float GetBakeExposure() const { return m_bakeExposure; }
 
+            // probe mode (RealTime or Baked)
+            ReflectionProbeMode GetMode() const { return m_mode; }
+            void SetMode(ReflectionProbeMode mode);
+
+            bool GetIsVisible() const;
+            void ResetVisibility() { m_isVisible = false; }
+
         private:
 
             AZ_DISABLE_COPY_MOVE(ReflectionProbe);
@@ -170,12 +178,19 @@ namespace AZ
             float m_bakeExposure = 0.0f;
             bool m_updateSrg = false;
 
+            // probe mode (RealTime or Baked)
+            ReflectionProbeMode m_mode = ReflectionProbeMode::Baked;
+            bool m_updateMode = false;
+
             const RHI::DrawItemSortKey InvalidSortKey = static_cast<RHI::DrawItemSortKey>(-1);
             RHI::DrawItemSortKey m_sortKey = InvalidSortKey;
 
             // culling
             RPI::Cullable m_cullable;
             AZ::Uuid m_uuid = AZ::Uuid::Create();
+
+            // visibility
+            bool m_isVisible = false;
         };
 
     } // namespace Render
