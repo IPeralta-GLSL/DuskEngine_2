@@ -213,6 +213,11 @@ namespace AZ
             return m_vulkan12Features;
         }
 
+        const VkPhysicalDeviceVulkan13Features& PhysicalDevice::GetPhysicalDeviceVulkan13Features() const
+        {
+            return m_vulkan13Features;
+        }
+
         VkFormatProperties PhysicalDevice::GetFormatProperties(RHI::Format format, bool raiseAsserts) const
         {
             VkFormatProperties formatProperties{};
@@ -478,6 +483,7 @@ namespace AZ
                 m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
                 m_timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
                 m_subpassMergeFeedbackFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT;
+                m_vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -552,6 +558,11 @@ namespace AZ
                 if (majorVersion >= 1 && minorVersion >= 2)
                 {
                     deviceFeaturesAppender.append(m_vulkan12Features);
+                }
+
+                if (majorVersion >= 1 && minorVersion >= 3)
+                {
+                    deviceFeaturesAppender.append(m_vulkan13Features);
                 }
                 else
                 {

@@ -102,6 +102,7 @@ namespace AZ
             const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& GetPhysicalDeviceDescriptorIndexingFeatures() const;
             const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& GetPhysicalDeviceBufferDeviceAddressFeatures() const;
             const VkPhysicalDeviceVulkan12Features& GetPhysicalDeviceVulkan12Features() const;
+            const VkPhysicalDeviceVulkan13Features& GetPhysicalDeviceVulkan13Features() const;
             const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR& GetPhysicalDeviceSeparateDepthStencilFeatures() const;
             const VkPhysicalDeviceShaderAtomicInt64Features& GetShaderAtomicInt64Features() const;
             const VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT& GetShaderImageAtomicInt64Features() const;
@@ -166,6 +167,7 @@ namespace AZ
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_rayTracingPipelineFeatures{};
             VkPhysicalDeviceRayQueryFeaturesKHR m_rayQueryFeatures{};
             VkPhysicalDeviceVulkan12Features m_vulkan12Features{};
+            VkPhysicalDeviceVulkan13Features m_vulkan13Features{};
             VkPhysicalDeviceFragmentShadingRateFeaturesKHR m_fragmentShadingRateFeatures{};
             VkPhysicalDeviceFragmentDensityMapFeaturesEXT m_fragmentDensityMapFeatures{};
             VkPhysicalDeviceFragmentDensityMapPropertiesEXT m_fragmentDensityMapProperties{};

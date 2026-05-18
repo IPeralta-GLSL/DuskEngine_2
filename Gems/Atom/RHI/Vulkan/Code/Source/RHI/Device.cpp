@@ -401,6 +401,18 @@ namespace AZ
 
                 deviceInfoAppender.append(vulkan12Features);
             }
+
+            VkPhysicalDeviceVulkan13Features vulkan13Features = {};
+            if (majorVersion >= 1 && minorVersion >= 3)
+            {
+                vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+                const auto& physicalDeviceVulkan13Features = physicalDevice.GetPhysicalDeviceVulkan13Features();
+                vulkan13Features.synchronization2 = physicalDeviceVulkan13Features.synchronization2;
+                vulkan13Features.dynamicRendering = physicalDeviceVulkan13Features.dynamicRendering;
+                vulkan13Features.maintenance4 = physicalDeviceVulkan13Features.maintenance4;
+
+                deviceInfoAppender.append(vulkan13Features);
+            }
             else
             {
                 float16Int8.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
