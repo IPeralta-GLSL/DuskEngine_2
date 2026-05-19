@@ -14,6 +14,8 @@
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
 #include "UI/ComponentPalette/ComponentPaletteSettings.h"
 
+#include <AzToolsFramework/UI/ImGui/ImGuiEditorDockWidget.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -166,6 +168,16 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         outlinerOptions);
 
+    ViewPaneOptions imguiOptions;
+    imguiOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+    imguiOptions.isDisabledInComponentMode = false;
+    imguiOptions.isDisabledInImGuiMode = false;
+
+    RegisterViewPane<AzToolsFramework::ImGuiEditorDockWidget>(
+        "ImGui Stage",
+        LyViewPane::CategoryTools,
+        imguiOptions);
+
     ComponentEntityEditorPluginInternal::RegisterSandboxObjects();
 
     // Check for common mistakes in component declarations
@@ -183,6 +195,7 @@ void ComponentEntityEditorPlugin::Release()
         UnregisterViewPane(LyViewPane::Inspector);
         UnregisterViewPane(LyViewPane::EntityOutliner);
         UnregisterViewPane(LyViewPane::EntityInspectorPinned);
+        UnregisterViewPane("ImGui Stage");
 
         ComponentEntityEditorPluginInternal::UnregisterSandboxObjects();
     }

@@ -27,6 +27,7 @@ ly_add_target(
         PRIVATE
             3rdParty::Qt::Core
             3rdParty::Qt::Widgets
+            3rdParty::Qt::OpenGL
             AZ::AzCore
             AZ::AzToolsFramework
             Legacy::CryCommon
