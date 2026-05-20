@@ -15,6 +15,31 @@
 
 namespace ImGuiEntityOutliner
 {
+    // Selection change listener to sync with viewport in real-time
+    class SelectionListener
+        : private AzToolsFramework::ToolsApplicationNotificationBus::Handler
+    {
+    public:
+        SelectionListener()
+        {
+            BusConnect();
+        }
+
+        ~SelectionListener()
+        {
+            BusDisconnect();
+        }
+
+    private:
+        void AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& /*newlySelectedEntities*/,
+                                      const AzToolsFramework::EntityIdList& /*newlyDeselectedEntities*/) override
+        {
+            RefreshSelection();
+        }
+    };
+
+    static SelectionListener* s_selectionListener = nullptr;
+
     static bool s_showStageWindow = true;
     static char s_searchBuffer[256] = "";
     static AZ::EntityId s_selectedEntity;
@@ -41,10 +66,19 @@ namespace ImGuiEntityOutliner
         s_selectedEntities.clear();
         s_isRenaming = false;
         s_renamingEntity = AZ::EntityId();
+        if (!s_selectionListener)
+        {
+            s_selectionListener = new SelectionListener();
+        }
     }
 
     void Shutdown()
     {
+        if (s_selectionListener)
+        {
+            delete s_selectionListener;
+            s_selectionListener = nullptr;
+        }
     }
 
     AZ::EntityId GetSelectedEntityId()
@@ -457,8 +491,15 @@ namespace ImGuiEntityOutliner
 
         ImGui::SetNextWindowSize(ImVec2(350, 500), ImGuiCond_FirstUseEver);
 
-        if (!ImGui::Begin("Stage##ImGui", &s_showStageWindow,
-                         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+        ImVec2 availSize = ImGui::GetContentRegionAvail();
+        ImGui::SetNextWindowSize(availSize, ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+
+        static bool s_dummyClose = true;
+        if (!ImGui::Begin("Stage##ImGui", &s_dummyClose,
+                         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoBringToFrontOnFocus))
         {
             ImGui::End();
             return;

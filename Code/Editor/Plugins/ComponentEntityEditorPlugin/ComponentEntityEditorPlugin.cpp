@@ -15,6 +15,9 @@
 #include "UI/ComponentPalette/ComponentPaletteSettings.h"
 
 #include <AzToolsFramework/UI/ImGui/ImGuiEditorDockWidget.h>
+#include <AzToolsFramework/UI/ImGui/ImGuiStageDockWidget.h>
+#include <AzToolsFramework/UI/ImGui/ImGuiAttributesDockWidget.h>
+#include <AzToolsFramework/UI/ImGui/ImGuiAssetBrowserDockWidget.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityUtils.h>
@@ -168,15 +171,38 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         outlinerOptions);
 
-    ViewPaneOptions imguiOptions;
-    imguiOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
-    imguiOptions.isDisabledInComponentMode = false;
-    imguiOptions.isDisabledInImGuiMode = false;
+    // ImGui Stage (hierarchy outliner)
+    ViewPaneOptions stageOptions;
+    stageOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+    stageOptions.isDisabledInComponentMode = false;
+    stageOptions.isDisabledInImGuiMode = false;
 
-    RegisterViewPane<AzToolsFramework::ImGuiEditorDockWidget>(
+    RegisterViewPane<AzToolsFramework::ImGuiStageDockWidget>(
         "ImGui Stage",
         LyViewPane::CategoryTools,
-        imguiOptions);
+        stageOptions);
+
+    // ImGui Attributes (inspector)
+    ViewPaneOptions attrsOptions;
+    attrsOptions.preferedDockingArea = Qt::RightDockWidgetArea;
+    attrsOptions.isDisabledInComponentMode = false;
+    attrsOptions.isDisabledInImGuiMode = false;
+
+    RegisterViewPane<AzToolsFramework::ImGuiAttributesDockWidget>(
+        "ImGui Attributes",
+        LyViewPane::CategoryTools,
+        attrsOptions);
+
+    // ImGui Asset Browser
+    ViewPaneOptions assetOptions;
+    assetOptions.preferedDockingArea = Qt::BottomDockWidgetArea;
+    assetOptions.isDisabledInComponentMode = false;
+    assetOptions.isDisabledInImGuiMode = false;
+
+    RegisterViewPane<AzToolsFramework::ImGuiAssetBrowserDockWidget>(
+        "ImGui Asset Browser",
+        LyViewPane::CategoryTools,
+        assetOptions);
 
     ComponentEntityEditorPluginInternal::RegisterSandboxObjects();
 
@@ -196,6 +222,8 @@ void ComponentEntityEditorPlugin::Release()
         UnregisterViewPane(LyViewPane::EntityOutliner);
         UnregisterViewPane(LyViewPane::EntityInspectorPinned);
         UnregisterViewPane("ImGui Stage");
+        UnregisterViewPane("ImGui Attributes");
+        UnregisterViewPane("ImGui Asset Browser");
 
         ComponentEntityEditorPluginInternal::UnregisterSandboxObjects();
     }

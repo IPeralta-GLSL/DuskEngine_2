@@ -1,20 +1,22 @@
 #pragma once
 
 #include <QMainWindow>
+#include "ImGuiQtOverlay.h"
 
 namespace AzToolsFramework
 {
-
-class ImGuiQtOverlay;
 
 class ImGuiEditorDockWidget : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit ImGuiEditorDockWidget(QWidget* parent = nullptr);
+    explicit ImGuiEditorDockWidget(ImGuiOverlayContent contentMode, QWidget* parent = nullptr);
     ~ImGuiEditorDockWidget();
 
+    ImGuiOverlayContent GetContentMode() const { return m_contentMode; }
+
 private:
+    ImGuiOverlayContent m_contentMode;
     ImGuiQtOverlay* m_overlay;
 };
 

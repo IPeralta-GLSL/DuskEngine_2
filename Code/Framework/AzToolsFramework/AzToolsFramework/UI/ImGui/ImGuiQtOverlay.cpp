@@ -10,13 +10,15 @@
 
 #include "ImGuiEntityOutliner.h"
 #include "ImGuiEntityInspector.h"
+#include "ImGuiAssetBrowser.h"
 
 namespace AzToolsFramework
 {
 
-ImGuiQtOverlay::ImGuiQtOverlay(QWidget* parent)
+ImGuiQtOverlay::ImGuiQtOverlay(ImGuiOverlayContent contentMode, QWidget* parent)
     : QOpenGLWidget(parent)
     , m_imguiContext(nullptr)
+    , m_contentMode(contentMode)
 {
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
@@ -32,10 +34,6 @@ ImGuiQtOverlay::~ImGuiQtOverlay()
     ShutdownImGui();
 }
 
-void ImGuiQtOverlay::SetStageVisible(bool visible) { m_stageVisible = visible; }
-void ImGuiQtOverlay::SetAttributesVisible(bool visible) { m_attributesVisible = visible; }
-bool ImGuiQtOverlay::IsStageVisible() const { return m_stageVisible; }
-bool ImGuiQtOverlay::IsAttributesVisible() const { return m_attributesVisible; }
 
 void ImGuiQtOverlay::initializeGL()
 {
@@ -122,8 +120,18 @@ void ImGuiQtOverlay::paintGL()
 
 void ImGuiQtOverlay::RenderImGuiContent()
 {
-    ImGuiEntityOutliner::Render();
-    ImGuiEntityInspector::Render();
+    switch (m_contentMode)
+    {
+    case ImGuiOverlayContent::Stage:
+        ImGuiEntityOutliner::Render();
+        break;
+    case ImGuiOverlayContent::Attributes:
+        ImGuiEntityInspector::Render();
+        break;
+    case ImGuiOverlayContent::AssetBrowser:
+        ImGuiAssetBrowser::Render();
+        break;
+    }
 }
 
 void ImGuiQtOverlay::resizeGL(int w, int h)

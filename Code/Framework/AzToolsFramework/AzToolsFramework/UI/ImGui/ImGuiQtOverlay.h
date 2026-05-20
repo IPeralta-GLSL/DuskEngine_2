@@ -8,17 +8,21 @@ struct ImGuiContext;
 namespace AzToolsFramework
 {
 
+enum class ImGuiOverlayContent
+{
+    Stage,
+    Attributes,
+    AssetBrowser
+};
+
 class ImGuiQtOverlay : public QOpenGLWidget
 {
     Q_OBJECT
 public:
-    explicit ImGuiQtOverlay(QWidget* parent = nullptr);
+    explicit ImGuiQtOverlay(ImGuiOverlayContent contentMode, QWidget* parent = nullptr);
     ~ImGuiQtOverlay();
 
-    void SetStageVisible(bool visible);
-    void SetAttributesVisible(bool visible);
-    bool IsStageVisible() const;
-    bool IsAttributesVisible() const;
+    ImGuiOverlayContent GetContentMode() const { return m_contentMode; }
 
 signals:
     void ImGuiInitialized();
@@ -42,8 +46,7 @@ private:
 
     ImGuiContext* m_imguiContext = nullptr;
     QTimer* m_renderTimer = nullptr;
-    bool m_stageVisible = true;
-    bool m_attributesVisible = true;
+    ImGuiOverlayContent m_contentMode;
 };
 
 } // namespace AzToolsFramework

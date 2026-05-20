@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Entity/EditorEntityAPIBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
+#include "ImGuiEntityOutliner.h"
 
 namespace ImGuiEntityInspector
 {
@@ -505,19 +506,29 @@ namespace ImGuiEntityInspector
 
     void Render()
     {
-        if (!s_showAttributesWindow)
-            return;
+        ImVec2 availSize = ImGui::GetContentRegionAvail();
+        ImGui::SetNextWindowSize(availSize, ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 
-        ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
-
-        if (!ImGui::Begin("Attributes##ImGui", &s_showAttributesWindow))
+        static bool s_dummyClose = true;
+        if (!ImGui::Begin("Attributes##ImGui", &s_dummyClose,
+                         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                         ImGuiWindowFlags_NoBringToFrontOnFocus))
         {
             ImGui::End();
             return;
         }
 
-        // Sync with current editor selection
+        // Sync with current editor selection from viewport
         RefreshTargetEntity();
+
+        // Also sync with Stage selection (bidirectional)
+        AZ::EntityId stageSelection = ImGuiEntityOutliner::GetSelectedEntityId();
+        if (stageSelection.IsValid() && stageSelection != s_targetEntity)
+        {
+            SetTargetEntity(stageSelection);
+        }
 
         // Header with O3DE accent
         ImGui::PushStyleColor(ImGuiCol_Text, O3DE_ACCENT_GREEN);

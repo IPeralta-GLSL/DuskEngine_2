@@ -29,6 +29,14 @@ set(FILES
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiEntityInspector.cpp
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiEditorDockWidget.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiEditorDockWidget.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiStageDockWidget.h
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiStageDockWidget.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAttributesDockWidget.h
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAttributesDockWidget.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAssetBrowser.h
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAssetBrowser.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAssetBrowserDockWidget.h
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAssetBrowserDockWidget.cpp
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/imgui_impl_opengl3.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/imgui_impl_opengl3.cpp
 )
