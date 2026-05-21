@@ -17,7 +17,7 @@ QToolBar
     /* QToolBar required a background colour to ensure it has a background when
      * displaying an overflow menu, or when floating
      */
-    background-color: #111111;
+    background-color: #2d2d2d;
     qproperty-iconSize: 16px 16px;
     border: 0 none;
 
@@ -30,7 +30,7 @@ QToolBar
 
 MainWindow QToolBar
 {
-    border-bottom: 2px solid #111111;
+    border-bottom: 2px solid #3a3a3a;
 }
 
 AzQtComponents--DockMainWindow QToolBar
@@ -70,11 +70,11 @@ QToolBar.MainToolBar.IconLarge QToolButton
 
 QToolBar::separator
 {
-    background-color: #111111;
+    background-color: #3a3a3a;
     width: 1px;
-    height: 1px;
+    height: 24px;
 
-    margin: 4px 0px;
+    margin: 0px 4px;
     padding: 0px;
 }
 
