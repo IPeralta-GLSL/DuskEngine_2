@@ -37,6 +37,7 @@ QTreeView::item
 
     padding-left: 4px; /* QStyle::PM_FocusFrameHMargin (2) + 1 + 4 = 7 */
     border: none; /* A border, background or image is required to actually make use of the padding */
+    border-bottom: 1px solid #3a3a3a;
 }
 
 AzQtComponents--TableView::branch:selected,
@@ -82,6 +83,11 @@ QTreeView::indicator
     width: 16px;
     height: 16px;
     margin-left: -3px;
+}
+
+QTreeView::branch
+{
+    border-bottom: 1px solid #3a3a3a;
 }
 
 QTreeView::branch:has-children:!has-siblings:closed,

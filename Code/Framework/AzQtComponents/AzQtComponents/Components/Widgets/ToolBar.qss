@@ -28,6 +28,27 @@ QToolBar
     padding: 5px;
 }
 
+QToolBar QToolButton
+{
+    border: 1px solid #3a3a3a;
+    border-radius: 0px;
+    margin: 1px;
+    background-color: transparent;
+}
+
+QToolBar QToolButton:hover
+{
+    background-color: #3a3a3a;
+    border: 1px solid #555555;
+}
+
+QToolBar QToolButton:checked,
+QToolBar QToolButton:on
+{
+    background-color: #3a3a3a;
+    border: 1px solid #555555;
+}
+
 MainWindow QToolBar
 {
     border-bottom: 2px solid #3a3a3a;

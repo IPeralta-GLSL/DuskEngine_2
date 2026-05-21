@@ -6,6 +6,11 @@
  *
  */
 
+AzToolsFramework--PropertyRowWidget
+{
+    border-bottom: 1px solid #3a3a3a;
+}
+
 AzToolsFramework--PropertyRowWidget QLabel#Name
 {
     min-height: 16px;
