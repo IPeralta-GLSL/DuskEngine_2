@@ -47,6 +47,7 @@ namespace AZ
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;
             AZ::u64 m_entityId{ EntityId::InvalidEntityId };
 
+            AZ::Render::ReflectionProbeMode m_mode = AZ::Render::ReflectionProbeMode::Baked;
             float m_renderExposure = 0.0f;
             float m_bakeExposure = 0.0f;
         };

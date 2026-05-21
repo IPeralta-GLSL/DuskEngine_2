@@ -35,9 +35,9 @@ namespace AZ
 
         enum class ReflectionProbeMode : uint8_t
         {
-            RealTime,
             Baked,
-            AutoSelect
+            AutoSelect,
+            SSRHybrid
         };
 
         //! The ReflectionProbeFeatureProcessorInterface provides an interface to the feature processor for code outside of Atom.
@@ -110,7 +110,7 @@ namespace AZ
             //! Note: result list is sorted by descending inner volume size
             virtual void FindReflectionProbes(const AZ::Aabb& aabb, ReflectionProbeHandleVector& reflectionProbeHandles) = 0;
 
-            //! Set or retrieve the probe mode (RealTime or Baked)
+            //! Set or retrieve the probe mode (Baked, AutoSelect, or SSRHybrid)
             virtual void SetMode(const ReflectionProbeHandle& handle, ReflectionProbeMode mode) = 0;
             virtual ReflectionProbeMode GetMode(const ReflectionProbeHandle& handle) const = 0;
         };

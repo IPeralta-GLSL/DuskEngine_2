@@ -24,7 +24,7 @@ ly_add_target(
             Source
             ${pal_source_dir}
             3rdParty/ACES
-            ../Assets/ShaderLib  # allow including .azsli - files from ShaderLib in c++
+            ../Assets/ShaderLib
     COMPILE_DEFINITIONS
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS

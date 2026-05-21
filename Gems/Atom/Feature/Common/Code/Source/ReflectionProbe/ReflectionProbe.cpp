@@ -282,9 +282,9 @@ namespace AZ
         {
             if (mode == ReflectionProbeMode::AutoSelect)
             {
-                m_mode = (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices) 
-                    ? ReflectionProbeMode::RealTime 
-                    : ReflectionProbeMode::Baked;
+                // For now, AutoSelect defaults to Baked. In the future, we might choose SSRHybrid
+                // based on GPU capabilities and performance settings.
+                m_mode = ReflectionProbeMode::Baked;
             }
             else
             {

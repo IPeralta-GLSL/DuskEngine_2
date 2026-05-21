@@ -278,6 +278,8 @@ set(FILES
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.h
     Source/ReflectionProbe/ReflectionProbe.cpp
+    Source/ReflectionProbe/ReflectionProbeSSSR.h
+    Source/ReflectionProbe/ReflectionProbeSSSR.cpp
     Source/SpecularReflections/SpecularReflectionsFeatureProcessor.h
     Source/SpecularReflections/SpecularReflectionsFeatureProcessor.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpacePass.cpp

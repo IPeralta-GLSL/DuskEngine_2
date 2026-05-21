@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h>
 #include <ReflectionProbe/ReflectionProbe.h>
+#include <ReflectionProbe/ReflectionProbeSSSR.h>
 
 namespace AZ
 {
@@ -141,6 +142,9 @@ namespace AZ
             RHI::InputStreamLayout m_boxStreamLayout;
 
             ReflectionRenderData m_reflectionRenderData;
+
+            // SSSR (Stochastic Screen Space Reflections) support
+            AZStd::unique_ptr<ReflectionProbeSSSR> m_sssr;
 
             bool m_probeSortRequired = false;
             bool m_meshFeatureProcessorUpdateRequired = false;

@@ -116,7 +116,7 @@ namespace AZ
             void SetBakeExposure(float bakeExposure);
             float GetBakeExposure() const { return m_bakeExposure; }
 
-            // probe mode (RealTime or Baked)
+            // probe mode (Baked, AutoSelect, or SSRHybrid)
             ReflectionProbeMode GetMode() const { return m_mode; }
             void SetMode(ReflectionProbeMode mode);
 

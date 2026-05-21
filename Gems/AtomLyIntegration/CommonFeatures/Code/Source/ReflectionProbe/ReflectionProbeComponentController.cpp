@@ -50,7 +50,20 @@ namespace AZ
                     ->Field("UseParallaxCorrection", &ReflectionProbeComponentConfig::m_useParallaxCorrection)
                     ->Field("ShowVisualization", &ReflectionProbeComponentConfig::m_showVisualization)
                     ->Field("RenderExposure", &ReflectionProbeComponentConfig::m_renderExposure)
+                    ->Field("Mode", &ReflectionProbeComponentConfig::m_mode)
                     ->Field("BakeExposure", &ReflectionProbeComponentConfig::m_bakeExposure);
+                    
+                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<ReflectionProbeComponentConfig>("ReflectionProbeComponentConfig", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ReflectionProbeComponentConfig::m_mode, "Reflection Mode", "Select the reflection mode for this probe")
+                            ->EnumAttribute(ReflectionProbeMode::Baked, "Baked")
+                            ->EnumAttribute(ReflectionProbeMode::AutoSelect, "AutoSelect")
+                            ->EnumAttribute(ReflectionProbeMode::SSRHybrid, "SSR Hybrid")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly);
+                }
             }
         }
 
@@ -158,6 +171,9 @@ namespace AZ
                 cubeMapAsset.QueueLoad();
                 Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
             }
+
+            // set the reflection mode (Baked, AutoSelect, SSRHybrid)
+            m_featureProcessor->SetMode(m_handle, m_configuration.m_mode);
 
             // set cubemap render exposure
             m_featureProcessor->SetRenderExposure(m_handle, m_configuration.m_renderExposure);

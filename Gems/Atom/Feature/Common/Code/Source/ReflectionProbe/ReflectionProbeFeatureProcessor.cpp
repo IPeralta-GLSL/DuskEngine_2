@@ -7,7 +7,7 @@
  */
 
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
-
+#include <ReflectionProbe/ReflectionProbeSSSR.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -84,6 +84,12 @@ namespace AZ
                 "Deactivating the ReflectionProbeFeatureProcessor, but there are still outstanding reflection probes. Components\n"
                 "using ReflectionProbeHandles should free them before the ReflectionProbeFeatureProcessor is deactivated.\n"
             );
+
+            if (m_sssr)
+            {
+                m_sssr->Shutdown();
+                m_sssr.reset();
+            }
 
             DisableSceneNotification();
 
@@ -565,7 +571,7 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::UpdateRealTimeList(const ReflectionProbePtr& reflectionProbe)
         {
-            if (reflectionProbe->GetMode() == ReflectionProbeMode::RealTime)
+            if (reflectionProbe->GetMode() == ReflectionProbeMode::SSRHybrid)
             {
                 auto itEntry = AZStd::find_if(m_realTimeReflectionProbes.begin(), m_realTimeReflectionProbes.end(), [&](ReflectionProbePtr const& entry)
                 {
