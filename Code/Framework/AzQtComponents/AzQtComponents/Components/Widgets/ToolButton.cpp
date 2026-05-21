@@ -43,7 +43,7 @@ ToolButton::Config ToolButton::defaultConfig()
     config.buttonIconSize = 16;
     config.defaultButtonMargin = 1;
     config.menuIndicatorWidth = 10;
-    config.checkedStateBackgroundColor = QStringLiteral("#4CAF50");
+    config.checkedStateBackgroundColor = QStringLiteral("#555555");
     config.menuIndicatorIcon = QStringLiteral(":/stylesheet/img/UI20/menu-indicator.svg");
     config.menuIndicatorIconSize = QSize(6, 3);
 

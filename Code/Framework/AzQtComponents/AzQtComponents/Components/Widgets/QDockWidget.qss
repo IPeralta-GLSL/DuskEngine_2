@@ -6,7 +6,7 @@
 
 .QDockWidget::title
 {
-    background-color: #1e1e1e;
+    background-color: #2d2d2d;
 }
 
 .QDockWidget::close-button,

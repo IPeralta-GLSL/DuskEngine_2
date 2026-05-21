@@ -398,39 +398,39 @@ PushButton::Config PushButton::defaultConfig()
 {
     Config config;
 
-    // Flat style – no gradients, accent green for primary, muted gray for secondary
-    config.primary.disabled.start = QColor("#4a7a4d");
-    config.primary.disabled.end = QColor("#4a7a4d");
+    // Flat style – RenderDoc-inspired muted grays
+    config.primary.disabled.start = QColor("#3a3a3a");
+    config.primary.disabled.end = QColor("#3a3a3a");
 
-    config.primary.sunken.start = QColor("#2e7d32");
-    config.primary.sunken.end = QColor("#2e7d32");
+    config.primary.sunken.start = QColor("#555555");
+    config.primary.sunken.end = QColor("#555555");
 
-    config.primary.hovered.start = QColor("#66BB6A");
-    config.primary.hovered.end = QColor("#66BB6A");
+    config.primary.hovered.start = QColor("#4a4a4a");
+    config.primary.hovered.end = QColor("#4a4a4a");
 
-    config.primary.normal.start = QColor("#4CAF50");
-    config.primary.normal.end = QColor("#4CAF50");
+    config.primary.normal.start = QColor("#3a3a3a");
+    config.primary.normal.end = QColor("#3a3a3a");
 
     config.secondary.disabled.start = QColor("#222222");
     config.secondary.disabled.end = QColor("#222222");
 
-    config.secondary.sunken.start = QColor("#111111");
-    config.secondary.sunken.end = QColor("#111111");
+    config.secondary.sunken.start = QColor("#1e1e1e");
+    config.secondary.sunken.end = QColor("#1e1e1e");
 
     config.secondary.hovered.start = QColor("#333333");
     config.secondary.hovered.end = QColor("#333333");
 
-    config.secondary.normal.start = QColor("#1a1a1a");
-    config.secondary.normal.end = QColor("#1a1a1a");
+    config.secondary.normal.start = QColor("#2d2d2d");
+    config.secondary.normal.end = QColor("#2d2d2d");
 
-    config.defaultBorder.thickness = 0;
-    config.defaultBorder.color = QColor("#000000");
+    config.defaultBorder.thickness = 1;
+    config.defaultBorder.color = QColor("#3a3a3a");
 
     config.disabledBorder.thickness = 0;
-    config.disabledBorder.color = QColor("#111111");
+    config.disabledBorder.color = QColor("#2d2d2d");
 
     config.focusedBorder.thickness = 1;
-    config.focusedBorder.color = QColor("#4CAF50");
+    config.focusedBorder.color = QColor("#555555");
 
     config.defaultFrame.height = 32;
     config.defaultFrame.radius = 0;

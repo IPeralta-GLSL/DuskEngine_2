@@ -29,7 +29,7 @@
 
 QPushButton
 {
-    color: #ffffff;
+    color: #cccccc;
     font-family: "Open Sans";
     font-size: 12px;
 }

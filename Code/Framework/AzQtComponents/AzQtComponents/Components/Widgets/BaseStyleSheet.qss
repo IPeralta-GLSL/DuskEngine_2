@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,14 +7,14 @@
  */
 
 /* ============================================================= */
-/* Global styles                                                 */
+/* Global styles - RenderDoc-inspired dark theme                 */
 /* ============================================================= */
 
 
 *
 {
     background-color: transparent;
-    color: white;
+    color: #cccccc;
     font-family: "Manrope";
     font-weight: 400;
 }
@@ -26,7 +25,7 @@ QTreeView
 {
     /* give a background color to views without parent (completer popups)
        it is reset to transparent in the next setting for views with a parent */
-    background-color: #111111;
+    background-color: #1e1e1e;
 }
 
 QWidget > QTableView,
@@ -44,17 +43,17 @@ QWidget > QTreeView
 .QFrame[frameShape="5"],
 .QFrame[frameShape="6"]
 {
-    background-color: #111111;
+    background-color: #3a3a3a;
 }
 
 QMainWindow:separator
 {
-    background-color: #0d1f0d;
+    background-color: #3a3a3a;
 }
 
 QMainWindow::separator:hover
 {
-    background-color: #4CAF50;
+    background-color: #555555;
 }
 
 QMainWindow,
@@ -62,7 +61,7 @@ QDialog,
 QDockWidget
 {
     color: #cccccc;
-    background-color: #111111;
+    background-color: #1e1e1e;
 }
 
 QTextEdit,
@@ -73,12 +72,12 @@ QSpinBox,
 QDoubleSpinBox,
 QComboBox
 {
-    background-color: #CCCCCC;
-    color: black;
+    background-color: #3a3a3a;
+    color: #cccccc;
     font-family: "Manrope";
     border-radius: 0;
     border-width: 0px;
-    border-color: #e9e9e9;
+    border-color: #555555;
     font-size: 12px;
     line-height: 16px;
 }
@@ -87,8 +86,8 @@ QTextEdit,
 QPlainText,
 QPlainTextEdit
 {
-    background-color: #E9E9E9;
-    color: #545454;
+    background-color: #3a3a3a;
+    color: #cccccc;
     margin: 2px;
     border-width: 0px;
     border-style: solid;
@@ -101,7 +100,7 @@ QPlainTextEdit:hover
     margin: 1px;
     border-width: 1px;
     border-style: solid;
-    border-color: #222222;
+    border-color: #555555;
 }
 
 QTextEdit:focus,
@@ -110,8 +109,8 @@ QPlainTextEdit:focus
 {
     margin: 1px;
     border-width: 1px;
-    border-color: #94D2FF;
-    background-color: #E9E9E9;
+    border-color: #666666;
+    background-color: #3a3a3a;
 }
 
 @import "AssetFolderListView.qss";
