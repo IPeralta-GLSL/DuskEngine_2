@@ -27,6 +27,7 @@
 #include <QStyledItemDelegate>
 
 // AzToolsFramework
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
@@ -328,6 +329,7 @@ enum EMenuItem
     eMI_AddDOF = 510,
     eMI_AddScreenfader = 511,
     eMI_AddShadowSetup = 513,
+    eMI_AddEntityFromStage = 515,
     eMI_EditEvents = 550,
     eMI_SaveToFBX = 12,
     eMI_ImportFromFBX = 14,
@@ -1285,6 +1287,23 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             pTrack->ClearCustomColor();
         }
     }
+    else if (cmd >= eMI_AddEntityFromStage && cmd < eMI_AddEntityFromStage + 1000 && groupNode)
+    {
+        unsigned int entityIdx = cmd - eMI_AddEntityFromStage;
+        if (entityIdx < m_stageEntityIdsForMenu.size())
+        {
+            AZ::EntityId entityId = m_stageEntityIdsForMenu[entityIdx];
+            AzToolsFramework::ScopedUndoBatch undoBatch("Add Entity to Track View from Stage");
+            AZStd::string entityName;
+            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(entityName, entityId, &AzToolsFramework::EditorEntityInfoRequests::GetName);
+            CTrackViewAnimNode* newNode = groupNode->CreateSubNode(entityName.c_str(), AnimNodeType::AzEntity, entityId);
+            if (newNode)
+            {
+                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
+            }
+            groupNode->BindToEditorObjects();
+        }
+    }
 
     if (cmd)
     {
@@ -1350,6 +1369,7 @@ struct SContextMenu
     QMenu setLayerSub;
     STrackMenuTreeNode addTrackSub;
     QMenu addComponentSub;
+    QMenu addEntitySub;
 };
 
 void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrackViewAnimNode* animNode)
@@ -1394,7 +1414,6 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
         contextMenu.main.addAction("Add Shadows Setup Node")->setData(eMI_AddShadowSetup);
     }
 
-    // A director node cannot have another director node as a child.
     if (animNode->GetType() != AnimNodeType::Director)
     {
         contextMenu.main.addAction("Add Director(Scene) Node")->setData(eMI_AddDirectorNode);
@@ -1404,6 +1423,39 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
     contextMenu.main.addAction("Add Console Variable Node")->setData(eMI_AddConsoleVariable);
     contextMenu.main.addAction("Add Script Variable Node")->setData(eMI_AddScriptVariable);
     contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
+
+    m_stageEntityIdsForMenu.clear();
+    AzToolsFramework::EntityIdList rootEntities;
+    AzToolsFramework::EditorEntitySearchBus::BroadcastResult(rootEntities, &AzToolsFramework::EditorEntitySearchRequests::GetRootEditorEntities);
+    for (AZ::EntityId rootId : rootEntities)
+    {
+        m_stageEntityIdsForMenu.push_back(rootId);
+        AzToolsFramework::EntityIdList children;
+        AzToolsFramework::EditorEntityInfoRequestBus::EventResult(children, rootId, &AzToolsFramework::EditorEntityInfoRequests::GetChildren);
+        for (AZ::EntityId childId : children)
+        {
+            m_stageEntityIdsForMenu.push_back(childId);
+        }
+    }
+    if (!m_stageEntityIdsForMenu.empty())
+    {
+        contextMenu.addEntitySub.setTitle("Add Entity from Stage");
+        contextMenu.main.addMenu(&contextMenu.addEntitySub);
+        unsigned int entityIdx = 0;
+        for (AZ::EntityId entityId : m_stageEntityIdsForMenu)
+        {
+            AZStd::string entityName;
+            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(entityName, entityId, &AzToolsFramework::EditorEntityInfoRequests::GetName);
+            QString displayName = entityName.c_str();
+            if (displayName.length() > 50)
+            {
+                displayName = displayName.left(47) + "...";
+            }
+            QAction* entityAction = contextMenu.addEntitySub.addAction(displayName);
+            entityAction->setData(eMI_AddEntityFromStage + entityIdx);
+            ++entityIdx;
+        }
+    }
 }
 
 void CTrackViewNodesCtrl::AddMenuSeperatorConditional(QMenu& menu, bool& bAppended)

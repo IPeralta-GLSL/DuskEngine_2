@@ -216,6 +216,8 @@ private:
     //! Key: Component's RTTI type
     //! Value: Icon for this component
     AZStd::unordered_map<AZ::Uuid, QIcon> m_componentTypeToIconMap;
+
+    AZStd::vector<AZ::EntityId> m_stageEntityIdsForMenu;
 };
 
 
