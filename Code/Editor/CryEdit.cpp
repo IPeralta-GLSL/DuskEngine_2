@@ -1531,6 +1531,11 @@ bool CCryEditApp::InitInstance()
     ((CCryDocManager*)m_pDocManager)->SetDefaultTemplate(pDocTemplate);
 
     auto mainWindow = new MainWindow();
+
+#ifdef Q_OS_LINUX
+    mainWindow->menuBar()->setNativeMenuBar(false);
+#endif
+
 #ifdef Q_OS_MACOS
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
 #else
