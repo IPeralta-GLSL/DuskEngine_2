@@ -147,28 +147,28 @@ namespace AzQtComponents
         m_stackedLayout->addWidget(tabBarContainer);
 
         auto container = new QWidget(this);
-        auto layout = new QHBoxLayout(container);
-        layout->setContentsMargins(0,0,0,0);
-        layout->setSpacing(0);
+        m_mainLayout = new QHBoxLayout(container);
+        m_mainLayout->setContentsMargins(0,0,0,0);
+        m_mainLayout->setSpacing(0);
 
         m_stackedLayout->addWidget(container);
 
         m_icon = new QLabel(container);
         m_icon->setObjectName(QStringLiteral("icon"));
-        layout->addWidget(m_icon);
+        m_mainLayout->addWidget(m_icon);
 
         m_label = new ElidingLabel(container);
         m_label->setObjectName(QStringLiteral("title"));
-        layout->addWidget(m_label, 1);
+        m_mainLayout->addWidget(m_label, 1);
 
-        layout->addStretch();
+        m_mainLayout->addStretch();
 
         m_buttonsContainer = new QFrame(container);
         m_buttonsContainer->setObjectName(QStringLiteral("buttons"));
         m_buttonsLayout = new QHBoxLayout(m_buttonsContainer);
         m_buttonsLayout->setContentsMargins(0,0,0,0);
         m_buttonsLayout->setSpacing(DockBar::ButtonsSpacing);
-        layout->addWidget(m_buttonsContainer);
+        m_mainLayout->addWidget(m_buttonsContainer);
 
         setCursor(m_originalCursor);
         setButtons({});
@@ -191,6 +191,21 @@ namespace AzQtComponents
 
     TitleBar::~TitleBar()
     {
+    }
+
+    void TitleBar::setMenuWidget(QWidget* menu)
+    {
+        if (m_menuWidget)
+        {
+            m_mainLayout->removeWidget(m_menuWidget);
+            m_menuWidget->deleteLater();
+        }
+        m_menuWidget = menu;
+        if (m_menuWidget)
+        {
+            m_mainLayout->insertWidget(0, m_menuWidget);
+            m_menuWidget->show();
+        }
     }
 
     void TitleBar::handleClose()

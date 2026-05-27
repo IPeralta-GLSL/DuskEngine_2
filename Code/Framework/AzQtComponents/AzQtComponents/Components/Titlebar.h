@@ -35,10 +35,6 @@ namespace AzQtComponents
     class DockTabBar;
     class ElidingLabel;
 
-    /* TitleBar style is now applied from Qt Style Sheets.
-     *
-     * This can be found in Code/Framework/AzQtComponents/AzQtComponents/Components/Widgets/TitleBar.qss
-     */
     class AZ_QT_COMPONENTS_API TitleBar
         : public QFrame
     {
@@ -49,9 +45,6 @@ namespace AzQtComponents
         Q_PROPERTY(bool tearEnabled READ tearEnabled WRITE setTearEnabled NOTIFY tearEnabledChanged)
         Q_PROPERTY(bool drawAsTabBar READ drawAsTabBar WRITE setDrawAsTabBar NOTIFY drawAsTabBarChanged)
         Q_PROPERTY(QString windowTitleOverride READ windowTitleOverride WRITE setWindowTitleOverride NOTIFY windowTitleOverrideChanged)
-        /**
-         * Expose the title using a QT property so that test automation can read it
-         */
         Q_PROPERTY(QString title READ title)
     public:
         typedef QList<DockBarButton::WindowDecorationButton> WindowDecorationButtons;
@@ -88,14 +81,7 @@ namespace AzQtComponents
             Buttons buttons;
         };
 
-        /*!
-         * Loads the button config data from a settings object.
-         */
         static Config loadConfig(QSettings& settings);
-
-        /*!
-         * Returns default button config data.
-         */
         static Config defaultConfig();
 
         enum TitleBarDrawMode
@@ -124,16 +110,6 @@ namespace AzQtComponents
         const QString& windowTitleOverride() const { return m_titleOverride; }
         void setWindowTitleOverride(const QString&);
 
-        /**
-         * Sets the titlebar buttons to show.
-         * By default shows: | Minimize | Maximize | Close
-         *
-         * Example:
-         *
-         * setButtons({ DockBarButton::DividerButton, DockBarButton::MinimizeButton,
-         *                        DockBarButton::DividerButton, DockBarButton::MaximizeButton,
-         *                        DockBarButton::DividerButton, DockBarButton::CloseButton});
-         */
         void setButtons(WindowDecorationButtons);
 
         void handleClose();
@@ -148,27 +124,17 @@ namespace AzQtComponents
         bool forceInactive() const { return m_forceInactive; }
         void setForceInactive(bool);
 
-        /**
-         * For left,right,bottom we use the native Windows border, but for top it's required we add
-         * the margin ourselves.
-         */
         bool isTopResizeArea(const QPoint& globalPos) const;
-        /**
-          * These will only return true ever for macOS.
-          */
         bool isLeftResizeArea(const QPoint& globalPos) const;
         bool isRightResizeArea(const QPoint& globalPos) const;
 
-        /**
-         * The title rect width minus the buttons rect.
-         * In local coords.
-         */
         QRect draggableRect() const;
 
         bool event(QEvent* event) override;
 
         void disableButton(DockBarButton::WindowDecorationButton buttonType);
         void enableButton(DockBarButton::WindowDecorationButton buttonType);
+        void setMenuWidget(QWidget* menu);
 
     Q_SIGNALS:
         void undockAction();
@@ -224,6 +190,8 @@ namespace AzQtComponents
         DockBarButton* findButton(DockBarButton::WindowDecorationButton buttonType) const;
 
         QStackedLayout* m_stackedLayout = nullptr;
+        QHBoxLayout* m_mainLayout = nullptr;
+        QWidget* m_menuWidget = nullptr;
         DockTabBar* m_tabBar = nullptr;
         QWidget* m_firstButton = nullptr;
         QLabel* m_icon = nullptr;
@@ -241,10 +209,10 @@ namespace AzQtComponents
         bool m_dragEnabled = false;
         bool m_tearEnabled = false;
         QPoint m_dragPos;
-        AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::TitleBar::m_buttons': class 'QList<AzQtComponents::DockBarButton::WindowDecorationButton>' needs to have dll-interface to be used by clients of class 'AzQtComponents::TitleBar'
+        AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
         WindowDecorationButtons m_buttons;
         AZ_POP_DISABLE_WARNING
-        bool m_forceInactive = false; // So we can show it inactive in the gallery, for demo purposes
+        bool m_forceInactive = false;
         bool m_autoButtons = false;
         bool m_pendingRepositioning = false;
         bool m_resizingTop = false;
@@ -272,9 +240,8 @@ namespace AzQtComponents
         Qt::CursorShape m_originalCursor = Qt::ArrowCursor;
         QTimer m_enableMouseTrackingTimer;
 
-        AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::TitleBar::m_interactiveWindowGeometryChanger': class 'QPointer<AzQtComponents::InteractiveWindowGeometryChanger>' needs to have dll-interface to be used by clients of class 'AzQtComponents::TitleBar'
+        AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
         QPointer<InteractiveWindowGeometryChanger> m_interactiveWindowGeometryChanger;
         AZ_POP_DISABLE_WARNING
     };
 } // namespace AzQtComponents
-

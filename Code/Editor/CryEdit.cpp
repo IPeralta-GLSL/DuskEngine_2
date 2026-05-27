@@ -35,10 +35,13 @@ AZ_POP_DISABLE_WARNING
 #include <QProcess>
 #include <QScopedValueRollback>
 #include <QClipboard>
+#include <QHBoxLayout>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QToolButton>
 #include <QUrlQuery>
+#include <QWidget>
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
@@ -64,6 +67,8 @@ AZ_POP_DISABLE_WARNING
 
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
@@ -81,6 +86,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 // CryCommon
@@ -1532,10 +1538,6 @@ bool CCryEditApp::InitInstance()
 
     auto mainWindow = new MainWindow();
 
-#ifdef Q_OS_LINUX
-    mainWindow->menuBar()->setNativeMenuBar(false);
-#endif
-
 #ifdef Q_OS_MACOS
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
 #else
@@ -1674,6 +1676,41 @@ bool CCryEditApp::InitInstance()
 
     // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
     AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
+
+#ifdef Q_OS_LINUX
+    {
+        auto* menuManagerInternal = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+        auto* menuContainer = new QWidget(mainWindow);
+        auto* menuLayout = new QHBoxLayout(menuContainer);
+        menuLayout->setContentsMargins(0, 0, 0, 0);
+        menuLayout->setSpacing(0);
+        AZStd::string_view menuIds[] = {
+            EditorIdentifiers::FileMenuIdentifier,
+            EditorIdentifiers::EditMenuIdentifier,
+            EditorIdentifiers::GameMenuIdentifier,
+            EditorIdentifiers::ToolsMenuIdentifier,
+            EditorIdentifiers::ViewMenuIdentifier,
+            EditorIdentifiers::HelpMenuIdentifier
+        };
+        for (auto menuId : menuIds)
+        {
+            QMenu* menu = menuManagerInternal->GetMenu(AZStd::string(menuId));
+            if (menu)
+            {
+                auto* btn = new QToolButton(menuContainer);
+                btn->setText(menu->title());
+                btn->setMenu(menu);
+                btn->setPopupMode(QToolButton::InstantPopup);
+                btn->setAutoRaise(true);
+                menuLayout->addWidget(btn);
+            }
+        }
+        menuLayout->addStretch();
+        mainWindowWrapper->titleBar()->setMenuWidget(menuContainer);
+        mainWindow->menuBar()->setNativeMenuBar(false);
+        mainWindow->menuBar()->hide();
+    }
+#endif
 
     CloseSplashScreen();
 
