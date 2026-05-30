@@ -159,6 +159,7 @@ namespace AzQtComponents
 
         m_label = new ElidingLabel(container);
         m_label->setObjectName(QStringLiteral("title"));
+        m_label->setAlignment(Qt::AlignCenter);
         m_mainLayout->addWidget(m_label, 1);
 
         m_mainLayout->addStretch();
