@@ -296,7 +296,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_viewPaneManager(QtViewPaneManager::instance())
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_activeView(nullptr)
-    , m_settings("O3DE", "O3DE")
+    , m_settings("DuskEngine", "DuskEngine")
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_sourceControlNotifHandler(new AzToolsFramework::QtSourceControlNotificationHandler(this))
     , m_viewPaneHost(nullptr)
@@ -502,6 +502,11 @@ void MainWindow::Initialize()
                     m_currentFps = 1.0 / deltaSeconds;
                 }
             }
+#ifdef Q_OS_LINUX
+            QString title = QStringLiteral("%1 v%2 | %3 FPS | %4 | %5")
+                .arg(m_engineDisplayName, m_engineVersion, QString::number(m_currentFps, 'f', 1), m_gpuApiName, m_gpuDeviceName);
+            setWindowTitle(title);
+#else
             QString gpuApiColored = m_gpuApiName;
             if (m_gpuApiName.contains(QStringLiteral("Vulkan"), Qt::CaseInsensitive))
             {
@@ -512,6 +517,7 @@ void MainWindow::Initialize()
             QString richTitle = QString("<div style='text-align: center;'>%1 | %2 FPS | %3 | %4</div>")
                 .arg(engineDisplay, QString::number(m_currentFps, 'f', 1), gpuApiColored, m_gpuDeviceName);
             setWindowTitle(richTitle);
+#endif
         });
         m_gpuInfoTimer->start();
     }

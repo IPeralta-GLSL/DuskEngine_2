@@ -182,7 +182,7 @@ namespace AzToolsFramework
     // if you want to run headlessly, do not call this function.
     void Framework::Run()
     {
-        pApplication->setOrganizationName("O3DE");
+        pApplication->setOrganizationName("DuskEngine");
         pApplication->setApplicationName("Dusk Engine Editor");
 
         bool GUIMode = true;

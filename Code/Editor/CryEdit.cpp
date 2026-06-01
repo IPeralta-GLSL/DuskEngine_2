@@ -762,7 +762,7 @@ QString FormatRichTextCopyrightNotice()
 {
     // copyright symbol is HTML Entity = &#xA9;
     QString copyrightHtmlSymbol = "&#xA9;";
-    QString copyrightString = QObject::tr("Copyright %1 Contributors to the Open 3D Engine Project");
+    QString copyrightString = QObject::tr("Copyright %1 Contributors to the DuskEngine Project");
 
     return copyrightString.arg(copyrightHtmlSymbol);
 }
@@ -910,7 +910,7 @@ bool CCryEditApp::CheckIfAlreadyRunning()
             // NOTE:  If you choose to do this, be sure to export *different* levels, since nothing prevents multiple runs
             // from trying to write to the same level at the same time.
             // If we're running interactively, let's ask and make sure the user actually intended to do this.
-            if (QMessageBox::question(AzToolsFramework::GetActiveWindow(), QObject::tr("Too many apps"), QObject::tr("There is already an Open 3D Engine application running\nDo you want to start another one?")) != QMessageBox::Yes)
+            if (QMessageBox::question(AzToolsFramework::GetActiveWindow(), QObject::tr("Too many apps"), QObject::tr("There is already a DuskEngine application running\nDo you want to start another one?")) != QMessageBox::Yes)
             {
                 return false;
             }
@@ -1610,7 +1610,7 @@ bool CCryEditApp::InitInstance()
 
     GetIEditor()->GetCommandManager()->RegisterAutoCommands();
 
-    mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "O3DE", "mainWindowGeometry");
+    mainWindowWrapper->enableSaveRestoreGeometry("DuskEngine", "DuskEngine", "mainWindowGeometry");
     m_pDocManager->OnFileNew();
 
     if (MainWindow::instance())
@@ -3369,7 +3369,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         int exitCode = 0;
 
         bool didCryEditStart = CCryEditApp::instance()->InitInstance();
-        AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."
+        AZ_Error("Editor", didCryEditStart, "DuskEngine Editor did not initialize correctly, and will close."
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");
 

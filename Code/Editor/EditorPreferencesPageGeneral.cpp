@@ -98,7 +98,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
                     "When you choose the 'detach' option on a prefab container, should the container entity be removed also?");
 
         editContext->Class<Messaging>("Messaging", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup");
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to DuskEngine at startup", "Show Welcome to DuskEngine at startup");
 
         editContext->Class<Undo>("Undo", "")
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Undo::m_undoLevels, "Undo Levels", "This field specifies the number of undo levels")

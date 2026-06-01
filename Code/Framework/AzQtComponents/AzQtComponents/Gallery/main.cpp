@@ -125,8 +125,8 @@ int main(int argc, char **argv)
     const AZ::Debug::Trace tracer;
     ComponentApplicationWrapper componentApplicationWrapper;
 
-    QApplication::setOrganizationName("O3DE");
-    QApplication::setOrganizationDomain("o3de.org");
+    QApplication::setOrganizationName("DuskEngine");
+    QApplication::setOrganizationDomain("");
     QApplication::setApplicationName("DuskEngineWidgetGallery");
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

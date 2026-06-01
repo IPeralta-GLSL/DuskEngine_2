@@ -114,7 +114,7 @@ void KeyboardCustomizationSettings::LoadDefaults()
 
 void KeyboardCustomizationSettings::Load()
 {
-    QSettings settings(QStringLiteral("O3DE"), QStringLiteral("O3DE"));
+    QSettings settings(QStringLiteral("DuskEngine"), QStringLiteral("DuskEngine"));
     settings.beginGroup(QStringLiteral("Keyboard Shortcuts"));
     settings.beginGroup(m_group);
 
@@ -161,7 +161,7 @@ void KeyboardCustomizationSettings::LoadFromSnapshot(const Snapshot& snapshot)
 
 void KeyboardCustomizationSettings::Save()
 {
-    QSettings settings(QStringLiteral("O3DE"), QStringLiteral("O3DE"));
+    QSettings settings(QStringLiteral("DuskEngine"), QStringLiteral("DuskEngine"));
     settings.beginGroup(QStringLiteral("Keyboard Shortcuts"));
     settings.beginGroup(m_group);
 

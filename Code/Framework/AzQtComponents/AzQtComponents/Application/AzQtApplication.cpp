@@ -17,8 +17,8 @@ namespace AzQtComponents
         : QApplication(argc, argv)
     {
          // Use a common Qt settings path for applications that don't register their own application name
-         QApplication::setOrganizationName("O3DE");
-         QApplication::setOrganizationDomain("o3de.org");
+         QApplication::setOrganizationName("DuskEngine");
+         QApplication::setOrganizationDomain("");
          QApplication::setApplicationName("Dusk Engine Tools Application");
 
          AzQtComponents::PrepareQtPaths();

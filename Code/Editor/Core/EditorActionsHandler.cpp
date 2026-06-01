@@ -1434,7 +1434,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Open 3D Engine Documentation
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Open 3D Engine Documentation";
+        actionProperties.m_name = "DuskEngine Documentation";
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(
@@ -1494,7 +1494,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // About O3DE
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "&About O3DE";
+        actionProperties.m_name = "&About DuskEngine";
         actionProperties.m_category = "Help";
 
         m_actionManagerInterface->RegisterAction(

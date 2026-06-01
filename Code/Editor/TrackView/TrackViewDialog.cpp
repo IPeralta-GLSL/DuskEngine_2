@@ -1838,7 +1838,7 @@ void CTrackViewDialog::ReadMiscSettings()
 
 void CTrackViewDialog::SaveLayouts()
 {
-    QSettings settings("O3DE", "O3DE");
+    QSettings settings("DuskEngine", "DuskEngine");
     settings.beginGroup("TrackView");
     QByteArray stateData = this->saveState();
     settings.setValue("layout", stateData);
@@ -1855,7 +1855,7 @@ void CTrackViewDialog::SaveLayouts()
 
 void CTrackViewDialog::ReadLayouts()
 {
-    QSettings settings("O3DE", "O3DE");
+    QSettings settings("DuskEngine", "DuskEngine");
     settings.beginGroup("TrackView");
 
     setViewMode(static_cast<ViewMode>(settings.value("lastViewMode").toInt()));

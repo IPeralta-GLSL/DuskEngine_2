@@ -74,7 +74,7 @@ QString CFFMPEGPlugin::GetFFMPEGExectablePath()
     // see what can be found!
     QString ffmpegExectablePath;
 
-    QSettings settings("O3DE", "O3DE");
+    QSettings settings("DuskEngine", "DuskEngine");
     settings.beginGroup("Settings");
     ffmpegExectablePath = settings.value("FFMPEG_PLUGIN").toString();
 
