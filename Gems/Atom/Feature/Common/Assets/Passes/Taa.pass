@@ -99,11 +99,11 @@
                     "FloatMappings": [
                         {
                             "Name": "m_currentFrameContribution",
-                            "Value": 0.15
+                            "Value": 0.2
                         },
                         {
                             "Name": "m_clampGamma",
-                            "Value": 0.95
+                            "Value": 0.85
                         },
                         {
                             "Name": "m_maxDeviationBeforeDampening",
@@ -111,7 +111,7 @@
                         }
                     ]
                 },
-                "NumJitterPositions": 8
+                "NumJitterPositions": 4
             }
         }
     }

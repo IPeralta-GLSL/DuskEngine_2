@@ -62,7 +62,7 @@
             "PassRequests": [
                 {
                     "Name": "SMAA1xApplyLinearHDRColorPass",
-                    "Enabled": false,
+                    "Enabled": true,
                     "TemplateName": "SMAA1xApplyLinearHDRColorTemplate",
                     "Connections": [
                         {
@@ -84,13 +84,13 @@
                 {
                     "Name": "TaaPass",
                     "TemplateName": "TaaParentTemplate",
-                    "Enabled": true,
+                    "Enabled": false,
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "SMAA1xApplyLinearHDRColorPass",
-                                "Attachment": "OutputColor"
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
                             }
                         },
                         {
@@ -117,7 +117,7 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "TaaPass",
+                                "Pass": "SMAA1xApplyLinearHDRColorPass",
                                 "Attachment": "OutputColor"
                             }
                         }
