@@ -7,7 +7,6 @@
             "Name": "PostProcessParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
-                // Inputs...
                 {
                     "Name": "LightingInput",
                     "SlotType": "Input"
@@ -20,17 +19,14 @@
                     "Name": "MotionVectors",
                     "SlotType": "Input"
                 },
-                // SwapChain here is only used to reference the frame height and format
                 {
                     "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 },
-                // Outputs...
                 {
                     "Name": "Output",
                     "SlotType": "Output"
                 },
-                // Debug Outputs...
                 {
                     "Name": "RawLightingOutput",
                     "SlotType": "Output"
@@ -88,7 +84,7 @@
                 {
                     "Name": "TaaPass",
                     "TemplateName": "TaaParentTemplate",
-                    "Enabled": false,
+                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",
@@ -114,6 +110,20 @@
                     ]
                 },
                 {
+                    "Name": "ContrastAdaptiveSharpeningPass",
+                    "TemplateName": "ContrastAdaptiveSharpeningTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "TaaPass",
+                                "Attachment": "OutputColor"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "DepthOfFieldPass",
                     "TemplateName": "NewDepthOfFieldTemplate",
                     "Enabled": true,
@@ -121,7 +131,7 @@
                         {
                             "LocalSlot": "LightingBuffer",
                             "AttachmentRef": {
-                                "Pass": "TaaPass",
+                                "Pass": "ContrastAdaptiveSharpeningPass",
                                 "Attachment": "OutputColor"
                             }
                         },
@@ -190,12 +200,11 @@
                     ]
                 },
                 {
-                    "Name": "ContrastAdaptiveSharpeningPass",
-                    "TemplateName": "ContrastAdaptiveSharpeningTemplate",
-                    "Enabled": true,
+                    "Name": "ChromaticAberrationPass",
+                    "TemplateName": "ChromaticAberrationTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "InputColor",
+                            "LocalSlot": "Input",
                             "AttachmentRef": {
                                 "Pass": "LightAdaptation",
                                 "Attachment": "Output"
@@ -203,19 +212,6 @@
                         }
                     ]
                 },
-                {
-                    "Name": "ChromaticAberrationPass",
-                    "TemplateName": "ChromaticAberrationTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "Input",
-			                "AttachmentRef": {
-                                "Pass": "ContrastAdaptiveSharpeningPass",
-                                "Attachment": "OutputColor"
-			                }
-			            }
-		            ]
-		        },
                 {
                     "Name": "PaniniProjectionPass",
                     "TemplateName": "PaniniProjectionTemplate",
@@ -248,12 +244,12 @@
                     "Connections": [
                         {
                             "LocalSlot": "Input",
-			                "AttachmentRef": {
+                            "AttachmentRef": {
                                 "Pass": "FilmGrainPass",
                                 "Attachment": "Output"
-			                }
-			            }
-		            ]
+                            }
+                        }
+                    ]
                 },
                 {
                     "Name": "VignettePass",

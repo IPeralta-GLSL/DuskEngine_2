@@ -95,66 +95,6 @@ float3 YCoCgToRgb(float3 yCoCg)
     return mul(conversionMatrix, yCoCg);
 }
 
-// Sample a texture with a 5 tap Catmull-Rom. Consider ripping this out and putting in a more general location.
-// This function samples a 4x4 neighborhood around the uv. By taking advantage of bilinear filtering this can be
-// done with only 9 taps on the edges between pixels. The cost is further reduced by dropping the 4 diagonal
-// samples as their influence is negligible.
-float3 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSampler, float2 uv, float2 textureSize, float2 rcpTextureSize, float sharpness)
-{
-    // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
-    // a bottom right coordinate of 3,3.
-
-    // Due to Catmull-Rom's use of negative weights, it's possible to have a very high value
-    // neighbor sample that turns into a large negative value when multiplied by its weight.
-    // This can completely overwhelm the final result leading to negative output. To fix this,
-    // use the local area green value as a measurement of luminance, and tweak the sharpness
-    // based on the difference between the max and min values. This will reduce the contribution
-    // of negative weights in high contrast areas and help prevent ringing artifacts.
-    float4 gatheredGreen = texture.GatherGreen(linearSampler, uv, int2(0, 0));
-    float minGreen = min(gatheredGreen.x, min(gatheredGreen.y, min(gatheredGreen.z, gatheredGreen.w)));
-    float maxGreen = max(gatheredGreen.x, max(gatheredGreen.y, max(gatheredGreen.z, gatheredGreen.w)));
-    float diff = maxGreen - minGreen;
-    sharpness = sharpness / (diff + 1.0);
-
-    // Find the position in texture space then round it to get the center of the 1,1 pixel (tc1)
-    float2 texelPos = uv * textureSize;
-    float2 tc1= floor(texelPos - 0.5) + 0.5;
-
-    // Offset from center position to texel
-    float2 f = texelPos - tc1;
-
-    // Compute Catmull-Rom weights based on the offset and sharpness
-    float c = sharpness;
-    float2 w0 = f * (-c + f * (2.0 * c - c * f));
-    float2 w1 = 1.0 + f * f * (c -3.0 + (2.0 - c) * f);
-    float2 w2 = f * (c + f * ((3.0 - 2.0 * c) - (2.0 - c) * f));
-    float2 w3 = f * f * (c * f - c);
-    float2 w12 = w1 + w2;
-
-    // Compute uv coordinates for sampling the texture
-    float2 tc0 = (tc1 - 1.0f) * rcpTextureSize;
-    float2 tc3 = (tc1 + 2.0f) * rcpTextureSize;
-    float2 tc12 = (tc1 + w2 / w12) * rcpTextureSize;
-
-    // Compute sample weights
-    float sw0 = w12.x * w0.y;
-    float sw1 = w0.x  * w12.y;
-    float sw2 = w12.x * w12.y;
-    float sw3 = w3.x  * w12.y;
-    float sw4 = w12.x * w3.y;
-
-    // total weight of samples to normalize result.
-    float totalWeight = sw0 + sw1 + sw2 + sw3 + sw4;
-
-    float3 result = 0.0;
-    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc0.y), 0.0).rgb * sw0;
-    result += texture.SampleLevel(linearSampler, float2( tc0.x, tc12.y), 0.0).rgb * sw1;
-    result += texture.SampleLevel(linearSampler, float2(tc12.x, tc12.y), 0.0).rgb * sw2;
-    result += texture.SampleLevel(linearSampler, float2( tc3.x, tc12.y), 0.0).rgb * sw3;
-    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc3.y), 0.0).rgb * sw4;
-
-    return result / totalWeight;
-}
 
 [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
 void MainCS(
@@ -227,8 +167,7 @@ void MainCS(
     float2 uvOld = uvCoord + previousPositionOffset;
     float2 previousPositionOffsetInPixels = float2(PassSrg::m_constantData.m_inputColorSize) * previousPositionOffset;
     
-    // Sample the last frame using a 5-tap Catmull-Rom
-    float3 lastFrameColor = SampleCatmullRom5Tap(PassSrg::m_lastFrameAccumulation, PassSrg::LinearSampler, uvOld, PassSrg::m_constantData.m_inputColorSize, PassSrg::m_constantData.m_inputColorRcpSize, 0.5);
+    float3 lastFrameColor = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0).rgb;
     lastFrameColor = RgbToYCoCg(lastFrameColor);
 
     // Last frame color relative to mean
