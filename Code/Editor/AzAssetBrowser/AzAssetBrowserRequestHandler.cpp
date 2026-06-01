@@ -18,6 +18,7 @@
 #include <QMenu>
 #include <QObject>
 #include <QString>
+#include <QProcess>
 
 // AzCore
 #include <AzCore/std/string/wildcard.h>

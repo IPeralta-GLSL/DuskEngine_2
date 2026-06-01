@@ -17,7 +17,8 @@
 // Editor
 #include "Settings.h"
 #include "EditorViewportSettings.h"
-
+#include "Util/FileUtil.h"
+#include "Util/Platform/Linux/Platform.h"
 
 
 void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
@@ -153,7 +154,19 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_files.m_backupOnSaveMaxCount = gSettings.backupOnSaveMaxCount;
     m_files.m_standardTempDirectory = gSettings.strStandardTempDirectory.toUtf8().data();
 
-    m_editors.m_scripts = gSettings.textEditorForScript.toUtf8().data();
+    if (gSettings.textEditorForScript.isEmpty())
+    {
+        AZStd::string defaultEditor = Platform::GetDefaultEditor(Common::EditFileType::FILE_TYPE_SCRIPT).toUtf8().data();
+        if (!defaultEditor.empty())
+        {
+            m_editors.m_scripts = defaultEditor;
+        }
+    }
+    else
+    {
+        m_editors.m_scripts = gSettings.textEditorForScript.toUtf8().data();
+    }
+
     m_editors.m_shaders = gSettings.textEditorForShaders.toUtf8().data();
     m_editors.m_BSpaces = gSettings.textEditorForBspaces.toUtf8().data();
     m_editors.m_textures = gSettings.textureEditor.toUtf8().data();

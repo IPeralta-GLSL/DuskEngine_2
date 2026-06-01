@@ -1,17 +1,9 @@
-/*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
- */
-
 #include "EditorDefs.h"
 
 #include "../../FileUtil_Common.h"
 
 #include <QProcess>
 
-// Editor
 #include "Settings.h"
 
 namespace Platform
@@ -35,10 +27,23 @@ namespace Platform
     {
         switch (fileType)
         {
-        case Common::EditFileType::FILE_TYPE_BSPACE://Drop through
+        case Common::EditFileType::FILE_TYPE_BSPACE:
         case Common::EditFileType::FILE_TYPE_SCRIPT:
         case Common::EditFileType::FILE_TYPE_SHADER:
+        {
+            QStringList editors = {"code", "cursor", "subl", "vim", "nvim", "emacs", "gedit", "kate", "zed"};
+            for (const QString& editor : editors)
+            {
+                QProcess process;
+                process.start("which", {editor});
+                process.waitForFinished();
+                if (process.exitCode() == 0 && !process.readAllStandardOutput().trimmed().isEmpty())
+                {
+                    return editor;
+                }
+            }
             return "";
+        }
         case Common::EditFileType::FILE_TYPE_TEXTURE:
             return "";
         case Common::EditFileType::FILE_TYPE_ANIMATION:
@@ -86,9 +91,6 @@ namespace Platform
         {
             strCurrentDirectoryPath += cstrDirectoryQueue[nCurrentPathQueue];
             strCurrentDirectoryPath += "\\";
-            // The value which will go out of this loop is the result of the attempt to create the
-            // last directory, only.
-
             strCurrentDirectoryPath = Path::CaselessPaths(strCurrentDirectoryPath);
             bnLastDirectoryWasCreated = QDir().mkpath(strCurrentDirectoryPath);
         }

@@ -153,14 +153,6 @@ namespace AzToolsFramework
                     constexpr bool isPrioritized = true;
                     openers.push_back({ "O3DE_LUA_External_Editor", "Open with external editor...", QIcon(), startProcess, isPrioritized });
                 }
-
-                const auto luaScriptOpener = [](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid&)
-                {
-                    AzToolsFramework::EditorRequestBus::Broadcast(
-                        &AzToolsFramework::EditorRequests::LaunchLuaEditor, fullSourceFileNameInCallback);
-                };
-
-                openers.push_back({ "O3DE_LUA_Editor", "Open in Open 3D Engine LUA Editor...", QIcon(), luaScriptOpener });
             }
         }
 
