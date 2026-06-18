@@ -33,7 +33,7 @@
 
 namespace AZ::Render
 {
-    AZ_CVAR(int, r_displayInfo, 2, [](const int& newDisplayInfoVal)->void
+    AZ_CVAR(int, r_displayInfo, 1, [](const int& newDisplayInfoVal)->void
         {
             // Forward this event to the system component so it can update accordingly.
             // This callback only gets triggered by console commands, so this will not recurse.
