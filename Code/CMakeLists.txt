@@ -9,5 +9,6 @@
 add_subdirectory(Framework)
 add_subdirectory(LauncherUnified)
 add_subdirectory(Legacy)
+add_subdirectory(${LY_ROOT_FOLDER}/SDK/imgui-node-editor ${CMAKE_BINARY_DIR}/SDK/imgui-node-editor)
 add_subdirectory(Editor)
 add_subdirectory(Tools)

@@ -12,7 +12,8 @@ enum class ImGuiOverlayContent
 {
     Stage,
     Attributes,
-    AssetBrowser
+    AssetBrowser,
+    MaterialEditor
 };
 
 class ImGuiQtOverlay : public QOpenGLWidget

@@ -532,6 +532,84 @@ namespace ImGuiAssetBrowser
                     }
                     ImGui::EndPopup();
                 }
+                if (ImGui::BeginPopupContextWindow())
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, O3DE_ACCENT_GREEN);
+                    ImGui::Text("Create New");
+                    ImGui::PopStyleColor();
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("Material (.material)"))
+                    {
+                        ImGui::OpenPopup("##NewMaterialPopup");
+                    }
+                    if (ImGui::MenuItem("Lua Script (.lua)"))
+                    {
+                        ImGui::OpenPopup("##NewLuaPopup");
+                    }
+                    ImGui::EndPopup();
+                }
+                if (ImGui::BeginPopup("##NewMaterialPopup"))
+                {
+                    static char newMaterialName[128] = "NewMaterial";
+                    ImGui::SetNextItemWidth(250.0f);
+                    ImGui::InputText("Name", newMaterialName, sizeof(newMaterialName));
+                    if (ImGui::Button("Create", ImVec2(100, 0)))
+                    {
+                        AZStd::string filePath;
+                        if (!s_currentPath.empty())
+                            filePath = s_currentPath + "/" + newMaterialName + ".material";
+                        else
+                            filePath = newMaterialName + AZStd::string(".material");
+                        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+                        if (fileIO)
+                        {
+                            const char* jsonContent = "{\n    \"materialType\": \"@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype\",\n    \"materialTypeVersion\": 5,\n    \"propertyValues\": {\n        \"baseColor.color\": [0.5, 0.5, 0.5, 1.0],\n        \"roughness.factor\": 0.5\n    }\n}\n";
+                            AZ::IO::FileIOStream file(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
+                            if (file.IsOpen())
+                            {
+                                file.Write(strlen(jsonContent), jsonContent);
+                                file.Close();
+                            }
+                        }
+                        s_needsRefresh = true;
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel", ImVec2(100, 0)))
+                        ImGui::CloseCurrentPopup();
+                    ImGui::EndPopup();
+                }
+                if (ImGui::BeginPopup("##NewLuaPopup"))
+                {
+                    static char newLuaName[128] = "NewScript";
+                    ImGui::SetNextItemWidth(250.0f);
+                    ImGui::InputText("Name", newLuaName, sizeof(newLuaName));
+                    if (ImGui::Button("Create", ImVec2(100, 0)))
+                    {
+                        AZStd::string filePath;
+                        if (!s_currentPath.empty())
+                            filePath = s_currentPath + "/" + newLuaName + ".lua";
+                        else
+                            filePath = newLuaName + AZStd::string(".lua");
+                        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+                        if (fileIO)
+                        {
+                            const char* luaContent = "-- New Script\n\nfunction OnActivate()\nend\n\nfunction OnDeactivate()\nend\n";
+                            AZ::IO::FileIOStream file(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
+                            if (file.IsOpen())
+                            {
+                                file.Write(strlen(luaContent), luaContent);
+                                file.Close();
+                            }
+                        }
+                        s_needsRefresh = true;
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel", ImVec2(100, 0)))
+                        ImGui::CloseCurrentPopup();
+                    ImGui::EndPopup();
+                }
                 ImGui::NextColumn();
                 ImGui::PushStyleColor(ImGuiCol_Text, O3DE_TEXT_MUTED);
                 if (entry.isDirectory)

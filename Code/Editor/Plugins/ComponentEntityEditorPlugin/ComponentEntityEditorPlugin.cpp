@@ -18,6 +18,7 @@
 #include <AzToolsFramework/UI/ImGui/ImGuiStageDockWidget.h>
 #include <AzToolsFramework/UI/ImGui/ImGuiAttributesDockWidget.h>
 #include <AzToolsFramework/UI/ImGui/ImGuiAssetBrowserDockWidget.h>
+#include <AzToolsFramework/UI/ImGui/ImGuiMaterialEditorDockWidget.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityUtils.h>
@@ -204,6 +205,16 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         assetOptions);
 
+    ViewPaneOptions matEditorOptions;
+    matEditorOptions.preferedDockingArea = Qt::BottomDockWidgetArea;
+    matEditorOptions.isDisabledInComponentMode = false;
+    matEditorOptions.isDisabledInImGuiMode = false;
+
+    RegisterViewPane<AzToolsFramework::ImGuiMaterialEditorDockWidget>(
+        "ImGui Material Editor",
+        LyViewPane::CategoryTools,
+        matEditorOptions);
+
     ComponentEntityEditorPluginInternal::RegisterSandboxObjects();
 
     // Check for common mistakes in component declarations
@@ -224,6 +235,7 @@ void ComponentEntityEditorPlugin::Release()
         UnregisterViewPane("ImGui Stage");
         UnregisterViewPane("ImGui Attributes");
         UnregisterViewPane("ImGui Asset Browser");
+        UnregisterViewPane("ImGui Material Editor");
 
         ComponentEntityEditorPluginInternal::UnregisterSandboxObjects();
     }

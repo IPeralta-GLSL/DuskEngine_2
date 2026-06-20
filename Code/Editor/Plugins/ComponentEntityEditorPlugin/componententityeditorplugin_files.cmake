@@ -37,6 +37,10 @@ set(FILES
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAssetBrowser.cpp
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAssetBrowserDockWidget.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiAssetBrowserDockWidget.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiMaterialNodeEditor.h
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiMaterialNodeEditor.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiMaterialEditorDockWidget.h
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiMaterialEditorDockWidget.cpp
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/imgui_impl_opengl3.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/imgui_impl_opengl3.cpp
 )

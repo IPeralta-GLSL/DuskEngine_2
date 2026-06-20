@@ -11,6 +11,7 @@
 #include "ImGuiEntityOutliner.h"
 #include "ImGuiEntityInspector.h"
 #include "ImGuiAssetBrowser.h"
+#include "ImGuiMaterialNodeEditor.h"
 
 namespace AzToolsFramework
 {
@@ -130,6 +131,9 @@ void ImGuiQtOverlay::RenderImGuiContent()
         break;
     case ImGuiOverlayContent::AssetBrowser:
         ImGuiAssetBrowser::Render();
+        break;
+    case ImGuiOverlayContent::MaterialEditor:
+        ImGuiMaterialNodeEditor::Render();
         break;
     }
 }

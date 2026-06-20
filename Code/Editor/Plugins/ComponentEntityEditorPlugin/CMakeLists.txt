@@ -23,6 +23,9 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             .
+        PRIVATE
+            ${LY_ROOT_FOLDER}/SDK/imgui-node-editor
+            ${LY_ROOT_FOLDER}/Gems/ImGui/External/ImGui/v1.82/imgui
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core
@@ -36,6 +39,7 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::AtomToolsFramework.Static
             Gem::LmbrCentral.Editor
+            imgui_node_editor_static
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral.Editor
 )
