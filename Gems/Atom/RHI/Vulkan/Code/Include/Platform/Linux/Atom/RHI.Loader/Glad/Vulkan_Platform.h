@@ -7,5 +7,7 @@
  */
 #pragma once
 
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <xcb/xcb.h>
 #include <xcb/xcbext.h>
+#endif

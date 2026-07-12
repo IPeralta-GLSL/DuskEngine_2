@@ -24,7 +24,8 @@ FREEZE_TIMEOUT=10          # segundos sin heartbeat = freeze
 
 # Entorno necesario en Linux
 export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-xcb}"
-export DRI_PRIME="${DRI_PRIME:-1}"
+# DRI_PRIME: let the system choose the GPU automatically
+# export DRI_PRIME=0  # removed: was forcing specific GPU
 
 LOG_DIR="/tmp/o3de_watchdog_logs"
 mkdir -p "$LOG_DIR"

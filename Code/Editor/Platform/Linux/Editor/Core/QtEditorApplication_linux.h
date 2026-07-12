@@ -13,10 +13,13 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #endif
 
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 using xcb_connection_t = struct xcb_connection_t;
+#endif
 
 namespace Editor
 {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     class EditorQtApplicationXcb
         : public EditorQtApplication
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
@@ -26,18 +29,40 @@ namespace Editor
         EditorQtApplicationXcb(int& argc, char** argv)
             : EditorQtApplication(argc, argv)
         {
-            // Connect bus to listen for OnStart/StopPlayInEditor events
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         }
 
         xcb_connection_t* GetXcbConnectionFromQt();
 
-        ///////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::EditorEntityContextNotificationBus overrides
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
 
-        // QAbstractNativeEventFilter:
         bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
     };
+#endif
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+    class EditorQtApplicationWayland
+        : public EditorQtApplication
+        , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    {
+        Q_OBJECT
+    public:
+        EditorQtApplicationWayland(int& argc, char** argv)
+            : EditorQtApplication(argc, argv)
+        {
+            AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        }
+
+        ~EditorQtApplicationWayland() override
+        {
+            AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
+        }
+
+        void OnStartPlayInEditor() override;
+        void OnStopPlayInEditor() override;
+
+        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+    };
+#endif
 } // namespace Editor

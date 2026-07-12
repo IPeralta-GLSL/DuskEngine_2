@@ -13,6 +13,8 @@
 
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <AzFramework/XcbConnectionManager.h>
+#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+#include <AzFramework/WaylandSurfaceAccess.h>
 #endif
 
 namespace AZ
@@ -24,7 +26,6 @@ namespace AZ
             Instance& instance = Instance::GetInstance();
 
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-
             xcb_connection_t* xcb_connection = nullptr;
             if (auto xcbConnectionManager = AzFramework::XcbConnectionManagerInterface::Get();
                 xcbConnectionManager != nullptr)
@@ -44,12 +45,32 @@ namespace AZ
 
             return ConvertResult(result);
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-            #error "Linux Window Manager Wayland not supported."
-            return RHI::ResultCode::Unimplemented;
+            struct wl_display* wlDisplay = AzFramework::WaylandSurfaceAccess::GetWaylandDisplay();
+            struct wl_surface* wlSurface = AzFramework::WaylandSurfaceAccess::GetWaylandSurface();
+
+            if (!wlDisplay || !wlSurface)
+            {
+                AZ_Error("AtomVulkan_RHI", false,
+                    "Wayland handles not available. Ensure the editor has initialized Wayland native handles.");
+                return RHI::ResultCode::Fail;
+            }
+
+            VkWaylandSurfaceCreateInfoKHR createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+            createInfo.pNext = nullptr;
+            createInfo.flags = 0;
+            createInfo.display = wlDisplay;
+            createInfo.surface = wlSurface;
+
+            const VkResult result = instance.GetContext().CreateWaylandSurfaceKHR(
+                instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
+            AssertSuccess(result);
+
+            return ConvertResult(result);
 #else
             #error "Linux Window Manager not recognized."
             return RHI::ResultCode::Unimplemented;
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#endif
         }
     }
 }
