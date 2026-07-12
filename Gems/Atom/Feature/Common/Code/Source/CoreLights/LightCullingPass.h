@@ -16,6 +16,7 @@
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <CoreLights/LightTreeBuilder.h>
 
 namespace AZ
 {
@@ -66,6 +67,7 @@ namespace AZ
             AZStd::array<float, 2> ComputeGridPixelSize();
             void CreateLightList();
             void AttachLightList();
+            void UpdateLightTree();
 
             AZ::RHI::Size GetTileDataBufferResolution();
             struct LightTypeData
@@ -95,6 +97,14 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_lightList;
 
             uint32_t m_tileDataIndex = std::numeric_limits<uint32_t>::max();
+
+            LightTreeBuilder m_lightTreeBuilder;
+            Data::Instance<RPI::Buffer> m_lightTreeNodesBuffer;
+            Data::Instance<RPI::Buffer> m_lightTreeIndicesBuffer;
+            AZ::RHI::ShaderInputNameIndex m_lightTreeNodesIndex = "m_lightTreeNodes";
+            AZ::RHI::ShaderInputNameIndex m_lightTreeIndicesIndex = "m_lightTreeIndices";
+            AZ::RHI::ShaderInputNameIndex m_lightTreeNodeCountIndex = "m_lightTreeNodeCount";
+            AZ::RHI::ShaderInputNameIndex m_lightTreeRootIndexIndex = "m_lightTreeRootIndex";
         };
     }   // namespace Render
 }   // namespace AZ

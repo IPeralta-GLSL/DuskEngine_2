@@ -73,9 +73,23 @@ namespace AZ
             AZ_Assert(m_shaderResourceGroup != nullptr, "LightCullingPass %s has a null shader resource group when calling FrameBeginInternal.", GetPathName().GetCStr());
 
             GetLightDataFromFeatureProcessor();
+            UpdateLightTree();
             SetLightBuffersToSRG();
             SetLightsCountToSRG();
             SetConstantdataToSRG();
+
+            if (m_lightTreeNodesBuffer)
+            {
+                m_shaderResourceGroup->SetBuffer(m_lightTreeNodesIndex, m_lightTreeNodesBuffer.get());
+            }
+            if (m_lightTreeIndicesBuffer)
+            {
+                m_shaderResourceGroup->SetBuffer(m_lightTreeIndicesIndex, m_lightTreeIndicesBuffer.get());
+            }
+            uint32_t nodeCount = m_lightTreeBuilder.GetNodeCount();
+            m_shaderResourceGroup->SetConstant(m_lightTreeNodeCountIndex, nodeCount);
+            uint32_t rootIndex = nodeCount > 0 ? 0u : 0u;
+            m_shaderResourceGroup->SetConstant(m_lightTreeRootIndexIndex, rootIndex);
 
             BindPassSrg(context, m_shaderResourceGroup);
             if (RPI::ViewPtr view = GetView())
@@ -265,6 +279,71 @@ namespace AZ
             if (m_lightList != nullptr)
             {
                 AttachBufferToSlot(Name("LightList"), m_lightList);
+            }
+        }
+
+        void LightCullingPass::UpdateLightTree()
+        {
+            AZStd::vector<LightTreeInput> treeLights;
+
+            if (!m_pipeline || !m_pipeline->GetScene())
+            {
+                return;
+            }
+
+            const auto pointLightFP = m_pipeline->GetScene()->GetFeatureProcessor<PointLightFeatureProcessor>();
+            if (pointLightFP && pointLightFP->GetLightCount() > 0)
+            {
+                auto buffer = pointLightFP->GetLightBuffer();
+                if (buffer && buffer->GetBufferView() != nullptr)
+                {
+                    uint32_t count = pointLightFP->GetLightCount();
+                    for (uint32_t i = 0; i < count; ++i)
+                    {
+                        LightTreeInput input{};
+                        input.m_position = AZ::Vector3::CreateZero();
+                        input.m_direction = AZ::Vector3(0.0f, 1.0f, 0.0f);
+                        input.m_energy = 1.0f;
+                        input.m_radius = 10.0f;
+                        input.m_lightIndex = i;
+                        treeLights.push_back(input);
+                    }
+                }
+            }
+
+            m_lightTreeBuilder.Build(treeLights);
+
+            const auto& nodes = m_lightTreeBuilder.GetNodes();
+            const auto& indices = m_lightTreeBuilder.GetLightIndices();
+
+            if (!nodes.empty())
+            {
+                RPI::CommonBufferDescriptor nodeDesc;
+                nodeDesc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                nodeDesc.m_bufferName = "LightTreeNodes";
+                nodeDesc.m_elementSize = sizeof(LightTreeGpuNode);
+                nodeDesc.m_byteCount = sizeof(LightTreeGpuNode) * nodes.size();
+                m_lightTreeNodesBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(nodeDesc);
+                if (m_lightTreeNodesBuffer)
+                {
+                    m_lightTreeNodesBuffer->SetAsStructured<LightTreeGpuNode>();
+                    m_lightTreeNodesBuffer->UpdateData(nodes.data(), sizeof(LightTreeGpuNode) * nodes.size());
+                }
+            }
+
+            if (!indices.empty())
+            {
+                RPI::CommonBufferDescriptor indexDesc;
+                indexDesc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+                indexDesc.m_bufferName = "LightTreeIndices";
+                indexDesc.m_elementSize = sizeof(uint32_t);
+                indexDesc.m_byteCount = sizeof(uint32_t) * indices.size();
+                m_lightTreeIndicesBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(indexDesc);
+                if (m_lightTreeIndicesBuffer)
+                {
+                    m_lightTreeIndicesBuffer->SetAsStructured<uint32_t>();
+                    m_lightTreeIndicesBuffer->UpdateData(indices.data(), sizeof(uint32_t) * indices.size());
+                }
             }
         }
     }   // namespace Render

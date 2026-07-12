@@ -53,6 +53,8 @@ set(FILES
     Source/CoreLights/EsmShadowmapsPass.cpp
     Source/CoreLights/LightCullingPass.cpp
     Source/CoreLights/LightCullingPass.h
+    Source/CoreLights/LightTreeBuilder.cpp
+    Source/CoreLights/LightTreeBuilder.h
     Source/CoreLights/LightCullingTilePreparePass.cpp
     Source/CoreLights/LightCullingTilePreparePass.h
     Source/CoreLights/LightCullingRemap.cpp
