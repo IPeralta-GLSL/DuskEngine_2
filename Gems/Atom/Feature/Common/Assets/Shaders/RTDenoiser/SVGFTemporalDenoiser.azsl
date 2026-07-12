@@ -1,0 +1,114 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/RPI/Math.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorInput;
+    Texture2DMS<float> m_depth;
+    Texture2DMS<float4> m_normal;
+    Texture2D<float> m_variance;
+
+    uint m_stepSize;
+    float m_phiColor;
+    float m_phiNormal;
+    float m_phiDepth;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+}
+
+static const float SIGMA_Z = 1.0;
+static const float SIGMA_N = 128.0;
+
+float LinearDepth(float hwDepth)
+{
+    float4 v = mul(ViewSrg::m_projectionMatrixInverse, float4(0.0, 0.0, hwDepth, 1.0));
+    return abs(v.z / v.w);
+}
+
+float Luminance(float3 c)
+{
+    return dot(c, float3(0.2126, 0.7152, 0.0722));
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    int2 icoords = int2(IN.m_position.xy);
+    float2 uv = IN.m_texCoord.xy;
+
+    float4 centerColor = PassSrg::m_colorInput.Load(int3(icoords, 0));
+    float  centerLum   = Luminance(centerColor.rgb);
+
+    float  hwDepthCenter     = PassSrg::m_depth.Load(icoords, 0).r;
+    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(icoords, 0).rgb);
+    float  linearDepthCenter = LinearDepth(hwDepthCenter);
+
+    float centerVariance = PassSrg::m_variance.Load(int3(icoords, 0)).r;
+
+    float kernel[5] = { 1.0 / 16.0, 4.0 / 16.0, 6.0 / 16.0, 4.0 / 16.0, 1.0 / 16.0 };
+
+    float3 sumColor  = float3(0.0, 0.0, 0.0);
+    float  sumWeight = 0.0;
+    float  sumVar    = 0.0;
+
+    int step = max(1, (int)m_stepSize);
+
+    [unroll]
+    for (int dy = -2; dy <= 2; ++dy)
+    {
+        [unroll]
+        for (int dx = -2; dx <= 2; ++dx)
+        {
+            int2 nc = icoords + int2(dx, dy) * step;
+
+            float4 neighborColor = PassSrg::m_colorInput.Load(int3(nc, 0));
+            float  neighborLum   = Luminance(neighborColor.rgb);
+
+            float  hwDepthN  = PassSrg::m_depth.Load(nc, 0).r;
+            float3 normalN   = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(nc, 0).rgb);
+            float  linDepthN = LinearDepth(hwDepthN);
+
+            float wSpatial = kernel[dx + 2] * kernel[dy + 2];
+
+            float depthDiff = abs(linearDepthCenter - linDepthN) / max(linearDepthCenter, 1e-6);
+            float wDepth = exp(-depthDiff * depthDiff * SIGMA_Z);
+
+            float wNormal = pow(saturate(dot(normalCenter, normalN)), SIGMA_N);
+
+            float lumDiff = abs(centerLum - neighborLum);
+            float wLum = exp(-lumDiff / max(m_phiColor * sqrt(max(centerVariance, 1e-6)), 1e-6));
+
+            float w = wSpatial * wDepth * wNormal * wLum;
+
+            sumColor += neighborColor.rgb * w;
+            sumWeight += w;
+            float neighborVar = PassSrg::m_variance.Load(int3(nc, 0)).r;
+            sumVar += neighborVar * w * w;
+        }
+    }
+
+    float3 filtered = (sumWeight > 1e-5) ? (sumColor / sumWeight) : centerColor.rgb;
+    float  filteredVar = (sumWeight > 1e-5) ? (sumVar / (sumWeight * sumWeight)) : centerVariance;
+
+    PSOutput OUT;
+    OUT.m_color = float4(filtered, filteredVar);
+    return OUT;
+}

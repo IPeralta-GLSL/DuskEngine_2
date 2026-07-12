@@ -1,0 +1,12 @@
+{
+    "Slots" : [ { "Name" : "m_colorInput" }, { "Name" : "m_depth" }, { "Name" : "m_normal" }, { "Name" : "m_variance" } ],
+    "ImageAttachments" : [
+        {
+            "Name": "Output",
+            "Format": "R16G16B16A16_FLOAT",
+            "MultisampleState": { "samples" : 1 },
+            "SizeSource" : { "Scale" : [ 1.0, 1.0 ] }
+        }
+    ],
+    "References" : [ { "Name" : "SVGFTemporalDenoiserPassShader", "Shader" : "Shaders/RTDenoiser/SVGFTemporalDenoiser.shader" } ]
+}

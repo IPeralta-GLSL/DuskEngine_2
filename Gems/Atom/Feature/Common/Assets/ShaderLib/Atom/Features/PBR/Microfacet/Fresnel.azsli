@@ -63,3 +63,73 @@ real FresnelSchlickWithRoughness_1(const real NdotV, const real specularF0, cons
     return F0 + (max(smoothness, F0) - F0) * pow(1.0 - saturate(NdotV), 5.0);
 }
 
+// Gulbrandsen 2014 - Artist Friendly Metallic Fresnel
+// "Artist Friendly Metallic Fresnel", Ole Gulbrandsen, JCGT Vol.3 No.4, 2014
+// http://jcgt.org/published/0003/04/03/
+//
+// Uses reflectivity (base reflectance at normal incidence) and edgeTint
+// (color at grazing angle) instead of raw complex IOR (n, k).
+// This gives artists intuitive control over metallic Fresnel behavior.
+
+float3 GulbrandsenNMin(float3 r)
+{
+    return (1.0 - r) / (1.0 + r);
+}
+
+float3 GulbrandsenNMax(float3 r)
+{
+    float3 rSqrt = sqrt(r);
+    return (1.0 + rSqrt) / (1.0 - rSqrt);
+}
+
+float3 GulbrandsenComputeEta(float3 reflectivity, float3 edgeTint)
+{
+    return edgeTint * GulbrandsenNMin(reflectivity) + (1.0 - edgeTint) * GulbrandsenNMax(reflectivity);
+}
+
+float3 GulbrandsenComputeK(float3 reflectivity, float3 eta)
+{
+    float3 a = eta + 1.0;
+    float3 b = eta - 1.0;
+    float3 nr = max(0.0, reflectivity * a * a - b * b);
+    return sqrt(nr / max(1.0 - reflectivity, 1e-8));
+}
+
+float3 FresnelConductorGulbrandsen(float cosThetaI, float3 reflectivity, float3 edgeTint)
+{
+    float3 clampedReflectivity = clamp(reflectivity, 0.0, 0.999);
+    float3 clampedEdgeTint = clamp(edgeTint, 0.0, 0.999);
+
+    float3 eta = GulbrandsenComputeEta(clampedReflectivity, clampedEdgeTint);
+    float3 k = GulbrandsenComputeK(clampedReflectivity, eta);
+
+    float cosTheta = saturate(cosThetaI);
+    float cosTheta2 = cosTheta * cosTheta;
+    float sinTheta2 = 1.0 - cosTheta2;
+
+    float3 eta2 = eta * eta;
+    float3 k2 = k * k;
+
+    float3 t0 = eta2 - k2 - sinTheta2;
+    float3 a2plusb2 = sqrt(max(0.0, t0 * t0 + 4.0 * eta2 * k2));
+    float3 t1 = a2plusb2 + cosTheta2;
+    float3 a = sqrt(max(0.0, 0.5 * (a2plusb2 + t0)));
+    float3 t2 = 2.0 * a * cosTheta;
+
+    float3 Rs = (t1 - t2) / max(t1 + t2, 1e-8);
+    float3 t3 = cosTheta2 * a2plusb2 + sinTheta2 * sinTheta2;
+    float3 t4 = t2 * sinTheta2;
+    float3 Rp = Rs * (t3 - t4) / max(t3 + t4, 1e-8);
+
+    return 0.5 * (Rs + Rp);
+}
+
+float3 FresnelConductorSchlick(float HdotV, float3 F0, float3 F90)
+{
+    float t = 1.0 - HdotV;
+    float t2 = t * t;
+    float t5 = t2 * t2 * t;
+    return F0 + (F90 - F0) * t5;
+}
+
+
