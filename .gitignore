@@ -25,3 +25,5 @@ _savebackup/
 .command_settings
 CrashDB/
 SDK/
+Expiration/
+.kilo/

@@ -20,6 +20,7 @@
 #endif
 
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+#include <Atom/Features/PBR/Microfacet/EnergyCompensation.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 #ifndef LightingData
@@ -62,6 +63,11 @@ real3 GetSpecularLighting_StandardPBR(Surface surface, LightingData lightingData
         specular = ClearCoatSpecular(dirToLight, lightingData.dirToCamera[viewIndex], surface.clearCoat.normal, surface.clearCoat.factor, surface.clearCoat.roughness, specular);
     }
 #endif
+
+    real NdotV = lightingData.GetSpecularNdotV(viewIndex);
+    real NdotL = saturate(dot(surface.GetSpecularNormal(), dirToLight));
+    real3 ec = EnergyCompensationPerLight(NdotV, NdotL, surface.roughnessLinear, surface.GetSpecularF0());
+    specular += ec * NdotL * lightIntensity;
 
     specular *= lightIntensity;
     return specular;

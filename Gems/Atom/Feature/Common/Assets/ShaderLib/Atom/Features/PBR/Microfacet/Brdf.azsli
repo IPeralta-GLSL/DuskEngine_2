@@ -17,6 +17,7 @@
 #include <Atom/RPI/Math.azsli>
 #include "Ggx.azsli"
 #include "Fresnel.azsli"
+#include "EnergyCompensation.azsli"
 
 
 // ------- Diffuse Lighting -------
