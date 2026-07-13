@@ -7,6 +7,7 @@
  */
 #include "FileWatcher.h"
 #include "AzCore/std/containers/vector.h"
+#include <AzCore/AzQtCompat.h>
 #include <native/assetprocessor.h>
 #include <native/FileWatcher/FileWatcher_platform.h>
 #include <QFileInfo>
@@ -206,7 +207,7 @@ bool FileWatcher::Filter(QString path, const WatchRoot& watchRoot)
     if (!watchRoot.m_recursive)
     {
         // filter out subtrees too.
-        QStringRef subRef = path.rightRef(path.length() - watchRoot.m_directory.length());
+        auto subRef = O3DE_RIGHTREF(path, path.length() - watchRoot.m_directory.length());
         if ((subRef.indexOf('/') != -1) || (subRef.indexOf('\\') != -1))
         {
             return false; // filter this out.

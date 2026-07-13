@@ -10,6 +10,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/AzQtCompat.h>
 #include <AudioControl.h>
 #include <AudioControlFilters.h>
 #include <IAudioInterfacesCommonData.h>
@@ -147,7 +148,7 @@ namespace AudioControls
 
     protected:
         void mousePressEvent(QMouseEvent* event) override;
-        void enterEvent(QEvent* event) override;
+        void enterEvent(O3DE_ENTER_EVENT_TYPE* event) override;
         void leaveEvent(QEvent* event) override;
 
         QLabel m_checkIcon;

@@ -8,6 +8,7 @@
 
 #include <UI/GradientPreviewWidget.h>
 
+#include <AzCore/AzQtCompat.h>
 #include <QIcon>
 #include <QPainter>
 #include <QToolButton>
@@ -62,7 +63,7 @@ namespace GradientSignal
         return size();
     }
 
-    void GradientPreviewWidget::enterEvent(QEvent* event)
+    void GradientPreviewWidget::enterEvent(O3DE_ENTER_EVENT_TYPE* event)
     {
         QWidget::enterEvent(event);
 

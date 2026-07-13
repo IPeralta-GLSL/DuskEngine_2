@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/AzQtCompat.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -1408,7 +1409,7 @@ namespace AzToolsFramework
             }
         }
 
-        void DetachMenuActionWidget::enterEvent(QEvent* event)
+        void DetachMenuActionWidget::enterEvent(O3DE_ENTER_EVENT_TYPE* event)
         {
             if (m_toLabel)
             {

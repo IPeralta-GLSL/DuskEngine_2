@@ -7,6 +7,7 @@
  */
 
 #include <native/utilities/ProductOutputUtil.h>
+#include <AzCore/AzQtCompat.h>
 #include <QString>
 #include <QFile>
 #include <AzCore/std/containers/vector.h>
@@ -168,7 +169,7 @@ namespace AssetProcessor
         }
 
         // Remove the prefix and update
-        QStringRef unprefixedString = filename.midRef(static_cast<int>(prefixPos + currentPrefix.size()));
+        auto unprefixedString = O3DE_MIDREF(filename, static_cast<int>(prefixPos + currentPrefix.size()), -1);
         newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) / (newPrefix + unprefixedString.toUtf8().constData()))
                       .StringAsPosix();
 

@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/AzQtCompat.h>
 #include <MysticQt/Source/DialogStack.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include <EMotionFX/Source/MorphTarget.h>
@@ -98,7 +99,7 @@ namespace EMStudio
         void UpdateInterface();
 
         void paintEvent(QPaintEvent* event) override;
-        void enterEvent(QEvent* event) override             { MCORE_UNUSED(event); m_mouseWithinWidget = true; repaint(); }
+        void enterEvent(O3DE_ENTER_EVENT_TYPE* event) override             { MCORE_UNUSED(event); m_mouseWithinWidget = true; repaint(); }
         void leaveEvent(QEvent* event) override             { MCORE_UNUSED(event); m_mouseWithinWidget = false; repaint(); }
 
     private:

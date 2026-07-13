@@ -23,8 +23,8 @@
 #include <QSettings>
 #include <QWindow>
 #include <QScreen>
+#include <AzCore/AzQtCompat.h>
 #include <QCloseEvent>
-#include <QDesktopWidget>
 #include <QDialog>
 #include <QStyleOption>
 #include <QScopedValueRollback>
@@ -100,7 +100,7 @@ namespace AzQtComponents
                 // the screen because since floating windows are frameless, on
                 // Windows 10 they end up taking up the entire screen when maximized
                 // instead of respecting the available space (e.g. taskbar)
-                window->setGeometry(QApplication::desktop()->availableGeometry(window));
+                window->setGeometry(O3DE_AvailableGeometry(window));
             }
             
 
@@ -483,8 +483,7 @@ namespace AzQtComponents
 
     static void centerOnScreen(WindowDecorationWrapper* window)
     {
-        const QDesktopWidget* desktop = QApplication::desktop();
-        QRect availableGeometry = desktop->availableGeometry(window);
+        QRect availableGeometry = O3DE_AvailableGeometry(window);
         QRect alignedRect = QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, window->size(), availableGeometry);
 
         window->setGeometry(alignedRect);

@@ -9,6 +9,7 @@
 
 #include <ATLControlsPanel.h>
 
+#include <AzCore/AzQtCompat.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
 
@@ -82,7 +83,7 @@ namespace AudioControls
         emit clicked(m_checked);
     }
 
-    void QFilterButton::enterEvent(QEvent* /*event*/)
+    void QFilterButton::enterEvent(O3DE_ENTER_EVENT_TYPE* /*event*/)
     {
         setStyleSheet("background-color: #444444;");
     }

@@ -7,6 +7,7 @@
  */
 
 // include the required headers
+#include <AzCore/AzQtCompat.h>
 #include "TrackDataHeaderWidget.h"
 #include "TimeViewPlugin.h"
 #include "TimeInfoWidget.h"
@@ -268,7 +269,7 @@ namespace EMStudio
             m_mouseRightClicked = true;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == O3DE_MIDDLE_BUTTON)
         {
             m_mouseMidClicked = true;
         }
@@ -348,7 +349,7 @@ namespace EMStudio
             m_isScrolling = false;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == O3DE_MIDDLE_BUTTON)
         {
             m_mouseMidClicked = false;
         }

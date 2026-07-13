@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzCore/AzQtCompat.h>
 #include <AzCore/base.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/UserSettings/UserSettings.h>
@@ -424,7 +425,7 @@ namespace AzToolsFramework
         {
         public:
             DetachMenuActionWidget(QWidget* parent, const int& indentation, const AZStd::string& sliceAssetName, const bool& isLastAncestor);
-            void enterEvent(QEvent* event) override;
+            void enterEvent(O3DE_ENTER_EVENT_TYPE* event) override;
             void leaveEvent(QEvent* event) override;
 
         private:

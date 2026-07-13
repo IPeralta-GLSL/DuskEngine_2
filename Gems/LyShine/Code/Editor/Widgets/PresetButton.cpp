@@ -7,6 +7,7 @@
  */
 #include "PresetButton.h"
 
+#include <AzCore/AzQtCompat.h>
 #include <QString>
 
 PresetButton::PresetButton(
@@ -35,7 +36,7 @@ PresetButton::PresetButton(
     QObject::connect(this, &QAbstractButton::toggled, this, &PresetButton::UpdateIcon);
 }
 
-void PresetButton::enterEvent(QEvent* ev)
+void PresetButton::enterEvent(O3DE_ENTER_EVENT_TYPE* ev)
 {
     m_isHovering = true;
 

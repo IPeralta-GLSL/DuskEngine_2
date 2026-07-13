@@ -7,6 +7,7 @@
  */
 
 #include "HierarchyHeader.h"
+#include <AzCore/AzQtCompat.h>
 
 #include "Commands/CommandHierarchyItemToggleIsVisible.h"
 #include "Commands/CommandHierarchyItemToggleIsSelectable.h"
@@ -91,7 +92,7 @@ void HierarchyHeader::paintSection(QPainter* painter, const QRect& rect, int log
     // Otherwise it will draw over our icons.
 }
 
-void HierarchyHeader::enterEvent(QEvent* ev)
+void HierarchyHeader::enterEvent(O3DE_ENTER_EVENT_TYPE* ev)
 {
     m_hierarchy->ClearItemBeingHovered();
 

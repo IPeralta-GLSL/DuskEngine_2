@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/AzQtCompat.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConnectionCommands.h>
@@ -636,7 +637,7 @@ namespace EMStudio
         const AnimGraphActionFilter& actionFilter = m_plugin->GetActionFilter();
 
         // check if we can start panning
-        if ((event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton) || event->button() == Qt::RightButton || event->button() == Qt::MidButton)
+        if ((event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton) || event->button() == Qt::RightButton || event->button() == O3DE_MIDDLE_BUTTON)
         {
             // update button booleans
             if (event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton)
@@ -669,7 +670,7 @@ namespace EMStudio
                 }
             }
 
-            if (event->button() == Qt::MidButton)
+            if (event->button() == O3DE_MIDDLE_BUTTON)
             {
                 m_middleMousePressed = true;
             }
@@ -1009,7 +1010,7 @@ namespace EMStudio
         }
 
         // middle mouse button
-        if (event->button() == Qt::MidButton)
+        if (event->button() == O3DE_MIDDLE_BUTTON)
         {
             m_middleMousePressed = false;
             m_panning            = false;

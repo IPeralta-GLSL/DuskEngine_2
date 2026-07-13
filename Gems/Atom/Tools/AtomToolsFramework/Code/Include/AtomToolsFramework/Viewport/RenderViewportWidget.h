@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/AzQtCompat.h>
 #include <QWidget>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -134,7 +135,7 @@ namespace AtomToolsFramework
 
         // QWidget overrides ...
         bool event(QEvent* event) override;
-        void enterEvent(QEvent* event) override;
+        void enterEvent(O3DE_ENTER_EVENT_TYPE* event) override;
         void leaveEvent(QEvent* event) override;
         void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 

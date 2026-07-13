@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <AzCore/AzQtCompat.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/View.h>
@@ -265,7 +266,7 @@ namespace AtomToolsFramework
     }
 
 
-    void RenderViewportWidget::enterEvent(QEvent* event)
+    void RenderViewportWidget::enterEvent(O3DE_ENTER_EVENT_TYPE* event)
     {
         if (const auto eventType = event->type();
             eventType == QEvent::Type::MouseMove)

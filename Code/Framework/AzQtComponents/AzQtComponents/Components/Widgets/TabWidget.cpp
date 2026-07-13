@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/AzQtCompat.h>
 #include <AzCore/std/sort.h>
 
 #include <AzQtComponents/Components/Style.h>
@@ -441,7 +442,7 @@ namespace AzQtComponents
         m_overflowing = OverflowUnchecked;
     }
 
-    void TabBar::enterEvent(QEvent* event)
+    void TabBar::enterEvent(O3DE_ENTER_EVENT_TYPE* event)
     {
         auto enterEvent = static_cast<QEnterEvent*>(event);
         m_hoveredTab = tabAt(enterEvent->pos());

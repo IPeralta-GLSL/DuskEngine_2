@@ -16,7 +16,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QApplication>
 #include <QComboBox>
 #include <QDebug>
-#include <QDesktopWidget>
 #include <QGraphicsDropShadowEffect>
 #include <QLineEdit>
 #include <QSettings>

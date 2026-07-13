@@ -11,6 +11,7 @@
 #include "AssetCatalogModel.h"
 
 #include <IEditor.h>
+#include <AzCore/AzQtCompat.h>
 #include <QEvent>
 #include <QMimeData>
 #include <QRegularExpression>
@@ -191,7 +192,7 @@ AZ::Data::AssetType AssetCatalogModel::GetAssetType(const QString &filename) con
         return AZ::Uuid::CreateNull();
     }
 
-    QStringRef extension = filename.midRef(dotIndex);
+    auto extension = O3DE_MIDREF(filename, dotIndex, -1);
     for (const auto& pair : m_extensionToAssetType)
     {
         QString qExtensions = pair.first.c_str();

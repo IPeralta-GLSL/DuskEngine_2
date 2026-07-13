@@ -6,6 +6,7 @@
  *
  */
 #include "rcjoblistmodel.h"
+#include <AzCore/AzQtCompat.h>
 
 
 // uncomment this in order to add additional verbose log output for this class.
@@ -534,7 +535,7 @@ namespace AssetProcessor
                 dotIndex = input.lastIndexOf('.');
                 if (dotIndex != -1)
                 {
-                    QStringRef testref = input.midRef(0, dotIndex);
+                    auto testref = O3DE_MIDREF(input, 0, dotIndex);
                     if (testref.endsWith(searchTermWithNoExtension, Qt::CaseInsensitive))
                     {
                         AZ_TracePrintf(
@@ -559,7 +560,7 @@ namespace AssetProcessor
                 dotIndex = input.lastIndexOf('.');
                 if (dotIndex != -1)
                 {
-                    QStringRef testref = input.midRef(0, dotIndex);
+                    auto testref = O3DE_MIDREF(input, 0, dotIndex);
                     if (testref.endsWith(searchTermWithNoExtension, Qt::CaseInsensitive))
                     {
                         AZ_TracePrintf(

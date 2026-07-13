@@ -7,6 +7,7 @@
  */
 
 
+#include <AzCore/AzQtCompat.h>
 #include <QGraphicsView>
 #include <QLabel>
 #include <QMenu>
@@ -372,7 +373,7 @@ namespace ScriptCanvasEditor
 
         void GraphTabBar::mouseReleaseEvent(QMouseEvent* event)
         {
-            if (event->button() == Qt::MidButton)
+            if (event->button() == O3DE_MIDDLE_BUTTON)
             {
                 int tabIndex = tabAt(event->localPos().toPoint());
 

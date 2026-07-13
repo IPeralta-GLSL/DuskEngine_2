@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/AzQtCompat.h>
 #include <AzCore/Casting/numeric_cast.h>
 
 #include <AzQtComponents/Components/Widgets/Slider.h>
@@ -718,7 +719,7 @@ void Slider::drawHandle(const QStyleOption* option, QPainter* painter, const Sli
 int Slider::styleHintAbsoluteSetButtons()
 {
     // Make sliders jump to the value when the user clicks on them instead of the Qt default of moving closer to the clicked location
-    return (Qt::LeftButton | Qt::MidButton | Qt::RightButton);
+    return (Qt::LeftButton | O3DE_MIDDLE_BUTTON | Qt::RightButton);
 }
 
 

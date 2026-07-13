@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/AzQtCompat.h>
 #include <QHeaderView>
 #include <QIcon>
 
@@ -27,7 +28,7 @@ public:
 
 protected:
     void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override;
-    void enterEvent(QEvent* ev) override;
+    void enterEvent(O3DE_ENTER_EVENT_TYPE* ev) override;
 
 private:
     HierarchyWidget* m_hierarchy;

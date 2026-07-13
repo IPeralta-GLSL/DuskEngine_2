@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <EngineInfo.h>
 #include <ProjectInfo.h>
+#include <AzCore/AzQtCompat.h>
 #include <AzCore/std/functional.h>
 
 #include <QLabel>
@@ -150,7 +151,7 @@ namespace O3DE::ProjectManager
         void LaunchAssetProcessor(const ProjectInfo& projectInfo);
 
     private:
-        void enterEvent(QEvent* event) override;
+        void enterEvent(O3DE_ENTER_EVENT_TYPE* event) override;
         void leaveEvent(QEvent* event) override;
 
         void ShowReadyState();

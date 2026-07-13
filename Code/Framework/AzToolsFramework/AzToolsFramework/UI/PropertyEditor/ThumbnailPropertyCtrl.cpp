@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/AzQtCompat.h>
 
 // 4251: 'QRawFont::d': class 'QExplicitlySharedDataPointer<QRawFontPrivate>' needs to have dll-interface to be used by clients of class
 // 'QRawFont' 4800: 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
@@ -133,7 +134,7 @@ namespace AzToolsFramework
         QWidget::paintEvent(e);
     }
 
-    void ThumbnailPropertyCtrl::enterEvent(QEvent* e)
+    void ThumbnailPropertyCtrl::enterEvent(O3DE_ENTER_EVENT_TYPE* e)
     {
         m_dropDownArrow->setPixmap(QPixmap(":/stylesheet/img/triangle0_highlighted.png"));
         const QPoint offset(-m_thumbnailEnlarged->width() - 5, -m_thumbnailEnlarged->height() / 2 + m_thumbnail->height() / 2);

@@ -27,7 +27,6 @@
 #include <QApplication>
 #include <QCursor>
 #include <QDebug>
-#include <QDesktopWidget>
 #include <QDockWidget>
 #include <QEvent>
 #include <QTimer>

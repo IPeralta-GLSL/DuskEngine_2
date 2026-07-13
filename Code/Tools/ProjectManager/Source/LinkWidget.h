@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/AzQtCompat.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QLabel>
 #include <QUrl>
@@ -36,7 +37,7 @@ namespace O3DE::ProjectManager
 
     private:
         void mousePressEvent(QMouseEvent* event) override;
-        void enterEvent(QEvent* event) override;
+        void enterEvent(O3DE_ENTER_EVENT_TYPE* event) override;
         void leaveEvent(QEvent* event) override;
         void SetDefaultStyle();
 

@@ -27,7 +27,7 @@
 #include <AzQtComponents/Components/Widgets/CardNotification.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
-#include <QDesktopWidget>
+#include <AzCore/AzQtCompat.h>
 #include <QMenu>
 #include <QPushButton>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
@@ -440,7 +440,7 @@ namespace AzToolsFramework
         auto featureButton = notification->addButtonFeature(tr("Add Required Component \342\226\276"));
         connect(featureButton, &QPushButton::clicked, this, [this, featureButton, services, incompatibleServices]()
         {
-            QRect screenRect(qApp->desktop()->availableGeometry(featureButton));
+            QRect screenRect(O3DE_AvailableGeometry(featureButton));
             QRect menuRect(
                 featureButton->mapToGlobal(featureButton->rect().topLeft()),
                 featureButton->mapToGlobal(featureButton->rect().bottomRight()));

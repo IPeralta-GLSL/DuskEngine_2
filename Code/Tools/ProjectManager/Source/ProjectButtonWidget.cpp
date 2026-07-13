@@ -8,6 +8,7 @@
 
 #include <ProjectButtonWidget.h>
 #include <ProjectManagerDefs.h>
+#include <AzCore/AzQtCompat.h>
 #include <ProjectUtils.h>
 #include <ProjectManager_Traits_Platform.h>
 #include <ProjectExportController.h>
@@ -780,7 +781,7 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->GetShowLogsButton()->hide();
     }
 
-    void ProjectButton::enterEvent(QEvent* /*event*/)
+    void ProjectButton::enterEvent(O3DE_ENTER_EVENT_TYPE* /*event*/)
     {
         if (m_canLaunch)
         {

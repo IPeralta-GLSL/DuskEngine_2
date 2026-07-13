@@ -8,6 +8,7 @@
 
 
 #include "DockTitleBarWidget.h"
+#include <AzCore/AzQtCompat.h>
 #include <QStyle>
 #include <QStyleOptionToolButton>
 #include <AzCore/Casting/numeric_cast.h>
@@ -34,7 +35,7 @@ public:
     QSize minimumSizeHint() const override { return sizeHint(); }
 
 protected:
-    void enterEvent(QEvent* ev) override;
+    void enterEvent(O3DE_ENTER_EVENT_TYPE* ev) override;
     void leaveEvent(QEvent* ev) override;
     void paintEvent(QPaintEvent* ev) override;
 };
@@ -96,7 +97,7 @@ QSize CDockWidgetTitleButton::sizeHint() const
     return QSize(size, size);
 }
 
-void CDockWidgetTitleButton::enterEvent(QEvent* ev)
+void CDockWidgetTitleButton::enterEvent(O3DE_ENTER_EVENT_TYPE* ev)
 {
     if (isEnabled())
     {

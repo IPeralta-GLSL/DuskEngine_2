@@ -9,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/AzQtCompat.h>
 #include <QWidget>
 
 #include <GradientSignal/Editor/EditorGradientPreviewRenderer.h>
@@ -32,7 +33,7 @@ namespace GradientSignal
         void popoutClicked();
 
     protected:
-        void enterEvent(QEvent* event) override;
+        void enterEvent(O3DE_ENTER_EVENT_TYPE* event) override;
         void leaveEvent(QEvent* event) override;
         void paintEvent(QPaintEvent* paintEvent) override;
         void resizeEvent(QResizeEvent* resizeEvent) override;

@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/functional.h>
+#include <AzCore/AzQtCompat.h>
 
 #include <QIcon>
 #include <QPushButton>
@@ -33,7 +34,7 @@ public:
         QWidget* parent = nullptr);
 
 protected:
-    void enterEvent(QEvent* ev) override;
+    void enterEvent(O3DE_ENTER_EVENT_TYPE* ev) override;
     void leaveEvent(QEvent* ev) override;
 
 private:

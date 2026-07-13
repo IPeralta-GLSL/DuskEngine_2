@@ -8,6 +8,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/AzQtCompat.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QAction>
@@ -172,7 +173,11 @@ namespace AzQtComponents
     protected:
         explicit TabBar(QWidget* parent = nullptr);
 
+        #ifdef O3DE_QT6
+        void enterEvent(QEnterEvent* event) override;
+#else
         void enterEvent(QEvent* event) override;
+#endif
         void leaveEvent(QEvent* event) override;
         void mousePressEvent(QMouseEvent* mouseEvent) override;
         void mouseMoveEvent(QMouseEvent* mouseEvent) override;

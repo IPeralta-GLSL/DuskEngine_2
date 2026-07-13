@@ -25,7 +25,6 @@
 #include <QSplitter>
 #include <QClipboard>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QToolBar>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <MCore/Source/LogManager.h>
