@@ -66,11 +66,7 @@
     #define O3DE_RIGHTREF(str, len) (str).rightRef(len)
 #endif
 
-#ifdef O3DE_QT6
-    #define O3DE_STYLEOPTION_VIEWITEM QStyleOptionViewItem
-#else
-    #define O3DE_STYLEOPTION_VIEWITEM QStyleOptionViewItemV4
-#endif
+#define O3DE_STYLEOPTION_VIEWITEM QStyleOptionViewItem
 
 #define O3DE_SUPPRESS_QT6_DEPRECATED_WARNINGS_BEGIN \
     _Pragma("GCC diagnostic push") \

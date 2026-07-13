@@ -107,6 +107,8 @@ AZ_POP_DISABLE_WARNING
 #include "IEditorImpl.h"
 #include "StartupLogoDialog.h"
 #include "DisplaySettings.h"
+#include <cstdio>
+#include <ctime>
 #include "GameEngine.h"
 
 #include "StartupTraceHandler.h"
@@ -745,7 +747,6 @@ namespace
     };
     ESplashScreenState g_splashScreenState = eSplashScreenState_Init;
     IInitializeUIInfo* g_pInitializeUIInfo = nullptr;
-    QWidget* g_splashScreen = nullptr;
 }
 
 QString FormatVersion([[maybe_unused]] const SFileVersion& v)
@@ -772,27 +773,24 @@ void CCryEditApp::AssetSystemWaiting()
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
-/////////////////////////////////////////////////////////////////////////////
-void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
+class CTerminalProgress : public IInitializeUIInfo
 {
-    g_splashScreenStateLock.lock();
-
-    CStartupLogoDialog* splashScreen = new CStartupLogoDialog(CStartupLogoDialog::Loading, FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
-
-    g_pInitializeUIInfo = splashScreen;
-    g_splashScreen = splashScreen;
-    g_splashScreenState = eSplashScreenState_Started;
-
-    g_splashScreenStateLock.unlock();
-
-    splashScreen->show();
-
-    QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
+public:
+    void SetInfoText(const char* text) override
     {
-        AZStd::scoped_lock lock(g_splashScreenStateLock);
-        g_pInitializeUIInfo = nullptr;
-        g_splashScreen = nullptr;
-    });
+        time_t now = time(nullptr);
+        struct tm* t = localtime(&now);
+        char timebuf[16];
+        strftime(timebuf, sizeof(timebuf), "%H:%M:%S", t);
+        fprintf(stderr, "[%s] %s\n", timebuf, text);
+        fflush(stderr);
+    }
+};
+
+/////////////////////////////////////////////////////////////////////////////
+void CCryEditApp::ShowSplashScreen([[maybe_unused]] CCryEditApp* app)
+{
+    // Splash screen replaced with terminal output
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -800,9 +798,8 @@ void CCryEditApp::CreateSplashScreen()
 {
     if (!m_bConsoleMode && !IsInAutotestMode())
     {
-        // Create startup output splash
-        ShowSplashScreen(this);
-
+        static CTerminalProgress s_terminalProgress;
+        g_pInitializeUIInfo = &s_terminalProgress;
         GetIEditor()->Notify(eNotify_OnSplashScreenCreated);
     }
     else
@@ -821,11 +818,11 @@ void CCryEditApp::CloseSplashScreen()
     if (CStartupLogoDialog::instance())
     {
         delete CStartupLogoDialog::instance();
-        g_splashScreenStateLock.lock();
-        g_splashScreenState = eSplashScreenState_Destroy;
-        g_splashScreenStateLock.unlock();
     }
-
+    g_splashScreenStateLock.lock();
+    g_splashScreenState = eSplashScreenState_Destroy;
+    g_splashScreenStateLock.unlock();
+    g_pInitializeUIInfo = nullptr;
     GetIEditor()->Notify(eNotify_OnSplashScreenDestroyed);
 }
 
