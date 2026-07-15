@@ -1562,10 +1562,6 @@ bool CCryEditApp::InitInstance()
     // So instead, we use winId(), which does consistently work
     //mainWindowWrapperHwnd = QtUtil::getNativeHandle(mainWindowWrapper);
 
-    // Connect to the AssetProcessor at this point
-    // It will be launched if not running
-    ConnectToAssetProcessor();
-
     CCryEditApp::OutputStartupMessage(QString("Initializing Game System..."));
 
     auto initGameSystemOutcome = InitGameSystem(mainWindowWrapperHwnd);
@@ -1652,62 +1648,62 @@ bool CCryEditApp::InitInstance()
     SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), nullptr);
     m_pEditor->InitFinished();
 
-    CCryEditApp::OutputStartupMessage(QString("Activating Python..."));
+    // Defer heavy initialization to after the window is visible
+    // This shows the editor window ASAP (like Decima/RE Engine)
+    QTimer::singleShot(0, this, [this, mainWindowWrapper, mainWindow]() {
+        CCryEditApp::OutputStartupMessage(QString("Connecting to Asset Processor..."));
+        ConnectToAssetProcessor();
 
-    // Make sure Python is started before we attempt to restore the Editor layout, since the user
-    // might have custom view panes in the saved layout that will need to be registered.
-    auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-    if (editorPythonEventsInterface)
-    {
-        editorPythonEventsInterface->StartPython();
-    }
+        CCryEditApp::OutputStartupMessage(QString("Activating Python..."));
+        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+        if (editorPythonEventsInterface)
+        {
+            editorPythonEventsInterface->StartPython();
+        }
 
-    CCryEditApp::OutputStartupMessage(QString("")); // add a blank line so that python is not blamed for anything that happens here
+        if (!GetIEditor()->IsInConsolewMode())
+        {
+            bool restoreDefaults = !mainWindowWrapper->restoreGeometryFromSettings();
+            QtViewPaneManager::instance()->RestoreLayout(restoreDefaults);
+        }
 
-
-    if (!GetIEditor()->IsInConsolewMode())
-    {
-        bool restoreDefaults = !mainWindowWrapper->restoreGeometryFromSettings();
-        QtViewPaneManager::instance()->RestoreLayout(restoreDefaults);
-    }
-
-    // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
-    AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
+        AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
 
 #ifdef Q_OS_LINUX
-    {
-        auto* menuManagerInternal = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
-        auto* menuContainer = new QWidget(mainWindow);
-        auto* menuLayout = new QHBoxLayout(menuContainer);
-        menuLayout->setContentsMargins(0, 0, 0, 0);
-        menuLayout->setSpacing(0);
-        AZStd::string_view menuIds[] = {
-            EditorIdentifiers::FileMenuIdentifier,
-            EditorIdentifiers::EditMenuIdentifier,
-            EditorIdentifiers::GameMenuIdentifier,
-            EditorIdentifiers::ToolsMenuIdentifier,
-            EditorIdentifiers::ViewMenuIdentifier,
-            EditorIdentifiers::HelpMenuIdentifier
-        };
-        for (auto menuId : menuIds)
         {
-            QMenu* menu = menuManagerInternal->GetMenu(AZStd::string(menuId));
-            if (menu)
+            auto* menuManagerInternal = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+            auto* menuContainer = new QWidget(mainWindow);
+            auto* menuLayout = new QHBoxLayout(menuContainer);
+            menuLayout->setContentsMargins(0, 0, 0, 0);
+            menuLayout->setSpacing(0);
+            AZStd::string_view menuIds[] = {
+                EditorIdentifiers::FileMenuIdentifier,
+                EditorIdentifiers::EditMenuIdentifier,
+                EditorIdentifiers::GameMenuIdentifier,
+                EditorIdentifiers::ToolsMenuIdentifier,
+                EditorIdentifiers::ViewMenuIdentifier,
+                EditorIdentifiers::HelpMenuIdentifier
+            };
+            for (auto menuId : menuIds)
             {
-                auto* btn = new QToolButton(menuContainer);
-                btn->setText(menu->title());
-                btn->setMenu(menu);
-                btn->setPopupMode(QToolButton::InstantPopup);
-                btn->setAutoRaise(true);
-                menuLayout->addWidget(btn);
+                QMenu* menu = menuManagerInternal->GetMenu(AZStd::string(menuId));
+                if (menu)
+                {
+                    auto* btn = new QToolButton(menuContainer);
+                    btn->setText(menu->title());
+                    btn->setMenu(menu);
+                    btn->setPopupMode(QToolButton::InstantPopup);
+                    btn->setAutoRaise(true);
+                    menuLayout->addWidget(btn);
+                }
             }
+            menuLayout->addStretch();
+            mainWindowWrapper->titleBar()->setMenuWidget(menuContainer);
+            mainWindow->menuBar()->setNativeMenuBar(false);
+            mainWindow->menuBar()->hide();
         }
-        menuLayout->addStretch();
-        mainWindowWrapper->titleBar()->setMenuWidget(menuContainer);
-        mainWindow->menuBar()->setNativeMenuBar(false);
-        mainWindow->menuBar()->hide();
-    }
 #endif
+    });
 
     CloseSplashScreen();
 
