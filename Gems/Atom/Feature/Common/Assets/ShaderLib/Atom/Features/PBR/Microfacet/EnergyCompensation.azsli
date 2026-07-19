@@ -31,5 +31,5 @@ real3 EnergyCompensationPerLight(real NdotV, real NdotL, real roughness, real3 F
     float Eavg = 1.0 - oneMinusEavg;
     real3 multiplier = Favg2 * Eavg / max(real3(1.0, 1.0, 1.0) - Favg * (1.0 - Eavg), real3(1e-4, 1e-4, 1e-4));
 
-    return compensation * multiplier * sOneOverPi;
+    return compensation * multiplier * INV_PI;
 }
