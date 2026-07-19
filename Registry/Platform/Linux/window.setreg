@@ -2,7 +2,7 @@
     "O3DE": {
         "Autoexec": {
             "ConsoleCommands": {
-                "r_displayInfo": 3
+                "r_displayInfo": 2
             }
         }
     }

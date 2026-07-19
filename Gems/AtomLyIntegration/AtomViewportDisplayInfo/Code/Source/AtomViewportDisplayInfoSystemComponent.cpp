@@ -33,7 +33,7 @@
 
 namespace AZ::Render
 {
-    AZ_CVAR(int, r_displayInfo, 1, [](const int& newDisplayInfoVal)->void
+    AZ_CVAR(int, r_displayInfo, 2, [](const int& newDisplayInfoVal)->void
         {
             // Forward this event to the system component so it can update accordingly.
             // This callback only gets triggered by console commands, so this will not recurse.
@@ -293,12 +293,16 @@ namespace AZ::Render
         const AZ::Transform transform = currentView->GetCameraTransform();
         const AZ::Vector3 translation = transform.GetTranslation();
         const AZ::Vector3 rotation = transform.GetEulerDegrees();
+        const AZ::Color camColor(0.4f, 1.0f, 0.65f, 1.0f);
         DrawLine(AZStd::string::format(
-            "CamPos=%.2f %.2f %.2f Angl=%3.0f %3.0f %4.0f ZN=%.2f ZF=%.0f",
-            translation.GetX(), translation.GetY(), translation.GetZ(),
+            "CamPos=%.2f %.2f %.2f",
+            translation.GetX(), translation.GetY(), translation.GetZ()
+        ), camColor);
+        DrawLine(AZStd::string::format(
+            "Angl=%3.0f %3.0f %4.0f ZN=%.2f ZF=%.0f",
             rotation.GetX(), rotation.GetY(), rotation.GetZ(),
             cameraState.m_nearClip, cameraState.m_farClip
-        ), AZ::Color(0.4f, 1.0f, 0.65f, 1.0f));
+        ), camColor);
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
@@ -475,7 +479,7 @@ namespace AZ::Render
         DrawBackground(
             m_drawParams.m_position.GetX() - bgPad,
             m_drawParams.m_position.GetY() - bgPad,
-            bgW + bgPad * 2.f,
+            bgW,
             blockH + bgPad * 2.f,
             AZ::Color(0.0f, 0.15f, 0.2f, 0.9f));
 
