@@ -1,0 +1,170 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#include <Atom/RPI/Math.azsli>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    [[input_attachment_index(0)]]
+    SubpassInputDS      m_depthStencilTexture;
+    Texture2D<float>    m_linearDepthTexture;
+    Texture2DArray<float> m_directionalLightShadowmap;
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;
+    Texture2D<float>    m_fullscreenShadow;
+
+    float3              m_lightColor;
+    float               m_lightIntensity;
+    float               m_density;
+    float               m_scattering;
+    float               m_extinction;
+    float               m_anisotropy;
+    float               m_steps;
+    float               m_maxDistance;
+    float               m_startDistance;
+    float               m_fogMinHeight;
+    float               m_fogMaxHeight;
+    float               m_noiseScale;
+    float               m_noiseSpeed;
+    float               m_noiseStrength;
+    float               m_time;
+    bool                m_enableShadows;
+
+    float2              m_depthTextureDimensions;
+
+    Sampler DepthSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+};
+
+#define ENABLE_FULLSCREEN_SHADOW 0
+#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+
+float Hash3D(float3 p)
+{
+    float h = dot(p, float3(127.1f, 311.7f, 74.7f));
+    return frac(sin(h) * 43758.5453f);
+}
+
+float GetHeightDensity(float worldY, float fogMinHeight, float fogMaxHeight, float baseDensity)
+{
+    float heightRange = max(fogMaxHeight - fogMinHeight, 0.001f);
+    float heightFactor = saturate((worldY - fogMinHeight) / heightRange);
+    return baseDensity * heightFactor;
+}
+
+float SampleNoise3D(float3 worldPos, float noiseScale, float noiseSpeed, float time)
+{
+    float3 samplePos = worldPos * noiseScale + time * noiseSpeed;
+    float n = Hash3D(floor(samplePos));
+    float3 offset = float3(n, n * 0.7f, n * 1.3f);
+    return Hash3D(floor(samplePos + offset));
+}
+
+float PhaseHenyeyGreenstein(float cosTheta, float g)
+{
+    float g2 = g * g;
+    float denom = max(1.0f + g2 - 2.0f * g * cosTheta, 1e-5f);
+    return (1.0f - g2) / (4.0f * PI * denom * sqrt(denom));
+}
+
+float4 ComputeVolumetricLight(float2 texCoord, float2 pixelPos, float linearDepth)
+{
+    float zDepth = PassSrg::m_depthStencilTexture.SubpassLoad(int3(pixelPos.x, pixelPos.y, 0)).r;
+    float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_depthTextureDimensions, zDepth, pixelPos).xyz;
+    float3 cameraPosWS = ViewSrg::m_worldPosition;
+    float3 viewVec = surfacePosWS - cameraPosWS;
+    float3 viewDir = normalize(viewVec);
+    float tMax = length(viewVec);
+
+    const float farZ = ViewSrg::GetFarZMinusNearZ();
+    if (linearDepth >= farZ * 0.999f || tMax <= 0.0f)
+    {
+        tMax = PassSrg::m_maxDistance;
+    }
+
+    tMax = max(tMax, PassSrg::m_startDistance);
+
+    int steps = max(8, (int)PassSrg::m_steps);
+    float stepSize = (tMax - PassSrg::m_startDistance) / (float)steps;
+
+    float3 lightDir = -normalize(SceneSrg::m_directionalLights[0].m_direction);
+    float3 lightIntensity = SceneSrg::m_directionalLights[0].m_rgbIntensityLux;
+    float phase = PhaseHenyeyGreenstein(dot(viewDir, lightDir), PassSrg::m_anisotropy);
+
+    float transmittance = 1.0f;
+    float3 inScattering = 0.0f;
+
+    [loop]
+    for (int i = 0; i < steps; ++i)
+    {
+        float t = PassSrg::m_startDistance + (i + 0.5f) * stepSize;
+        float3 worldPos = cameraPosWS + viewDir * t;
+
+        float visibility = 1.0f;
+        if (PassSrg::m_enableShadows)
+        {
+            visibility = (float)DirectionalLightShadow::GetVisibility(0, worldPos, float3(0.0f, 1.0f, 0.0f), float4(texCoord, 0.0f, 0.0f));
+        }
+
+        float heightDensity = GetHeightDensity(worldPos.y, PassSrg::m_fogMinHeight, PassSrg::m_fogMaxHeight, PassSrg::m_density);
+        float noise = SampleNoise3D(worldPos, PassSrg::m_noiseScale, PassSrg::m_noiseSpeed, PassSrg::m_time);
+        float noiseFactor = 1.0f + (noise - 0.5f) * PassSrg::m_noiseStrength;
+        float finalDensity = heightDensity * noiseFactor;
+
+        float3 scattering = PassSrg::m_scattering * PassSrg::m_lightColor * lightIntensity * visibility * phase;
+        float extinction = PassSrg::m_extinction * finalDensity;
+
+        float stepAttenuation = exp(-extinction * stepSize);
+        inScattering += transmittance * scattering * stepSize;
+        transmittance *= stepAttenuation;
+    }
+
+    float alpha = 1.0f - transmittance;
+    float3 lightColor = alpha > 1e-4f ? (inScattering / alpha) : 0.0f;
+    return float4(lightColor, saturate(alpha));
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+    float linearDepth = PassSrg::m_linearDepthTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
+    OUT.m_color = ComputeVolumetricLight(IN.m_texCoord, IN.m_position.xy, linearDepth);
+    return OUT;
+}

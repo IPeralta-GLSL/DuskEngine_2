@@ -257,6 +257,10 @@
                 "Path": "Passes/DeferredFog.pass"
             },
             {
+                "Name": "VolumetricLightPassTemplate",
+                "Path": "Passes/VolumetricLight.pass"
+            },
+            {
                 "Name": "SubsurfaceScatteringPassTemplate",
                 "Path": "Passes/SubsurfaceScattering.pass"
             },

@@ -22,6 +22,7 @@
 #include <Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h>
 #include <Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h>
+#include <Atom/Feature/PostProcess/VolumetricLight/VolumetricLightSettingsInterface.h>
 #include <Atom/RPI.Public/View.h>
 
 namespace AZ

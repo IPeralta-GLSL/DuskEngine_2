@@ -317,6 +317,49 @@
                         "BindViewSrg": true
                     }
                 },
+                },
+                {
+                    "Name": "VolumetricLightPass",
+                    "TemplateName": "VolumetricLightPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DeferredFogPass",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        }
+                    ]
+                },
                 {
                     "Name": "ReflectionCopyFrameBufferPass",
                     "TemplateName": "ReflectionCopyFrameBufferPassTemplate",
@@ -325,7 +368,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "DeferredFogPass",
+                                "Pass": "VolumetricLightPass",
                                 "Attachment": "RenderTargetInputOutput"
                             }
                         }
@@ -338,7 +381,7 @@
                         {
                             "LocalSlot": "LightingInput",
                             "AttachmentRef": {
-                                "Pass": "DeferredFogPass",
+                                "Pass": "VolumetricLightPass",
                                 "Attachment": "RenderTargetInputOutput"
                             }
                         },

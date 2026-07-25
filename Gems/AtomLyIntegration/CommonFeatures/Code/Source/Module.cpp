@@ -30,6 +30,8 @@
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/DisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/ExposureControlComponent.h>
+#include <PostProcess/VolumetricLight/VolumetricLightComponent.h>
+#include <PostProcess/VolumetricLight/VolumetricLightComponent.h>
 #include <PostProcess/Ssao/SsaoComponent.h>
 #include <PostProcess/LookModification/LookModificationComponent.h>
 #include <PostProcess/RadiusWeightModifier/RadiusWeightModifierComponent.h>
@@ -72,6 +74,8 @@
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/EditorExposureControlComponent.h>
+#include <PostProcess/VolumetricLight/EditorVolumetricLightComponent.h>
+#include <PostProcess/VolumetricLight/EditorVolumetricLightComponent.h>
 #include <PostProcess/Ssao/EditorSsaoComponent.h>
 #include <PostProcess/LookModification/EditorLookModificationComponent.h>
 #include <PostProcess/RadiusWeightModifier/EditorRadiusWeightModifierComponent.h>
@@ -115,6 +119,8 @@ namespace AZ
                         DisplayMapperComponent::CreateDescriptor(),
                         DepthOfFieldComponent::CreateDescriptor(),
                         ExposureControlComponent::CreateDescriptor(),
+                        VolumetricLightComponent::CreateDescriptor(),
+                        VolumetricLightComponent::CreateDescriptor(),
                         SsaoComponent::CreateDescriptor(),
                         LookModificationComponent::CreateDescriptor(),
                         GridComponent::CreateDescriptor(),
@@ -155,6 +161,9 @@ namespace AZ
                         EditorDepthOfFieldComponent::CreateDescriptor(),
                         EditorDisplayMapperComponent::CreateDescriptor(),
                         EditorExposureControlComponent::CreateDescriptor(),
+                        EditorVolumetricLightComponent::CreateDescriptor(),
+                        VolumetricLightComponent::CreateDescriptor(),
+                        EditorVolumetricLightComponent::CreateDescriptor(),
                         EditorSsaoComponent::CreateDescriptor(),
                         EditorLookModificationComponent::CreateDescriptor(),
                         EditorGridComponent::CreateDescriptor(),

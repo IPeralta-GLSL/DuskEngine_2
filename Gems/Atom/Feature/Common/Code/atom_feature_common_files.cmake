@@ -170,6 +170,8 @@ set(FILES
     Source/PostProcess/PostProcessFeatureProcessor.h
     Source/PostProcess/PostProcessSettings.cpp
     Source/PostProcess/PostProcessSettings.h
+    Source/PostProcess/VolumetricLight/VolumetricLightSettings.cpp
+    Source/PostProcess/VolumetricLight/VolumetricLightSettings.h
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp

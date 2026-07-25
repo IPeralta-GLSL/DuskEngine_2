@@ -25,6 +25,7 @@
 #include <PostProcess/WhiteBalance/WhiteBalanceSettings.h>
 #include <PostProcess/Vignette/VignetteSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
+#include <PostProcess/VolumetricLight/VolumetricLightSettings.h>
 
 namespace AZ
 {

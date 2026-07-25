@@ -139,6 +139,16 @@ set(FILES
     Source/PostProcess/ExposureControl/ExposureControlComponentConfig.cpp
     Source/PostProcess/ExposureControl/ExposureControlComponentController.cpp
     Source/PostProcess/ExposureControl/ExposureControlComponentController.h
+    Source/PostProcess/VolumetricLight/VolumetricLightComponent.h
+    Source/PostProcess/VolumetricLight/VolumetricLightComponent.cpp
+    Source/PostProcess/VolumetricLight/VolumetricLightComponentConfig.cpp
+    Source/PostProcess/VolumetricLight/VolumetricLightComponentController.h
+    Source/PostProcess/VolumetricLight/VolumetricLightComponentController.cpp
+    Source/PostProcess/VolumetricLight/VolumetricLightComponent.cpp
+    Source/PostProcess/VolumetricLight/VolumetricLightComponent.h
+    Source/PostProcess/VolumetricLight/VolumetricLightComponentConfig.cpp
+    Source/PostProcess/VolumetricLight/VolumetricLightComponentController.cpp
+    Source/PostProcess/VolumetricLight/VolumetricLightComponentController.h
     Source/PostProcess/Ssao/SsaoComponent.cpp
     Source/PostProcess/Ssao/SsaoComponent.h
     Source/PostProcess/Ssao/SsaoComponentConfig.cpp

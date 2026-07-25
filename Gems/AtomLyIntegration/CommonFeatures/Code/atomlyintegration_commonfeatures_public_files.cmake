@@ -58,6 +58,12 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/VolumetricLight/VolumetricLightBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/VolumetricLight/VolumetricLightComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/VolumetricLight/VolumetricLightComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/VolumetricLight/VolumetricLightBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/VolumetricLight/VolumetricLightComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/VolumetricLight/VolumetricLightComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/EditorHDRColorGradingBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingComponentConfig.h

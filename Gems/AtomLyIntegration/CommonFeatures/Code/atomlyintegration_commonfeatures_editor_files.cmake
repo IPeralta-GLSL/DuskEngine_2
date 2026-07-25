@@ -84,6 +84,10 @@ set(FILES
     Source/PostProcess/DisplayMapper/EditorDisplayMapperComponent.h
     Source/PostProcess/ExposureControl/EditorExposureControlComponent.cpp
     Source/PostProcess/ExposureControl/EditorExposureControlComponent.h
+    Source/PostProcess/VolumetricLight/EditorVolumetricLightComponent.h
+    Source/PostProcess/VolumetricLight/EditorVolumetricLightComponent.cpp
+    Source/PostProcess/VolumetricLight/EditorVolumetricLightComponent.cpp
+    Source/PostProcess/VolumetricLight/EditorVolumetricLightComponent.h
     Source/PostProcess/Ssao/EditorSsaoComponent.cpp
     Source/PostProcess/Ssao/EditorSsaoComponent.h
     Source/PostProcess/LookModification/EditorLookModificationComponent.cpp

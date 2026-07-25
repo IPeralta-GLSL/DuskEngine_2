@@ -1,0 +1,106 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "VolumetricLightPassTemplate",
+            "PassClass": "VolumetricLightPass",
+            "Slots": [
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "InputLinearDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_linearDepthTexture",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputDepthStencil",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depthStencilTexture",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_directionalLightShadowmap",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/VolumetricLight.shader"
+                },
+                "BindViewSrg": true,
+                "ShaderDataMappings": {
+                    "Float3Mappings": [
+                        {
+                            "Name": "m_lightColor",
+                            "Value": [ 1.0, 0.9, 0.7 ]
+                        }
+                    ],
+                    "FloatMappings": [
+                        {
+                            "Name": "m_lightIntensity",
+                            "Value": 1.0
+                        },
+                        {
+                            "Name": "m_density",
+                            "Value": 0.05
+                        },
+                        {
+                            "Name": "m_scattering",
+                            "Value": 3.0
+                        },
+                        {
+                            "Name": "m_extinction",
+                            "Value": 0.5
+                        },
+                        {
+                            "Name": "m_anisotropy",
+                            "Value": 0.4
+                        },
+                        {
+                            "Name": "m_steps",
+                            "Value": 32.0
+                        },
+                        {
+                            "Name": "m_maxDistance",
+                            "Value": 200.0
+                        },
+                        {
+                            "Name": "m_startDistance",
+                            "Value": 0.5
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
