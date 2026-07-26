@@ -25,7 +25,7 @@ ly_add_target(
             .
         PRIVATE
             ${LY_ROOT_FOLDER}/SDK/imgui-node-editor
-            ${LY_ROOT_FOLDER}/Gems/ImGui/External/ImGui/v1.82/imgui
+            ${LY_ROOT_FOLDER}/plugins/ImGui/External/ImGui/v1.82/imgui
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core

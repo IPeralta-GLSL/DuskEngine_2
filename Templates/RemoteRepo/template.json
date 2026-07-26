@@ -20,7 +20,7 @@
             "isTemplated": true
         },
         {
-            "file": "Gems/README.md",
+            "file": "plugins/README.md",
             "isTemplated": false
         },
         {
@@ -34,7 +34,7 @@
     ],
     "createDirectories": [
         {
-            "dir": "Gems"
+            "dir": "plugins"
         },
         {
             "dir": "Templates"

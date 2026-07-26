@@ -239,12 +239,12 @@ def test_cmake_dependency_success(tmpdir):
             "Maestro.Editor":
             {{
                 "Module":"{test_module_1}",
-                "SourcePaths":["Gems/Maestro"]
+                "SourcePaths":["plugins/Maestro"]
             }},
             "TextureAtlas":
             {{
                 "Module":"{test_module_2}",
-                "SourcePaths":["Gems/TextureAtlas"]
+                "SourcePaths":["plugins/TextureAtlas"]
             }}
         }}
     }}

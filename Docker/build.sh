@@ -62,8 +62,8 @@ rm -rf /home/o3de/O3DE
 # The python libraries that are linked in the engine needs to be writable during python bootstrapping for the O3DE user from the installer
 chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/Tools/LyTestTools \
   && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/Tools/RemoteConsole/ly_remote_console \
-  && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/Gems/Atom/RPI/Tools \
-  && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface \
+  && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/plugins/Atom/RPI/Tools \
+  && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/plugins/AtomLyIntegration/TechnicalArt/DccScriptingInterface \
   && chmod -R a+w /opt/O3DE/$(ls /opt/O3DE/)/scripts/o3de
 if [ $? -ne 0 ]
 then

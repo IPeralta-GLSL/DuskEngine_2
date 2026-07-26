@@ -29,7 +29,7 @@ execute_process (COMMAND lsb_release -a)
 execute_process (COMMAND bash ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python/get_python.sh)
 
 # Since snap is immutable, we will pre-compile all the python scripts that is packaged into python byte-codes
-set(O3DE_PY_SUBDIRS "Code;Gems;scripts;Tools")
+set(O3DE_PY_SUBDIRS "Code;plugins;scripts;Tools")
 foreach(engine_subfolder ${O3DE_PY_SUBDIRS})
     file(GLOB_RECURSE pyfiles "${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/${engine_subfolder}/*.py")
     foreach(pyfile ${pyfiles})

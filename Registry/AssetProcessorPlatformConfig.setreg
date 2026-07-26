@@ -214,6 +214,9 @@
                 "Exclude Gems": {
                     "glob": "Gems/*"
                 },
+                "Exclude Plugins": {
+                    "glob": "plugins/*"
+                },
                 // Exclude the .git folder which is commonly found in projects
                 "Exclude Git": {
                     "glob": ".git/*"

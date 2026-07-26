@@ -42,20 +42,20 @@ define_property(TARGET PROPERTY LY_PROJECT_NAME
 #         Ex.
 #         /home/user/
 #           o3de/
-#             Gems/
+#             plugins/
 #               RayTracing/
 #                 gem.json
 #             restricted_platform_name_which_cannot_be_mentioned/
-#               Gems/
+#               plugins/
 #                 RayTracing/
 #                   restricted.json
 # \return:pal_dir - Sets the ${pal_dir} variable to the "platform
 #         abstracted layer" (PAL) version of the current directory for a specific platform
 #         For example if the directory containing the calling CMakeLists.txt
-#         is "Gems/Location/",
-#         then the PAL directory for windows is "Gems/Location/Platform/Windows/".
+#         is "plugins/Location/",
+#         then the PAL directory for windows is "plugins/Location/Platform/Windows/".
 #         For a restricted platform, the directory could be located at the path
-#         "<restricted-platform-root>/Gems/Location/Platform/<platform>/"
+#         "<restricted-platform-root>/plugins/Location/Platform/<platform>/"
 macro(o3de_gem_setup) #default_gem_name)
     # Check if a default_gem_name was provided
     if(${ARGC} GREATER 0)

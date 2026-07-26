@@ -28,21 +28,21 @@
         "EditorModeFeedback",
         "EditorPythonBindings",
         "ExpressionEvaluation",
-        "FastNoise",
+        
         "Gestures",
         "GradientSignal",
         "GraphCanvas",
         "GraphModel",
         "ImGui",
         "InAppPurchases",
-        "LandscapeCanvas",
+        
         "LmbrCentral",
         "LyShine",
         "LyShineExamples",
         "Maestro",
         "Multiplayer",
         "NvCloth",
-        "OpenParticleSystem",
+        
         "PhysX",
         "PhysXDebug",
         "PrefabBuilder",
@@ -65,10 +65,10 @@
         "StartingPointInput",
         "StartingPointMovement",
         "SurfaceData",
-        "Terrain",
+        
         "TestAssetBuilder",
         "TextureAtlas",
-        "Vegetation",
+        
         "WhiteBox"
     ]
 }

@@ -10,7 +10,7 @@
         "PreprocessorOptions": {
             "predefinedMacros": [ "AZSL=17" ],
             "projectIncludePaths": [
-                "Gems/AtomTressFX/Assets/Shaders"
+                "plugins/AtomTressFX/Assets/Shaders"
             ]
         }
     }
