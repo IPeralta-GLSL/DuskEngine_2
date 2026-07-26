@@ -675,7 +675,7 @@ class BuildOutputDialog(QDialog):
 
 def get_all_available_gems() -> list[dict]:
     results = []
-    gems_root = ENGINE_PATH / "Gems"
+    gems_root = ENGINE_PATH / "plugins"
     if not gems_root.exists():
         return results
     for gem_json_path in sorted(gems_root.rglob("gem.json")):

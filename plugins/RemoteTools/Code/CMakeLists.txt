@@ -10,8 +10,8 @@
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 # Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
 #       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here in our gem : Gems/${gem_name}/Code/Platform/<platorm_name>  or
-#            <restricted_folder>/<platform_name>/Gems/${gem_name}/Code
+#       i.e. It could here in our gem : plugins/${gem_name}/Code/Platform/<platorm_name>  or
+#            <restricted_folder>/<platform_name>/plugins/${gem_name}/Code
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_name}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, that's where we will find the

@@ -414,10 +414,10 @@ def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-engines-path ${workspace}/${repoName}/Engines || echo>nul", "Registering all engines in ${workspace}/${repoName}/Engines")
                 found = true
             }
-            if(fileExists("Gems")) {
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || echo>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
+            if(fileExists("plugins")) {
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/plugins || echo>nul", "Registering all gems in ${workspace}/${repoName}/plugins")
                 if(o3de_project) {
-                    defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project}", ECHO: "Enabling all gems in ${o3de_project}"])
+                    defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/plugins --project-name ${o3de_project}", ECHO: "Enabling all gems in ${o3de_project}"])
                 }
                 found = true
             }
