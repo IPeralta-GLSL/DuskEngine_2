@@ -418,9 +418,13 @@ namespace Editor
         Q_ASSERT(QFile::exists(directory + "/" + filename));
 
         QTranslator* translator = new QTranslator();
-        translator->load(filename, directory);
-        installTranslator(translator);
-        return translator;
+        if (translator->load(filename, directory))
+        {
+            installTranslator(translator);
+            return translator;
+        }
+        delete translator;
+        return nullptr;
     }
 
     void EditorQtApplication::InstallEditorTranslators()

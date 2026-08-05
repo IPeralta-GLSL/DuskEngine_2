@@ -7,6 +7,11 @@
  */
 #pragma once
 
+#include <AzCore/Math/Color.h>
+#include <QMetaType>
+
+Q_DECLARE_METATYPE(AZ::Color)
+
 /**
  * \mainpage
  * 

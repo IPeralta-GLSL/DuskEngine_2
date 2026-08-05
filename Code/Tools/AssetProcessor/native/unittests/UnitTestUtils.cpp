@@ -69,7 +69,6 @@ namespace UnitTestUtils
         if (!contents.isEmpty())
         {
             QTextStream ts(&writer);
-            ts.setCodec("UTF-8");
             ts << contents;
         }
         return true;

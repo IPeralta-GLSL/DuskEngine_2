@@ -16,10 +16,6 @@
 #include <AzCore/std/algorithm.h>
 
 #include <AzQtComponents/Components/Style.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/ConfigHelpers.h>
-
-#include <QtWidgets/private/qstylesheetstyle_p.h>
 
 namespace AzQtComponents
 {
@@ -37,22 +33,20 @@ namespace AzQtComponents
         bool eventFilter(QObject* obj, QEvent* event) override
         {
             if (qobject_cast<QTreeView*>(obj) && !qobject_cast<const TableView*>(obj))
-            {
-                switch (event->type())
-                {
-                    case QEvent::DynamicPropertyChange:
+{
+                    switch (event->type())
                     {
-                        auto widget = qobject_cast<QWidget*>(obj);
-                        auto styleSheet = StyleManager::styleSheetStyle(widget);
-                        if (styleSheet)
+                        case QEvent::DynamicPropertyChange:
                         {
-                            styleSheet->repolish(widget);
+                            auto widget = qobject_cast<QWidget*>(obj);
+                            // Qt6: Use public API instead of QStyleSheetStyle
+                            widget->style()->unpolish(widget);
+                            widget->style()->polish(widget);
+                            widget->update();
+                            break;
                         }
-                        widget->update();
-                        break;
                     }
                 }
-            }
 
             return QObject::eventFilter(obj, event);
         }

@@ -111,6 +111,8 @@ namespace ScriptCanvasEditor
     {
     }
 
-#include <Editor/View/Windows/Tools/UpgradeTool/moc_UpgradeHelper.cpp>
+
 
 }
+
+#include <Editor/View/Windows/Tools/UpgradeTool/moc_UpgradeHelper.cpp>

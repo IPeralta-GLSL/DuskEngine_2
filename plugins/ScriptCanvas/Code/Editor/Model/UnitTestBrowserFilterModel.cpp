@@ -8,7 +8,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Editor/Model/UnitTestBrowserFilterModel.h>
-#include <Editor/Model/moc_UnitTestBrowserFilterModel.cpp>
+
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 
@@ -133,7 +133,7 @@ namespace ScriptCanvasEditor
             flags |= Qt::ItemIsUserCheckable;
             if (sourceIndex.model()->hasChildren(sourceIndex))
             {
-                flags |= Qt::ItemIsTristate;
+                flags |= Qt::ItemIsAutoTristate;
             }
         }
 
@@ -520,3 +520,5 @@ namespace ScriptCanvasEditor
        return false;
    }
 }
+
+#include <Editor/Model/moc_UnitTestBrowserFilterModel.cpp>

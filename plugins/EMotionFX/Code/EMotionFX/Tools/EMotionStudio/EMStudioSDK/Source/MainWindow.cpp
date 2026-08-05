@@ -369,7 +369,7 @@ namespace EMStudio
             tr("Redo"),
             this,
             &MainWindow::OnRedo,
-            QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z)
+            QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z)
         );
         m_redoAction->setObjectName("EMFX.MainWindow.RedoAction");
         m_undoAction->setDisabled(true);

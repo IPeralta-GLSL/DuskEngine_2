@@ -153,12 +153,12 @@ params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapPa
 _LOGGER.debug(f'qtPluginsFolder: {params.qtPluginsFolder}')
 _LOGGER.debug(f'qtBinaryFolder: {params.qtBinaryFolder}')
 
-#PySide2 imports
-from PySide2 import QtWidgets
-from PySide2.QtWidgets import QMenuBar, QMenu, QAction
-from PySide2 import QtGui
-from PySide2.QtCore import Slot, QObject, QUrl
-from shiboken2 import wrapInstance, getCppPointer
+# PySide6 imports
+from PySide6 import QtWidgets
+from PySide6.QtWidgets import QMenuBar, QMenu, QAction
+from PySide6 import QtGui
+from PySide6.QtCore import Slot, QObject, QUrl
+from shiboken6 import wrapInstance, getCppPointer
 
 # additional DCCsi imports that utilize PySide2
 from DccScriptingInterface.Editor.Scripts.ui import start_service

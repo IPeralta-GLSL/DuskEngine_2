@@ -45,6 +45,7 @@
 #include "UiEditorAnimationBus.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QInputDialog>
 #include <QKeyEvent>

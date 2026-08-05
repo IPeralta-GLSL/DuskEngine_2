@@ -222,7 +222,8 @@ namespace AZ
 
             void ManifestVectorWidget::UpdatePropertyGrid()
             {
-                QSignalBlocker(this);
+                const QSignalBlocker signalBlocker(this);
+                Q_UNUSED(signalBlocker);
                 m_propertyEditor->ClearInstances();
                 for (auto &object : m_manifestVector)
                 {

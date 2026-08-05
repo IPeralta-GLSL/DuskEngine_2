@@ -308,11 +308,11 @@ namespace GraphCanvas
                 return;
             }
 
-            qRegisterMetaTypeStreamOperators<Qt::PenStyle>();
-            qRegisterMetaTypeStreamOperators<Qt::PenCapStyle>();
-            qRegisterMetaTypeStreamOperators<Qt::AlignmentFlag>();
-            qRegisterMetaTypeStreamOperators<Styling::ConnectionCurveType>();
-            qRegisterMetaTypeStreamOperators<Styling::PaletteStyle>();
+            qRegisterMetaType<Qt::PenStyle>();
+            qRegisterMetaType<Qt::PenCapStyle>();
+            qRegisterMetaType<Qt::AlignmentFlag>();
+            qRegisterMetaType<Styling::ConnectionCurveType>();
+            qRegisterMetaType<Styling::PaletteStyle>();
 
             // Allow QVectors to be serialized
             serializeContext->Class<QVariant>()

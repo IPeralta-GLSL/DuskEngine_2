@@ -87,7 +87,6 @@ protected:
             if (componentEditor->IsDragged())
             {
                 QStyleOption opt;
-                opt.init(this);
                 opt.rect = currRect;
                 static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                 drag = true;
@@ -100,7 +99,6 @@ protected:
                 dropRect.setHeight(0);
 
                 QStyleOption opt;
-                opt.init(this);
                 opt.rect = dropRect;
                 style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
 
@@ -115,7 +113,6 @@ protected:
             dropRect.setHeight(0);
 
             QStyleOption opt;
-            opt.init(this);
             opt.rect = dropRect;
             style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
         }

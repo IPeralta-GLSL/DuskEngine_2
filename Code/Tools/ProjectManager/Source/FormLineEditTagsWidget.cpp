@@ -34,10 +34,12 @@ namespace O3DE::ProjectManager
     void FormLineEditTagsWidget::setupCompletionTags()
     {
         QFile completionTagFile(":/ProjectManager/text/ProjectManagerCompletionTags.txt");
-        completionTagFile.open(QFile::ReadOnly);
-        while(!completionTagFile.atEnd())
+        if (completionTagFile.open(QFile::ReadOnly))
         {
-            m_completionTags << completionTagFile.readLine().trimmed();
+            while(!completionTagFile.atEnd())
+            {
+                m_completionTags << completionTagFile.readLine().trimmed();
+            }
         }
 
         m_completionTags.removeDuplicates();
@@ -72,8 +74,11 @@ namespace O3DE::ProjectManager
          * stylesheet proved very difficult, so a stop-gap measure of hard-coding the stylesheet was used.
          */
         QFile popupStyleSheetFile(":/ProjectManager/style/ProjectManagerCompleterPopup.qss");
-        popupStyleSheetFile.open(QFile::ReadOnly);
-        QString popupStyleSheet = QLatin1String(popupStyleSheetFile.readAll());
+        QString popupStyleSheet;
+        if (popupStyleSheetFile.open(QFile::ReadOnly))
+        {
+            popupStyleSheet = QLatin1String(popupStyleSheetFile.readAll());
+        }
 
         m_completer->popup()->setStyleSheet(popupStyleSheet);
 

@@ -313,5 +313,6 @@ namespace ScriptCanvasEditor
         }
     }
     
-#include <Editor/View/Windows/moc_EBusHandlerActionMenu.cpp>
 }
+
+#include <Editor/View/Windows/moc_EBusHandlerActionMenu.cpp>

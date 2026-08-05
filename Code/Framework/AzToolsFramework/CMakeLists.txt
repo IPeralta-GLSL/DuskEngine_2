@@ -23,6 +23,9 @@ ly_add_target(
         PUBLIC
             .
             AzToolsFramework
+    COMPILE_DEFINITIONS
+        PUBLIC
+            QT_NO_DEPRECATED_WARNINGS
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
@@ -49,6 +52,7 @@ ly_add_target(
             AZTF_EXPORTS
             $<$<CONFIG:debug>:ENABLE_UNDOCACHE_CONSISTENCY_CHECKS>
             O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
+            QT_NO_DEPRECATED_WARNINGS
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::SQLite

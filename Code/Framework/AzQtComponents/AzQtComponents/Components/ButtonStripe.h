@@ -13,12 +13,12 @@
 
 #include <QWidget>
 #include <QList>
+#include <QStringList>
 #endif
 
 class QGridLayout;
 class QPushButton;
 class QButtonGroup;
-class QStringList;
 
 namespace AzQtComponents
 {

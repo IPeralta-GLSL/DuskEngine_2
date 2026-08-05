@@ -1140,6 +1140,11 @@ namespace AZ
         {
             auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                 passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            if (!passRequestAsset)
+            {
+                AZ_Error("RPIUtils", false, "Can't load PassRequest from %s", passRequestAssetFilePath);
+                return;
+            }
             const AZ::RPI::PassRequest* passRequest = nullptr;
             if (passRequestAsset->IsReady())
             {

@@ -162,12 +162,12 @@ namespace AZ
 
                     // Whenever the browse button is clicked, open a save file dialog in the same location as the current export file setting
                     QObject::connect(materialFileWidget, &AzQtComponents::BrowseEdit::attachedButtonTriggered, materialFileWidget, [&dialog, &exportItem, materialFileWidget, overwriteCheckBox]() {
-                        QFileInfo fileInfo = AzQtComponents::FileDialog::GetSaveFileName(&dialog,
+                        QFileInfo fileInfo = QFileInfo(AzQtComponents::FileDialog::GetSaveFileName(&dialog,
                             QString("Select Material Filename"),
                             exportItem.GetExportPath().c_str(),
                             QString("Material (*.material)"),
                             nullptr,
-                            QFileDialog::DontConfirmOverwrite);
+                            QFileDialog::DontConfirmOverwrite));
 
                         // Only update the export data if a valid path and filename was selected
                         if (!fileInfo.absoluteFilePath().isEmpty())

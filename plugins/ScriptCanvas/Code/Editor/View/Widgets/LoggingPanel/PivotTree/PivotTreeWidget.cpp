@@ -418,5 +418,6 @@ namespace ScriptCanvasEditor
         }
     }
 
-#include <Editor/View/Widgets/LoggingPanel/PivotTree/moc_PivotTreeWidget.cpp>
 }
+
+#include <Editor/View/Widgets/LoggingPanel/PivotTree/moc_PivotTreeWidget.cpp>

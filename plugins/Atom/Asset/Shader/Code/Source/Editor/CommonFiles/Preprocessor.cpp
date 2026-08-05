@@ -418,6 +418,18 @@ namespace AZ
                 }
             }
 
+            // DuskEngine: the engine gems live in <engineroot>/plugins instead of <engineroot>/Gems
+            AZ::IO::Path enginePluginsFolder(AZStd::string_view{ AZ::Utils::GetEnginePath() });
+            enginePluginsFolder /= "plugins";
+            if (auto it = AZStd::find_if(includePaths.begin(), includePaths.end(), PathCompare(enginePluginsFolder));
+                it == includePaths.end())
+            {
+                if (AZ::IO::SystemFile::Exists(enginePluginsFolder.c_str()))
+                {
+                    includePaths.emplace_back(AZStd::move(enginePluginsFolder.Native()));
+                }
+            }
+
             return includePaths;
         }
 

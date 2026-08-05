@@ -220,10 +220,11 @@ namespace AzToolsFramework
                     QFile cssFile(QString("UI:%1.css").arg(switchValue.c_str()));
                     if (cssFile.exists())
                     {
-                        enableStyleSheet = false; // dont use the built-in style sheet!
-                        cssFile.open(QFile::ReadOnly);
-                        QString styleSheet = QLatin1String(cssFile.readAll());
-                        pApplication->setStyleSheet(styleSheet);
+                        if (cssFile.open(QFile::ReadOnly))
+                        {
+                            QString styleSheet = QLatin1String(cssFile.readAll());
+                            pApplication->setStyleSheet(styleSheet);
+                        }
                     }
                 }
             }

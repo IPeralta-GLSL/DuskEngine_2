@@ -129,8 +129,6 @@ int main(int argc, char **argv)
     QApplication::setOrganizationDomain("");
     QApplication::setApplicationName("DuskEngineWidgetGallery");
 
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     qInstallMessageHandler(LogToDebug);

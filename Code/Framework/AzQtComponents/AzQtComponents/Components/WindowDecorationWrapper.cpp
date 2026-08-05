@@ -30,7 +30,6 @@
 #include <QScopedValueRollback>
 #include <QStyle>
 #include <QLayout>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 #ifdef Q_OS_WIN
 #endif
@@ -513,7 +512,7 @@ namespace AzQtComponents
         QFrame::showEvent(ev);
     }
 
-    bool WindowDecorationWrapper::nativeEvent(const QByteArray& eventType, void* message, long* result)
+    bool WindowDecorationWrapper::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
     {
         return handleNativeEvent(eventType, message, result, this);
     }
@@ -522,7 +521,6 @@ namespace AzQtComponents
     {
         if (ev->type() == QEvent::WindowStateChange)
         {
-            // only way to know when the window has minimized/maximized or full screen has changed
             saveGeometryToSettings();
         }
 
@@ -530,7 +528,7 @@ namespace AzQtComponents
     }
 
     /* static */
-    bool WindowDecorationWrapper::handleNativeEvent(const QByteArray& eventType, void* message, long* result, const QWidget* widget)
+    bool WindowDecorationWrapper::handleNativeEvent(const QByteArray& eventType, void* message, qintptr* result, const QWidget* widget)
     {
 #ifdef Q_OS_WIN
         MSG* msg = static_cast<MSG*>(message);

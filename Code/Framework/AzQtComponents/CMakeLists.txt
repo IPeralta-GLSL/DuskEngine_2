@@ -29,6 +29,12 @@ ly_add_target(
         PUBLIC
             .
             ${pal_dir}
+            /usr/include/qt6/QtCore/6.11.1
+            /usr/include/qt6/QtCore/6.11.1/QtCore
+            /usr/include/qt6/QtGui/6.11.1
+            /usr/include/qt6/QtGui/6.11.1/QtGui
+            /usr/include/qt6/QtWidgets/6.11.1
+            /usr/include/qt6/QtWidgets/6.11.1/QtWidgets
     COMPILE_DEFINITIONS
         PRIVATE
             AZ_QT_COMPONENTS_EXPORT_SYMBOLS
@@ -40,6 +46,7 @@ ly_add_target(
         PUBLIC
             3rdParty::Qt::Widgets
             3rdParty::Qt::Svg
+            3rdParty::Qt::SvgWidgets
             3rdParty::Qt::Xml
             AZ::AzCore
 )

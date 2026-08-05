@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 
 #include <AzQtComponents/Components/Widgets/GradientSlider.h>
@@ -48,6 +49,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QScrollBar>
 #include <QScopedValueRollback>
 #include <QSettings>
+#include <QActionGroup>
 #include <QToolButton>
 #include <QDirIterator>
 #include <QUndoStack>
@@ -55,6 +57,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QCursor>
 #include <QLabel>
 #include <QTextEdit>
+#include <QMetaType>
+
 AZ_POP_DISABLE_WARNING
 
 // settings keys
@@ -341,7 +345,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     , m_defaultVForHsMode(0.85)
     , m_defaultLForHsMode(0.85)
 {
-    qRegisterMetaTypeStreamOperators<Palette>("AzQtComponents::Palette");
+    qRegisterMetaType<Palette>("AzQtComponents::Palette");
 
     setFocusPolicy(Qt::NoFocus);
 

@@ -42,7 +42,7 @@
 #include <Editor/View/Widgets/PropertyGridBus.h>
 #include <Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.h>
 #include <Editor/View/Widgets/UnitTestPanel/ui_UnitTestDockWidget.h>
-#include <Editor/View/Widgets/UnitTestPanel/moc_UnitTestDockWidget.cpp>
+
 
 #include <Data/Data.h>
 
@@ -630,3 +630,5 @@ namespace ScriptCanvasEditor
     }
 
 }
+
+#include <Editor/View/Widgets/UnitTestPanel/moc_UnitTestDockWidget.cpp>

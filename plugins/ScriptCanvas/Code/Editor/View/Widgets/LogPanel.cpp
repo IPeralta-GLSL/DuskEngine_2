@@ -161,7 +161,9 @@ namespace ScriptCanvasEditor
             }
         }
 
-#include <Editor/View/Widgets/moc_LogPanel.cpp>
+
 
     }
 }
+
+#include <Editor/View/Widgets/moc_LogPanel.cpp>

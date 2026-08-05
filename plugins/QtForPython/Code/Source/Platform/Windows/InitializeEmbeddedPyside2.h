@@ -9,10 +9,10 @@
 
 namespace QtForPython
 {
-    class InitializeEmbeddedPyside2
+    class InitializeEmbeddedPyside6
     {
     public:
-        InitializeEmbeddedPyside2() = default;
-        virtual ~InitializeEmbeddedPyside2() = default;
+        InitializeEmbeddedPyside6() = default;
+        virtual ~InitializeEmbeddedPyside6() = default;
     };
 } // namespace QtForPython

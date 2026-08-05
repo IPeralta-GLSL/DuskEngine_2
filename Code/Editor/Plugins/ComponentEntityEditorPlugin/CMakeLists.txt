@@ -31,6 +31,7 @@ ly_add_target(
             3rdParty::Qt::Core
             3rdParty::Qt::Widgets
             3rdParty::Qt::OpenGL
+            3rdParty::Qt::OpenGLWidgets
             AZ::AzCore
             AZ::AzToolsFramework
             Legacy::CryCommon

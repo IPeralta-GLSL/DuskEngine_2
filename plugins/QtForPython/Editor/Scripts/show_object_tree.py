@@ -5,11 +5,13 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import sys
+import os
 import azlmbr
-from shiboken2 import wrapInstance, getCppPointer
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtCore import QEvent, Qt
-from PySide2.QtWidgets import QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
+from shiboken6 import wrapInstance, getCppPointer
+from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtWidgets import QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
 
 class OverlayWidget(QWidget):
     def __init__(self, parent=None):

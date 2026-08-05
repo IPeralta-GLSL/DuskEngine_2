@@ -14,9 +14,8 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
-// VariableId is a UUID typedef for now. So we don't want to double reflect the UUID.
-Q_DECLARE_METATYPE(AZ::Uuid);
-Q_DECLARE_METATYPE(AZ::Data::AssetId);
+// AZ::Uuid and AZ::Data::AssetId are auto-registered with QVariant in Qt 6.8+,
+// which avoids "explicit specialization after instantiation" errors in unity builds.
 Q_DECLARE_METATYPE(ScriptCanvas::Data::Type);
 Q_DECLARE_METATYPE(ScriptCanvas::VariableId);
 Q_DECLARE_METATYPE(ScriptCanvas::SourceHandle);

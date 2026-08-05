@@ -18,6 +18,9 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
+// Needed for Q_DECLARE_METATYPE below
+#include <QMetaType>
+
 namespace AZ
 {
     class ReflectContext;
@@ -288,6 +291,8 @@ namespace AzToolsFramework
     using AssetSystemRequestBus = AZ::EBus<AssetSystem::AssetSystemRequest>;
     using AssetSystemJobRequestBus = AZ::EBus<AssetSystem::AssetSystemJobRequest>;
 } // namespace AzToolsFramework
+
+Q_DECLARE_METATYPE(AzToolsFramework::AssetSystem::JobStatus)
 
 namespace AZStd
 {

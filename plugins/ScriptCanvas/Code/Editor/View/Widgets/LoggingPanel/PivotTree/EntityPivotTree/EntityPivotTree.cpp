@@ -336,5 +336,6 @@ namespace ScriptCanvasEditor
     {
     }
 
-#include <Editor/View/Widgets/LoggingPanel/PivotTree/EntityPivotTree/moc_EntityPivotTree.cpp>
 }
+
+#include <Editor/View/Widgets/LoggingPanel/PivotTree/EntityPivotTree/moc_EntityPivotTree.cpp>

@@ -583,7 +583,6 @@ namespace UnitTests
 
         {
             QTextStream ts(&writer);
-            ts.setCodec("UTF-8");
             ts << "modified test file";
         }
 
@@ -627,7 +626,6 @@ namespace UnitTests
 
         {
             QTextStream ts(&writer);
-            ts.setCodec("UTF-8");
             ts << "modified test file";
         }
 

@@ -340,6 +340,11 @@ namespace AZ
                 const char* passRequestAssetFilePath = "Passes/AtomTressFX_PassRequest.azasset";
                 m_hairPassRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                     passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+                if (!m_hairPassRequestAsset)
+                {
+                    AZ_Error("AtomTressFx", false, "Failed to add hair parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+                    return false;
+                }
                 const AZ::RPI::PassRequest* passRequest = nullptr;
                 if (m_hairPassRequestAsset->IsReady())
                 {

@@ -41,7 +41,6 @@
 #include <QStyleOptionToolButton>
 #include <QVBoxLayout>
 #include <QWindow>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 
 static void OptimizedSetParent(QWidget* widget, QWidget* parent)
@@ -125,9 +124,8 @@ namespace AzQtComponents
     {
         m_dropZoneState.setDropZoneColorOnHover(Style::dropZoneColorOnHover());
 
-        // Register our TabContainerType stream operators so that they will be used
-        // when reading/writing from/to data streams
-        qRegisterMetaTypeStreamOperators<FancyDocking::TabContainerType>("FancyDocking::TabContainerType");
+        // Register our TabContainerType so that it can be used in data streams
+        qRegisterMetaType<FancyDocking::TabContainerType>("FancyDocking::TabContainerType");
         mainWindow->installEventFilter(this);
         mainWindow->SetFancyDockingOwner(this);
         setAutoFillBackground(false);
@@ -647,7 +645,7 @@ namespace AzQtComponents
         int index = 0;
         for (auto screen : QApplication::screens()) {
             if (screen->geometry().contains(point)) {
-                qreal scaleFactor = QHighDpiScaling::factor(screen);
+                qreal scaleFactor = screen ? screen->devicePixelRatio() : 1.0;
                 return (
                     (m_perScreenFullScreenWidgets[index]->mapFromGlobal(point) * scaleFactor) +
                     (m_perScreenFullScreenWidgets[index]->mapToGlobal({0, 0})) / scaleFactor);
@@ -1484,8 +1482,8 @@ namespace AzQtComponents
                     // Construct a new QMouseEvent with a local mouse position that is correct for
                     // the tab widget. We can't just pass the event being filtered because the mouse
                     // positions are relative to the widget being watched.
-                    const auto tabPos = m_state.tabWidget->mapFromGlobal(event->globalPos());
-                    QMouseEvent tabEvent(event->type(), tabPos, event->button(), event->buttons(), event->modifiers());
+                    const auto tabPos = m_state.tabWidget->mapFromGlobal(event->globalPosition().toPoint());
+                    QMouseEvent tabEvent(event->type(), tabPos, event->globalPosition(), event->button(), event->buttons(), event->modifiers());
                     m_state.tabWidget->mouseMoveEvent(&tabEvent);
                     return true;
                 }
@@ -2480,7 +2478,7 @@ namespace AzQtComponents
 
             if (fromScreen != toScreen)
             {
-                qreal factorRatio = QHighDpiScaling::factor(fromScreen) / QHighDpiScaling::factor(toScreen);
+                qreal factorRatio = (fromScreen ? fromScreen->devicePixelRatio() : 1.0) / (toScreen ? toScreen->devicePixelRatio() : 1.0);
                 placeholderRect.setWidth(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.width()) * factorRatio));
                 placeholderRect.setHeight(aznumeric_cast<int>(aznumeric_cast<qreal>(placeholderRect.height()) * factorRatio));
             }

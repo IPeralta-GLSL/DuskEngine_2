@@ -70,14 +70,14 @@
    </item>
    <item>
     <widget class="AzQtComponents::ExtendedLabel" name="m_clearFiltersButton">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-       <kerning>true</kerning>
-      </font>
-     </property>
+<property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>Bold</weight>
+        <bold>true</bold>
+        <kerning>true</kerning>
+       </font>
+      </property>
      <property name="text">
       <string>Clear</string>
      </property>

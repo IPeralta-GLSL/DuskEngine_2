@@ -19,8 +19,7 @@
 #include <QSettings>
 #include <QScrollBar>
 #include <QEvent>
-
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+#include <QStyleFactory>
 
 namespace AzQtComponents
 {
@@ -167,10 +166,9 @@ namespace AzQtComponents
                 {
                     case QEvent::DynamicPropertyChange:
                     {
-                        if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
-                        {
-                            styleSheet->repolish(cornerWidget);
-                        }
+                        // Qt6: Use public API instead of QStyleSheetStyle
+                        cornerWidget->style()->unpolish(cornerWidget);
+                        cornerWidget->style()->polish(cornerWidget);
                     }
                     break;
                 }
@@ -306,10 +304,12 @@ namespace AzQtComponents
     {
         Q_UNUSED(config);
 
-        auto styleSheetStyle = qobject_cast<QStyleSheetStyle*>(style->baseStyle());
-        if (styleSheetStyle)
+        // Qt6: Use Fusion style directly instead of QStyleSheetStyle
+        QStyle* fusionStyle = QStyleFactory::create("Fusion");
+        if (fusionStyle)
         {
-            styleSheetStyle->QWindowsStyle::drawComplexControl(QStyle::CC_ScrollBar, option, painter, widget);
+            fusionStyle->drawComplexControl(QStyle::CC_ScrollBar, option, painter, widget);
+            delete fusionStyle;
             return true;
         }
 

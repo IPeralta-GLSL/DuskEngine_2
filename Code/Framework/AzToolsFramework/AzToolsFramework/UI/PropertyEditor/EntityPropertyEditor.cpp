@@ -245,7 +245,6 @@ namespace AzToolsFramework
                     if (rowWidget == dragRowWidget)
                     {
                         QStyleOption opt;
-                        opt.init(this);
                         opt.rect = currRect;
                         qobject_cast <AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                     }
@@ -265,7 +264,6 @@ namespace AzToolsFramework
                         dropRect.setHeight(0);
 
                         QStyleOption opt;
-                        opt.init(this);
                         opt.rect = dropRect;
                         style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
                     }
@@ -317,7 +315,6 @@ namespace AzToolsFramework
 
                 painter.setOpacity(alpha);
                 QStyleOption lineOpt;
-                lineOpt.init(this);
                 lineOpt.rect = dropRect;
                 style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &lineOpt, &painter, this);
                 painter.setOpacity(1.0f);
@@ -350,7 +347,6 @@ namespace AzToolsFramework
                 if (componentEditor->IsDragged())
                 {
                     QStyleOption opt;
-                    opt.init(this);
                     opt.rect = currRect;
                     static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                     drag = true;
@@ -363,7 +359,6 @@ namespace AzToolsFramework
                     dropRect.setHeight(0);
 
                     QStyleOption opt;
-                    opt.init(this);
                     opt.rect = dropRect;
                     style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
 
@@ -378,7 +373,6 @@ namespace AzToolsFramework
                 dropRect.setHeight(0);
 
                 QStyleOption opt;
-                opt.init(this);
                 opt.rect = dropRect;
                 style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
             }
@@ -5375,15 +5369,19 @@ namespace AzToolsFramework
     static void EnableDisableComponentActions(
         QWidget* widget, const QVector<QAction*>& actions, const bool enable)
     {
-        using AddRemoveFunc = void (QWidget::*)(QAction*);
-
-        const AddRemoveFunc addRemove = enable
-            ? &QWidget::addAction
-            : &QWidget::removeAction;
-
-        for (QAction* action : actions)
+        if (enable)
         {
-            (widget->*addRemove)(action);
+            for (QAction* action : actions)
+            {
+                widget->addAction(action);
+            }
+        }
+        else
+        {
+            for (QAction* action : actions)
+            {
+                widget->removeAction(action);
+            }
         }
     }
 

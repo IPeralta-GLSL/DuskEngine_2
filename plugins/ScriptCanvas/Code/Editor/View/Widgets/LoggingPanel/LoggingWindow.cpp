@@ -88,5 +88,6 @@ namespace ScriptCanvasEditor
         return nullptr;
     }
 
-#include <Editor/View/Widgets/LoggingPanel/moc_LoggingWindow.cpp>
 }
+
+#include <Editor/View/Widgets/LoggingPanel/moc_LoggingWindow.cpp>

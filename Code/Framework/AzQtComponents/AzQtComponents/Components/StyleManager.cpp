@@ -13,7 +13,7 @@
 #include <QTextStream>
 #include <QApplication>
 #include <QPalette>
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
+AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QDir>
 AZ_POP_DISABLE_WARNING
 #include <QString>
@@ -24,8 +24,6 @@ AZ_POP_DISABLE_WARNING
 #include <QStyle>
 #include <QWidget>
 #include <QDebug>
-
-#include <QtWidgets/private/qstylesheetstyle_p.h>
 
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
@@ -96,36 +94,18 @@ namespace AzQtComponents
         return true;
     }
 
-    QStyleSheetStyle* StyleManager::styleSheetStyle(const QWidget* widget)
+    QStyle *StyleManager::baseStyle(const QWidget*)
     {
-        Q_UNUSED(widget);
-        // widget is currently unused, but would be required if Qt::AA_ManualStyleSheetStyle was
-        // not set.
-
-        if (!s_instance)
-        {
-            AZ_Warning("StyleManager", false, "StyleManager::styleSheetStyle called before instance was created");
-            return nullptr;
-        }
-
-        if (!QApplication::testAttribute(Qt::AA_ManualStyleSheetStyle))
-        {
-            qFatal("StyleManager::styleSheetStyle has not been implemented for automatically created QStyleSheetStyles");
-            return nullptr;
-        }
-
-        return s_instance->m_styleSheetStyle;
-    }
-
-    QStyle *StyleManager::baseStyle(const QWidget *widget)
-    {
-        const auto sss = styleSheetStyle(widget);
-        return sss ? sss->baseStyle() : nullptr;
+        return qApp->style();
     }
 
     void StyleManager::repolishStyleSheet(QWidget* widget)
     {
-        StyleManager::styleSheetStyle(widget)->repolish(widget);
+        if (widget)
+        {
+            widget->style()->unpolish(widget);
+            widget->style()->polish(widget);
+        }
     }
 
     StyleManager::StyleManager(QObject* parent)
@@ -148,7 +128,6 @@ namespace AzQtComponents
         {
             delete m_style.data();
             m_style.clear();
-            m_styleSheetStyle = nullptr;
         }
     }
 
@@ -161,9 +140,6 @@ namespace AzQtComponents
         }
         s_instance = this;
 
-        QApplication::setAttribute(Qt::AA_ManualStyleSheetStyle, true);
-        QApplication::setAttribute(Qt::AA_PropagateStyleToChildren, true);
-
         connect(application, &QCoreApplication::aboutToQuit, this, &StyleManager::cleanupStyles);
 
         initializeSearchPaths(application, engineRootPath);
@@ -175,15 +151,10 @@ namespace AzQtComponents
 
         m_titleBarOverdrawHandler = TitleBarOverdrawHandler::createHandler(application, this);
 
-        // The window decoration wrappers require the titlebar overdraw handler
-        // so we can't initialize the custom window decoration monitor until the
-        // titlebar overdraw handler has been initialized.
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
 
-        // Style is chained as: Style -> QStyleSheetStyle -> native, meaning any CSS limitation can be tackled in Style.cpp
-        m_styleSheetStyle = new QStyleSheetStyle(createBaseStyle());
-        m_style = new Style(m_styleSheetStyle);
+        m_style = new Style(createBaseStyle());
 
         QApplication::setStyle(m_style);
         m_style->setParent(this);
@@ -210,14 +181,11 @@ namespace AzQtComponents
 
         m_widgetToStyleSheetMap.remove(widget);
 
-        // Remove any old stylesheet
         widget->setStyleSheet(QString());
     }
 
     void StyleManager::initializeFonts()
     {
-        // yes, the path specifier could've included OpenSans- and .ttf, but I
-        // wanted anyone searching for OpenSans-Bold.ttf to find something so left it this way
         QString openSansPathSpecifier = QStringLiteral(":/AzQtFonts/Fonts/Open_Sans/%1");
         QFontDatabase::addApplicationFont(openSansPathSpecifier.arg("OpenSans-Bold.ttf"));
         QFontDatabase::addApplicationFont(openSansPathSpecifier.arg("OpenSans-BoldItalic.ttf"));
@@ -233,23 +201,15 @@ namespace AzQtComponents
 
     void StyleManager::initializeSearchPaths([[maybe_unused]] QApplication* application, const AZ::IO::PathView& engineRootPath)
     {
-        // now that QT is initialized, we can use its path manipulation functions to set the rest up:
-
         QString rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
 
         if (!rootDir.isEmpty())
         {
             QDir appPath(rootDir);
 
-            // Set the StyleSheetCache fallback prefix
             const auto pathOnDisk = appPath.absoluteFilePath(g_styleSheetRelativePath.toString());
             m_stylesheetCache->setFallbackSearchPaths(g_searchPathPrefix.toString(), pathOnDisk, g_styleSheetResourcePath.toString());
 
-            // add the expected editor paths
-            // this allows you to refer to your assets relative, like
-            // STYLESHEETIMAGES:something.txt
-            // UI:blah/blah.png
-            // EDITOR:blah/something.txt
             QDir::addSearchPath("STYLESHEETIMAGES", appPath.filePath("Assets/Editor/Styles/StyleSheetImages"));
             QDir::addSearchPath("UI", appPath.filePath("Assets/Editor/UI"));
             QDir::addSearchPath("EDITOR", appPath.filePath("Assets/Editor"));
@@ -259,9 +219,8 @@ namespace AzQtComponents
     void StyleManager::refresh()
     {
         const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
-        m_styleSheetStyle->setGlobalSheet(globalStyleSheet);
+        qApp->setStyleSheet(globalStyleSheet);
 
-        // Iterate widgets and update the stylesheet (the base style has already been set)
         auto i = m_widgetToStyleSheetMap.constBegin();
         while (i != m_widgetToStyleSheetMap.constEnd())
         {
@@ -270,9 +229,6 @@ namespace AzQtComponents
             ++i;
         }
 
-        // QMessageBox uses "QMdiSubWindowTitleBar" class to query the titlebar font
-        // through QApplication::font() and (buggily) calculate required width of itself
-        // to fit the title. It bypassess stylesheets. See QMessageBoxPrivate::updateSize().
         QFont titleBarFont("Manrope");
         titleBarFont.setPixelSize(18);
         QApplication::setFont(titleBarFont, "QMdiSubWindowTitleBar");
@@ -287,10 +243,5 @@ namespace AzQtComponents
 #include "Components/moc_StyleManager.cpp"
 
 #if defined(AZ_QT_COMPONENTS_STATIC)
-    // If we're statically compiling the lib, we need to include the compiled rcc resources
-    // somewhere to ensure that the linker doesn't optimize the symbols out (with Visual Studio at least)
-    // With dlls, there's no step to optimize out the symbols, so we don't need to do this.
-    #include <Components/rcc_resources.h>
+#include <Components/rcc_resources.h>
 #endif // #if defined(AZ_QT_COMPONENTS_STATIC)
-
-

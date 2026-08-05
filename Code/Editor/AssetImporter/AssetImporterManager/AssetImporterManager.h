@@ -12,7 +12,6 @@
 #include <AssetImporter/UI/SelectDestinationDialog.h>
 #endif
 
-class QStringList;
 class QFile;
 class QFileDialog;
 

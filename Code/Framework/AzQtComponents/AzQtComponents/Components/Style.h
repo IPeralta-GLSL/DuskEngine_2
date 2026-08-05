@@ -178,12 +178,14 @@ namespace AzQtComponents
     Q_SIGNALS:
         void settingsReloaded(); // emitted when any config settings (*.ini) files reload
 
-    private:
+private:
         void repolishWidgetDestroyed(QObject* obj);
 
-        AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // needs to have dll-interface to be used by clients of class 'AzQtComponents::LineEdit'
+        AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
         QScopedPointer<Data> m_data;
         AZ_POP_DISABLE_WARNING
+
+        QStyle* m_fusionStyle = nullptr;
 
         // To be used when text alignment has to be forced from outside Qt
         mutable QVariant m_drawItemTextAlignmentOverride;

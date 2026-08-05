@@ -950,6 +950,11 @@ namespace AZ
         void DiffuseProbeGridFeatureProcessor::AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName)
         {
             auto passRequestAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(passRequestAssetFilePath, RPI::AssetUtils::TraceLevel::Warning);
+            if (!passRequestAsset)
+            {
+                AZ_Error("DiffuseProbeGridFeatureProcessor", false, "Failed to load PassRequest asset [%s]", passRequestAssetFilePath);
+                return;
+            }
 
             // load pass request from the asset
             const RPI::PassRequest* passRequest = nullptr;

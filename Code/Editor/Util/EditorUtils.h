@@ -328,9 +328,6 @@ QColor ColorToQColor(uint32 color);
 class QCursor;
 class QPixmap;
 
-template<typename T>
-class QVector;
-
 /*! Collection of Utility MFC functions.
 */
 struct CMFCUtils

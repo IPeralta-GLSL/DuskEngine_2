@@ -16,6 +16,7 @@
 
 // Qt
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QInputDialog>

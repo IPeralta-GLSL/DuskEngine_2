@@ -5329,7 +5329,6 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint)
         ASSERT_TRUE(writer.open(QFile::WriteOnly));
 
         QTextStream ts(&writer);
-        ts.setCodec("UTF-8");
         ts << "Hello World";
     }
 

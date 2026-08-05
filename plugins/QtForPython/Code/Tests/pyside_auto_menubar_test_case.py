@@ -23,11 +23,11 @@ def printOrExcept(expression, message):
 
 printOrExcept(azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive'), 'QtForPython Is Ready')
 
-# the PySide2 and shiboken2 libraries should import cleanly
+# the PySide6 and shiboken6 libraries should import cleanly
 try:
-    from shiboken2 import wrapInstance, getCppPointer
-    from PySide2 import QtWidgets
-    from PySide2 import QtGui
+    from shiboken6 import wrapInstance, getCppPointer
+    from PySide6 import QtWidgets
+    from PySide6 import QtGui
 except:
     printOrExcept(False, 'Importing PySide2 and Shiboken2')
 

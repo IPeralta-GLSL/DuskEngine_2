@@ -215,5 +215,6 @@ namespace ScriptCanvasEditor
     }
 
 
-    #include <Editor/View/Dialogs/moc_SettingsDialog.cpp>
 }
+
+    #include <Editor/View/Dialogs/moc_SettingsDialog.cpp>

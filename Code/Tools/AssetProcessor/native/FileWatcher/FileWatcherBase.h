@@ -67,6 +67,13 @@ public:
     //! Paths for the params that are empty will cause no rules to be installed for that path or children.
     virtual void InstallDefaultExclusionRules(QString cacheRootPath, QString projectRootPath) = 0;
 
+    //! Qt6: QPrivateSignal is a private tag type, so it cannot be constructed from the platform
+    //! implementations. This factory allows emitting the raw* signals outside of this class.
+    static QPrivateSignal MakePrivateSignal()
+    {
+        return QPrivateSignal();
+    }
+
 Q_SIGNALS:
     // These signals are emitted when a file under a watched path changes
     void fileAdded(QString filePath);

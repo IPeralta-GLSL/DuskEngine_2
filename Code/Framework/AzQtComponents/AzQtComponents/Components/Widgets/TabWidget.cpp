@@ -445,7 +445,7 @@ namespace AzQtComponents
     void TabBar::enterEvent(O3DE_ENTER_EVENT_TYPE* event)
     {
         auto enterEvent = static_cast<QEnterEvent*>(event);
-        m_hoveredTab = tabAt(enterEvent->pos());
+        m_hoveredTab = tabAt(enterEvent->position().toPoint());
 
         QTabBar::enterEvent(event);
     }

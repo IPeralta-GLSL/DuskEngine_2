@@ -217,7 +217,9 @@ namespace ScriptCanvasEditor
         {
         }
 
-#include <Editor/View/Widgets/moc_CanvasWidget.cpp>
+
 
     }
 }
+
+#include <Editor/View/Widgets/moc_CanvasWidget.cpp>

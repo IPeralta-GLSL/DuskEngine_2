@@ -710,7 +710,7 @@ namespace AzToolsFramework
                         nullptr, QString("Save As..."), saveAsInitialSuggestedFullPath.c_str(), QString("Archetypes (*.arch)"));
                 }
 
-                prefabSaveFileInfo = saveAs;
+                prefabSaveFileInfo = QFileInfo(saveAs);
                 prefabName = prefabSaveFileInfo.baseName();
                 if (saveAs.isEmpty())
                 {

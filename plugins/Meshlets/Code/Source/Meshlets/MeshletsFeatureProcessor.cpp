@@ -173,6 +173,11 @@ namespace AZ
             const char* passRequestAssetFilePath = "Passes/MeshletsPassRequest.azasset";
             m_passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                 passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            if (!m_passRequestAsset)
+            {
+                AZ_Error("Meshlets", false, "Failed to add meshlets pass. Can't load PassRequest from [%s]", passRequestAssetFilePath);
+                return false;
+            }
             const AZ::RPI::PassRequest* passRequest = nullptr;
             if (m_passRequestAsset->IsReady())
             {

@@ -275,5 +275,6 @@ namespace ScriptCanvasEditor
         emit CreateNamedVariable(variableName, dataType);
     }
 
-#include <Editor/View/Widgets/VariablePanel/moc_VariablePaletteTableView.cpp>
 }
+
+#include <Editor/View/Widgets/VariablePanel/moc_VariablePaletteTableView.cpp>

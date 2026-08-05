@@ -41,7 +41,11 @@ namespace LyShine
             const char* passRequestAssetFilePath = "Passes/LyShinePassRequest.azasset";
             m_passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
                 passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
-            
+            if (!m_passRequestAsset)
+            {
+                AZ_Error("LyShine", false, "Failed to add LyShine parent pass. Can't load PassRequest from %s", passRequestAssetFilePath);
+                return;
+            }
         }
 
         const AZ::RPI::PassRequest *passRequest = nullptr;

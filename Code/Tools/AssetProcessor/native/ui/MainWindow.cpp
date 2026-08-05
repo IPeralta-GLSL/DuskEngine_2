@@ -321,7 +321,10 @@ void MainWindow::Activate()
 
     ui->detailsFilterWidget->SetTypeFilterVisible(true);
     connect(ui->detailsFilterWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, m_logSortFilterProxy,
-        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&LogSortFilterProxy::setFilterRegExp));
+        [this](const QString& filterText)
+        {
+            m_logSortFilterProxy->setFilterRegularExpression(QRegularExpression(filterText));
+        });
     connect(ui->detailsFilterWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, m_logSortFilterProxy, &LogSortFilterProxy::onTypeFilterChanged);
 
     // add filters for each logging type
@@ -377,7 +380,10 @@ void MainWindow::Activate()
         m_jobSortFilterProxy, &AssetProcessor::JobSortFilterProxyModel::OnJobStatusFilterChanged);
     connect(ui->jobFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_jobSortFilterProxy,
-        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetProcessor::JobSortFilterProxyModel::setFilterRegExp));
+        [this](const QString& filterText)
+        {
+            m_jobSortFilterProxy->setFilterRegularExpression(QRegularExpression(filterText));
+        });
     {
         QSettings settingsObj(this);
         ui->jobFilteredSearchWidget->readSettings(settingsObj, g_jobFilteredSearchWidgetState);

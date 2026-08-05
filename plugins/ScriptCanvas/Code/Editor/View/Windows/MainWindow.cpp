@@ -4570,5 +4570,7 @@ namespace ScriptCanvasEditor
     }
 
 
-#include <Editor/View/Windows/moc_MainWindow.cpp>
+
 } // namespace ScriptCanvasEditor
+
+#include <Editor/View/Windows/moc_MainWindow.cpp>

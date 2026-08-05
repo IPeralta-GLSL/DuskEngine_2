@@ -5,6 +5,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions_3_0>
+#include <QOpenGLVersionFunctionsFactory>
 
 // Vertex shader
 static const char* VERTEX_SHADER = R"(
@@ -54,7 +55,7 @@ bool ImGui_ImplOpenGL3_Init(const char* glsl_version)
     (void)glsl_version;
     
     // Get OpenGL 3.0 functions
-    g_GLFuncs = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_0>();
+    g_GLFuncs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_0>(QOpenGLContext::currentContext());
     if (!g_GLFuncs)
     {
         qWarning("OpenGL 3.0 not supported!");

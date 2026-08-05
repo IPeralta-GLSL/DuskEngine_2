@@ -37,7 +37,7 @@ namespace Editor
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
 
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result) override;
     };
 #endif
 
@@ -62,7 +62,7 @@ namespace Editor
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
 
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result) override;
     };
 #endif
 } // namespace Editor

@@ -135,6 +135,11 @@ namespace SkyAtmosphere
         const char* passRequestAssetFilePath = "Passes/SkyAtmospherePassRequest.azasset";
         AZ::Data::Asset<AZ::RPI::AnyAsset> passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
             passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+        if (!passRequestAsset)
+        {
+            AZ_Error("SkyAtmosphere", false, "Failed to load PassRequest from %s", passRequestAssetFilePath);
+            return;
+        }
 
         const AZ::RPI::PassRequest *passRequest = nullptr;
         if (passRequestAsset->IsReady())

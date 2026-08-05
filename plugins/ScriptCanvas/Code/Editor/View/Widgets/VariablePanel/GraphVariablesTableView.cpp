@@ -1434,5 +1434,6 @@ namespace ScriptCanvasEditor
         }
     }
 
-#include <Editor/View/Widgets/VariablePanel/moc_GraphVariablesTableView.cpp>
 }
+
+#include <Editor/View/Widgets/VariablePanel/moc_GraphVariablesTableView.cpp>

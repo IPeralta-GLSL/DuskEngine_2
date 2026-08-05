@@ -641,9 +641,8 @@ namespace GraphCanvas
             rapidjson::Document document;
 
             QFile resource(QString::fromUtf8(json.c_str()));
-            if (resource.exists())
+            if (resource.exists() && resource.open(QIODevice::ReadOnly))
             {
-                resource.open(QIODevice::ReadOnly);
                 document.Parse(resource.readAll().data());
             }
             else

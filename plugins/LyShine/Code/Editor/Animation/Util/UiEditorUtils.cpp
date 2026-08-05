@@ -60,15 +60,17 @@ QCursor CMFCUtils::LoadCursor(UINT nIDResource, int hotX, int hotY)
     if (!pm.isNull() && (hotX < 0 || hotX < 0))
     {
         QFile f(path);
-        f.open(QFile::ReadOnly);
-        QDataStream stream(&f);
-        stream.setByteOrder(QDataStream::LittleEndian);
-        f.read(10);
-        quint16 x;
-        stream >> x;
-        hotX = x;
-        stream >> x;
-        hotY = x;
+        if (f.open(QFile::ReadOnly))
+        {
+            QDataStream stream(&f);
+            stream.setByteOrder(QDataStream::LittleEndian);
+            f.read(10);
+            quint16 x;
+            stream >> x;
+            hotX = x;
+            stream >> x;
+            hotY = x;
+        }
     }
     return QCursor(pm, hotX, hotY);
 }

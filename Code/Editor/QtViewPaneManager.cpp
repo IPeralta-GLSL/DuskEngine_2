@@ -557,8 +557,8 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
     , m_advancedDockManager(nullptr)
     , m_componentModeNotifications(AZStd::make_unique<ViewportEditorModeNotificationsBusImpl>())
 {
-    qRegisterMetaTypeStreamOperators<ViewLayoutState>("ViewLayoutState");
-    qRegisterMetaTypeStreamOperators<QVector<QString> >("QVector<QString>");
+    qRegisterMetaType<ViewLayoutState>("ViewLayoutState");
+    qRegisterMetaType<QVector<QString>>("QVector<QString>");
 
     // view pane manager is interested when we enter/exit ComponentMode
     m_componentModeNotifications->BusConnect(AzToolsFramework::GetEntityContextId());
@@ -1607,7 +1607,7 @@ QtViewPane* QtViewPaneManager::GetPane(int id)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [id](const QtViewPane& pane) { return id == pane.m_id; });
 
-    return it == m_registeredPanes.end() ? nullptr : it;
+    return it == m_registeredPanes.end() ? nullptr : &(*it);
 }
 
 QtViewPane* QtViewPaneManager::GetPane(const QString& name)
@@ -1615,7 +1615,7 @@ QtViewPane* QtViewPaneManager::GetPane(const QString& name)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [name](const QtViewPane& pane) { return name == pane.m_name; });
 
-    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
+    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : &(*it));
 
     if (foundPane == nullptr)
     {
@@ -1623,7 +1623,7 @@ QtViewPane* QtViewPaneManager::GetPane(const QString& name)
         it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [name](const QtViewPane& pane) { return name == pane.m_options.saveKeyName; });
 
-        foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
+        foundPane = ((it == m_registeredPanes.end()) ? nullptr : &(*it));
     }
 
     return foundPane;
@@ -1646,7 +1646,7 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
             return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
         });
 
-    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
+    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : &(*it));
 
     if (foundPane == nullptr)
     {
@@ -1660,7 +1660,7 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
                 return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
             });
 
-        foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : optionsIt);
+        foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : &(*optionsIt));
     }
 
     return foundPane;
@@ -1671,7 +1671,7 @@ QtViewPane* QtViewPaneManager::GetViewportPane(int viewportType)
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [viewportType](const QtViewPane& pane) { return viewportType == pane.m_options.viewportType; });
 
-    return it == m_registeredPanes.end() ? nullptr : it;
+    return it == m_registeredPanes.end() ? nullptr : &(*it);
 }
 
 QDockWidget* QtViewPaneManager::GetView(const QString& name)

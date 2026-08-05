@@ -600,7 +600,7 @@ QStringList HierarchyWidget::mimeTypes() const
     return list;
 }
 
-QMimeData* HierarchyWidget::mimeData(const QList<QTreeWidgetItem*> items) const
+QMimeData* HierarchyWidget::mimeData(const QList<QTreeWidgetItem*>& items) const
 {
     AzToolsFramework::EditorEntityIdContainer entityIdList;
     for (auto i : items)

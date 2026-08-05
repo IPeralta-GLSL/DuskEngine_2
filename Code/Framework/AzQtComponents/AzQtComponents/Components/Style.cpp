@@ -48,6 +48,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDebug>
+#include <QStyleFactory>
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QHeaderView>
@@ -68,11 +69,10 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' n
 #include <QTableView>
 #include <QTextEdit>
 #include <QToolButton>
-#include <QtGui/private/qscreen_p.h>
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+#include <private/qscreen_p.h>
 AZ_POP_DISABLE_WARNING
 
-#include <QtWidgets/private/qstylehelper_p.h>
+#include <private/qstylehelper_p.h>
 
 #include <limits>
 #include <QListWidget>
@@ -158,6 +158,7 @@ namespace AzQtComponents
     Style::Style(QStyle* style)
         : QProxyStyle(style)
         , m_data(new Style::Data)
+        , m_fusionStyle(QStyleFactory::create("Fusion"))
     {
         SpinBox::initializeWatcher();
         LineEdit::initializeWatcher();
@@ -641,16 +642,12 @@ namespace AzQtComponents
 
                 if (qobject_cast<const QTreeView*>(widget) && !hasClass(widget, g_treeViewDisableDefaultArrorPainting))
                 {
-                    QStyleSheetStyle* styleSheetStyle = qobject_cast<QStyleSheetStyle*>(baseStyle());
-                    if (styleSheetStyle)
+                    QStyle* fusionStyle = m_fusionStyle;
+                    if (fusionStyle && (fusionStyle != this) && (fusionStyle != baseStyle()))
                     {
-                        QStyle* fusionStyle = styleSheetStyle->baseStyle();
-                        if (fusionStyle && (fusionStyle != this) && (fusionStyle != styleSheetStyle))
-                        {
-                            QProxyStyle::drawPrimitive(element, option, painter, widget);
+                        QProxyStyle::drawPrimitive(element, option, painter, widget);
 
-                            return fusionStyle->drawPrimitive(element, option, painter, widget);
-                        }
+                        return fusionStyle->drawPrimitive(element, option, painter, widget);
                     }
                 }
 #endif // !defined(AZ_PLATFORM_LINUX)
@@ -1099,26 +1096,6 @@ namespace AzQtComponents
                 if (margin != -1)
                 {
                     return margin;
-                }
-                break;
-            }
-
-            case QStyle::PM_MenuHPlacementOffset:
-            {
-                const int hOffset = Menu::horizontalShadowMargin(this, option, widget, m_data->menuConfig);
-                if (hOffset != std::numeric_limits<int>::lowest())
-                {
-                    return hOffset;
-                }
-                break;
-            }
-
-            case QStyle::PM_MenuVPlacementOffset:
-            {
-                const int vOffset = Menu::verticalShadowMargin(this, option, widget, m_data->menuConfig);
-                if (vOffset != std::numeric_limits<int>::lowest())
-                {
-                    return vOffset;
                 }
                 break;
             }

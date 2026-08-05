@@ -50,6 +50,11 @@ namespace AZ
         {
             Data::Asset<RPI::AnyAsset> smaaAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>("passes/SMAAConfiguration.azasset", RPI::AssetUtils::TraceLevel::Error);
             const SMAAConfigurationDescriptor* smaaConfigurationDescriptor = RPI::GetDataFromAnyAsset<SMAAConfigurationDescriptor>(smaaAsset);
+            if (!smaaConfigurationDescriptor)
+            {
+                AZ_Error("SMAAFeatureProcessor", false, "Failed to load SMAA configuration from passes/SMAAConfiguration.azasset");
+                return;
+            }
             m_data.m_enable = smaaConfigurationDescriptor->m_enable != 0;
             SetQualityByPreset(static_cast<SMAAQualityPreset>(smaaConfigurationDescriptor->m_quality));
             m_data.m_edgeDetectionMode = static_cast<SMAAEdgeDetectionMode>(smaaConfigurationDescriptor->m_edgeDetectionMode);

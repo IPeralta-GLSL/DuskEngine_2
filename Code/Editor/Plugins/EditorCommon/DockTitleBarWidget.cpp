@@ -121,7 +121,6 @@ void CDockWidgetTitleButton::paintEvent([[maybe_unused]] QPaintEvent* ev)
 
     QStyleOptionToolButton opt;
     opt.state = QStyle::State_AutoRaise;
-    opt.init(this);
     opt.state |= QStyle::State_AutoRaise;
 
     if (isEnabled() && underMouse() && !isChecked() && !isDown())
