@@ -46,6 +46,7 @@
 #include <ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <Mesh/MeshFeatureProcessor.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
+#include <PostProcess/VolumetricLight/VolumetricLightPass.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
 #include <PostProcessing/BloomBlurPass.h>
 #include <PostProcessing/BloomCompositePass.h>
@@ -260,6 +261,9 @@ namespace AZ
             
             // Add Taa Pass
             passSystem->AddPassCreator(Name("TaaPass"), &TaaPass::Create);
+
+            // Add Volumetric Light pass
+            passSystem->AddPassCreator(Name("VolumetricLightPass"), &VolumetricLightPass::Create);
 
             // Add CAS (Contrast Adaptive Sharpening) pass — runs after TAA
             passSystem->AddPassCreator(Name("CasPass"), &CasPass::Create);

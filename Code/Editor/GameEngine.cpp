@@ -101,7 +101,7 @@ struct SSystemUserCallback
             {
                 if (GetIEditor()->SaveDocument())
                 {
-                    QMessageBox::information(QApplication::activeWindow(), QObject::tr("Save"), QObject::tr("Level has been successfully saved!\r\nPress Ok to terminate Editor."));
+                    QMessageBox::information(QApplication::activeWindow(), QObject::tr("Save"), QObject::tr("Stage has been successfully saved!\r\nPress Ok to terminate Editor."));
                 }
             }
         }

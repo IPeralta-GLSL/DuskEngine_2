@@ -40,6 +40,7 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
@@ -317,6 +318,7 @@ MainWindow::MainWindow(QWidget* parent)
     QObject::connect(m_connectionLostTimer, &QTimer::timeout, this, &MainWindow::ShowConnectionDisconnectedDialog);
 
     setStatusBar(new MainStatusBar(this));
+    statusBar()->hide();
 
     setAttribute(Qt::WA_DeleteOnClose, true);
 
@@ -1087,6 +1089,11 @@ void MainWindow::OnUpdateConnectionStatus()
         }
 
         status = tr("Pending Jobs : %1  Failed Jobs : %2").arg(m_connectionListener->GetJobsCount()).arg(failureCount);
+
+        if (auto actionManager = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            actionManager->SetActionName("o3de.action.editor.assetProcessorJobs", status.toUtf8().constData());
+        }
 
         statusBar->SetItem("connection", status, tooltip, icon);
 

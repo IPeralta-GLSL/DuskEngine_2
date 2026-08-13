@@ -365,16 +365,9 @@ set(FILES
     Slice/SliceMetadataEntityContextComponent.cpp
     SourceControl/LocalFileSCComponent.cpp
     SourceControl/LocalFileSCComponent.h
-    SourceControl/PerforceComponent.cpp
-    SourceControl/PerforceComponent.h
-    SourceControl/PerforceConnection.cpp
-    SourceControl/PerforceConnection.h
     SourceControl/QtSourceControlNotificationHandler.cpp
     SourceControl/QtSourceControlNotificationHandler.h
     SourceControl/SourceControlAPI.h
-    SourceControl/PerforceSettings.cpp
-    SourceControl/PerforceSettings.h
-    SourceControl/PerforceSettings.ui
     SQLite/SQLiteConnection.cpp
     SQLite/SQLiteConnection.h
     SQLite/SQLiteQuery.cpp

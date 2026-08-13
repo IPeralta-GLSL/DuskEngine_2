@@ -50,6 +50,7 @@ namespace AZ
         private:
             VolumetricLightSettings m_fallbackSettings;
             RHI::ShaderInputConstantIndex m_depthTextureDimensionsIndex;
+            RHI::ShaderInputImageIndex m_noiseTextureIndex;
             float m_currentTime;
         };
     }

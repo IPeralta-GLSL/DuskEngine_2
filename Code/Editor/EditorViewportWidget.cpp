@@ -788,7 +788,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             if (QWidget* widget = item->widget())
             {
-                delete widget;
+                widget->deleteLater();
             }
             thisLayout->removeItem(item);
             delete item;

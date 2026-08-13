@@ -32,7 +32,6 @@
 #include <AzToolsFramework/Slice/SliceRequestComponent.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
@@ -108,7 +107,6 @@ namespace AzToolsFramework
             Components::EditorEntitySortComponent::CreateDescriptor(),
             Components::EditorEntityModelComponent::CreateDescriptor(),
             AssetSystem::AssetSystemComponent::CreateDescriptor(),
-            PerforceComponent::CreateDescriptor(),
             AzToolsFramework::ArchiveComponent::CreateDescriptor(),
             AzToolsFramework::AssetBundleComponent::CreateDescriptor(),
             AzToolsFramework::SliceDependencyBrowserComponent::CreateDescriptor(),

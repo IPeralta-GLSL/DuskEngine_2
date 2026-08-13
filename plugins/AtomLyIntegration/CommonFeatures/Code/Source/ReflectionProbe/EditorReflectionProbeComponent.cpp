@@ -12,11 +12,16 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzCore/IO/SystemFile.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
@@ -292,6 +297,20 @@ namespace AZ
 
             // refresh currently displayed cubemap
             m_controller.UpdateCubeMap();
+
+            AZ::RPI::Scene* scene = AZ::RPI::Scene::GetSceneForEntityContextId(AzToolsFramework::GetEntityContextId());
+            if (scene)
+            {
+                auto* ssrFeatureProcessor = scene->GetFeatureProcessor<AZ::Render::SpecularReflectionsFeatureProcessorInterface>();
+                if (ssrFeatureProcessor)
+                {
+                    AZ::Render::SSROptions options = ssrFeatureProcessor->GetSSROptions();
+                    options.m_enable = !m_useBakedCubemap;
+                    ssrFeatureProcessor->SetSSROptions(options);
+                }
+            }
+
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(AZStd::string::format("r_ssr %d", m_useBakedCubemap ? 0 : 1).c_str());
 
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }

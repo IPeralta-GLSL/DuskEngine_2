@@ -317,11 +317,10 @@
                         "BindViewSrg": true
                     }
                 },
-                },
                 {
                     "Name": "VolumetricLightPass",
                     "TemplateName": "VolumetricLightPassTemplate",
-                    "Enabled": true,
+                    "Enabled": false,
                     "Connections": [
                         {
                             "LocalSlot": "InputLinearDepth",

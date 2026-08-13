@@ -17,6 +17,9 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/API/SettingsRegistryUtils.h>
+#include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace SandboxEditor
 {
@@ -895,5 +898,50 @@ namespace SandboxEditor
     void ResetCameraFocusChannelId()
     {
         AzToolsFramework::ClearRegistry(CameraFocusIdSetting);
+    }
+
+    void ApplySSROptions();
+
+    AZ_CVAR(bool, r_ssr, false, [](const bool&) { ApplySSROptions(); }, AZ::ConsoleFunctorFlags::Null,
+        "Enables or disables screen space reflections");
+    AZ_CVAR(AZ::Render::SSROptions::ReflectionMethod, r_ssrReflectionMethod,
+        AZ::Render::SSROptions::ReflectionMethod::ScreenSpace,
+        [](const AZ::Render::SSROptions::ReflectionMethod&) { ApplySSROptions(); }, AZ::ConsoleFunctorFlags::Null,
+        "Screen space reflection method: 0=ScreenSpace, 1=Hybrid, 2=HybridWithFallback, 3=RayTracing");
+    AZ_CVAR(bool, r_ssrHalfResolution, true, [](const bool&) { ApplySSROptions(); }, AZ::ConsoleFunctorFlags::Null,
+        "Render screen space reflections at half resolution");
+    AZ_CVAR(float, r_ssrMaxRayDistance, 50.0f, [](const float&) { ApplySSROptions(); }, AZ::ConsoleFunctorFlags::Null,
+        "Maximum ray distance for screen space reflections");
+    AZ_CVAR(float, r_ssrMaxRoughness, 0.31f, [](const float&) { ApplySSROptions(); }, AZ::ConsoleFunctorFlags::Null,
+        "Maximum roughness for screen space reflections");
+    AZ_CVAR(bool, r_ssrTemporalFiltering, true, [](const bool&) { ApplySSROptions(); }, AZ::ConsoleFunctorFlags::Null,
+        "Enables or disables temporal filtering for screen space reflections");
+    AZ_CVAR(bool, r_ssrConeTracing, false, [](const bool&) { ApplySSROptions(); }, AZ::ConsoleFunctorFlags::Null,
+        "Enables or disables cone tracing for screen space reflections");
+
+    void ApplySSROptions()
+    {
+        AzFramework::EntityContextId contextId = AzToolsFramework::GetEntityContextId();
+        AZ::RPI::Scene* scene = AZ::RPI::Scene::GetSceneForEntityContextId(contextId);
+        if (!scene)
+        {
+            return;
+        }
+
+        auto* ssrFeatureProcessor = scene->GetFeatureProcessor<AZ::Render::SpecularReflectionsFeatureProcessorInterface>();
+        if (!ssrFeatureProcessor)
+        {
+            return;
+        }
+
+        AZ::Render::SSROptions options = ssrFeatureProcessor->GetSSROptions();
+        options.m_enable = r_ssr;
+        options.m_reflectionMethod = r_ssrReflectionMethod;
+        options.m_halfResolution = r_ssrHalfResolution;
+        options.m_maxRayDistance = r_ssrMaxRayDistance;
+        options.m_maxRoughness = r_ssrMaxRoughness;
+        options.m_temporalFiltering = r_ssrTemporalFiltering;
+        options.m_coneTracing = r_ssrConeTracing;
+        ssrFeatureProcessor->SetSSROptions(options);
     }
 } // namespace SandboxEditor

@@ -250,6 +250,8 @@ set(FILES
     Core/QtEditorApplication.h
     Core/Widgets/PrefabEditVisualModeWidget.h
     Core/Widgets/PrefabEditVisualModeWidget.cpp
+    Core/Widgets/GitToolbarWidget.h
+    Core/Widgets/GitToolbarWidget.cpp
     Core/Widgets/ViewportSettingsWidgets.h
     Core/Widgets/ViewportSettingsWidgets.cpp
     StartupTraceHandler.cpp

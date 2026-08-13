@@ -73,7 +73,7 @@ namespace AZ
             VolumetricLightSettings* settings = GetPassSettings();
             Data::Instance<RPI::ShaderResourceGroup> srg = m_shaderResourceGroup.get();
 
-#define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                            settings->MemberName##SrgIndex = srg->FindShaderInputConstantIndex(Name(#MemberName));      
+#define AZ_GFX_COMMON_PARAM(ValueType, ParamName, MemberName, DefaultValue)                                            settings->MemberName##SrgIndex = srg->FindShaderInputConstantIndex(AZ::Name(#MemberName));      
 #include <Atom/Feature/ParamMacros/MapParamCommon.inl>
 #include <Atom/Feature/PostProcess/VolumetricLight/VolumetricLightParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
@@ -98,7 +98,7 @@ namespace AZ
                 settings->SetSettingsNeedUpdate(false);
             }
 
-#define AZ_GFX_COMMON_PARAM(ValueType, Name, MemberName, DefaultValue)                                  \
+#define AZ_GFX_COMMON_PARAM(ValueType, ParamName, MemberName, DefaultValue)                                  \
             if (settings->MemberName##SrgIndex.IsValid())                                               \
             {                                                                                           \
                 srg->SetConstant(settings->MemberName##SrgIndex, settings->MemberName);                 \

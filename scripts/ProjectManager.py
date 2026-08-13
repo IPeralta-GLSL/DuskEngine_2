@@ -12,9 +12,9 @@ from PyQt5.QtWidgets import (
     QLabel, QPushButton, QLineEdit, QComboBox, QScrollArea, QFrame,
     QMenu, QAction, QMessageBox, QFileDialog, QSizePolicy, QStackedWidget,
     QAbstractScrollArea, QDialog, QDialogButtonBox, QFormLayout, QSpacerItem,
-    QListWidget, QListWidgetItem, QCheckBox, QSplitter, QTextEdit
+    QListWidget, QListWidgetItem, QActionGroup, QSplitter, QTextEdit
 )
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QProcess, QTimer, QSize
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QProcess, QTimer, QSize, QPoint
 from PyQt5.QtGui import QFont, QFontDatabase, QIcon, QCursor, QColor, QTextCharFormat, QTextCursor
 
 ENGINE_PATH = Path(__file__).parent.parent.resolve()
@@ -487,14 +487,33 @@ def find_engine_for_project(project_info: dict) -> dict:
     return {"name": "Unknown Engine", "version": "", "path": ""}
 
 
+def _compute_jobs(low_ram: bool) -> int:
+    import multiprocessing
+    cpus = multiprocessing.cpu_count()
+    if not low_ram:
+        return cpus
+    jobs = max(1, cpus // 2)
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemAvailable:"):
+                    avail_gb = int(line.split()[1]) // (1024 * 1024)
+                    jobs = min(jobs, max(1, avail_gb // 2))
+                    break
+    except OSError:
+        pass
+    return jobs
+
+
 class BuildWorker(QThread):
     output_line = pyqtSignal(str)
     finished = pyqtSignal(bool)
 
-    def __init__(self, project_path: str, project_name: str):
+    def __init__(self, project_path: str, project_name: str, low_ram: bool = False):
         super().__init__()
         self._project_path = project_path
         self._project_name = project_name
+        self._low_ram = low_ram
         self._current_proc = None
         self._cancelled = False
 
@@ -516,8 +535,7 @@ class BuildWorker(QThread):
         return self._current_proc.returncode
 
     def run(self):
-        import multiprocessing
-        j = multiprocessing.cpu_count()
+        j = _compute_jobs(self._low_ram)
         engine_build = str(BUILD_PATH)
         engine_src = str(ENGINE_PATH)
 
@@ -551,9 +569,10 @@ class EngineBuildWorker(QThread):
     output_line = pyqtSignal(str)
     finished = pyqtSignal(bool)
 
-    def __init__(self, targets: list = None):
+    def __init__(self, targets: list = None, low_ram: bool = False):
         super().__init__()
         self._targets = targets or ["Editor", "AssetProcessor"]
+        self._low_ram = low_ram
         self._current_proc = None
         self._cancelled = False
 
@@ -563,8 +582,7 @@ class EngineBuildWorker(QThread):
             self._current_proc.terminate()
 
     def run(self):
-        import multiprocessing
-        j = multiprocessing.cpu_count()
+        j = _compute_jobs(self._low_ram)
         build_cmd = [
             "cmake", "--build", str(BUILD_PATH),
             "--config", "profile",
@@ -1073,12 +1091,13 @@ class ProjectRow(QFrame):
     launch_asset_processor_requested = pyqtSignal(dict)
     duplicate_requested = pyqtSignal(dict)
 
-    def __init__(self, project: dict, engine: dict, parent=None):
+    def __init__(self, project: dict, engine: dict, pm, parent=None):
         super().__init__(parent)
         self.setObjectName("projectRow")
         self.setAttribute(Qt.WA_Hover, True)
         self._project = project
         self._engine = engine
+        self._pm = pm
         self._status = "ready" if not project.get("needs_build") else "needs_build"
         self._build_worker = None
         self._setup_ui()
@@ -1174,7 +1193,10 @@ class ProjectRow(QFrame):
         menu.addAction("Edit Project Settings…", lambda: self.edit_settings_requested.emit(self._project))
         menu.addAction("Configure Plugins…", lambda: self.edit_gems_requested.emit(self._project))
         menu.addSeparator()
-        menu.addAction("Build", lambda: self.build_requested.emit(self._project))
+        build_sub = menu.addMenu("Build")
+        build_sub.addAction("Build Project", lambda: self.build_requested.emit(self._project))
+        build_sub.addSeparator()
+        self._pm._add_ram_submenu(build_sub)
         export_menu = menu.addMenu("Export Launcher")
         export_menu.addAction("Linux", lambda: self._export("export_source_built_project.py"))
         export_menu.addAction("Android", lambda: self._export("export_source_android.py"))
@@ -1236,6 +1258,7 @@ class ProjectManagerLite(QMainWindow):
         self._sort_order = 0
         self._building_paths: set = set()
         self._build_workers: dict = {}
+        self._ram_low = False
 
         central = QWidget()
         central.setObjectName("centralWidget")
@@ -1324,6 +1347,7 @@ class ProjectManagerLite(QMainWindow):
         title.setObjectName("sectionTitle")
         hlayout.addWidget(title)
         hlayout.addStretch()
+
         add_btn = QPushButton("Add Engine")
         add_btn.setObjectName("primaryButton")
         add_btn.setFixedHeight(34)
@@ -1419,17 +1443,14 @@ class ProjectManagerLite(QMainWindow):
         btn_row.setSpacing(8)
 
         if is_current:
-            build_menu = QMenu()
-            build_menu.addAction("Editor + AssetProcessor",
-                lambda: self._handle_build_engine(["Editor", "AssetProcessor"]))
-            build_menu.addAction("Editor only",
-                lambda: self._handle_build_engine(["Editor"]))
-            build_menu.addAction("AssetProcessor only",
-                lambda: self._handle_build_engine(["AssetProcessor"]))
             build_btn = QPushButton("Build Engine  ▾")
             build_btn.setObjectName("menuButton")
-            build_btn.setMenu(build_menu)
             build_btn.setFixedHeight(30)
+            build_btn.clicked.connect(lambda: self._show_build_menu(build_btn, [
+                ("Editor + AssetProcessor", ["Editor", "AssetProcessor"]),
+                ("Editor only", ["Editor"]),
+                ("AssetProcessor only", ["AssetProcessor"]),
+            ]))
             btn_row.addWidget(build_btn)
 
         more_btn = QPushButton("⋯")
@@ -1465,8 +1486,35 @@ class ProjectManagerLite(QMainWindow):
             write_manifest(manifest)
         self._load_engines()
 
+    def _set_ram_low(self, low: bool):
+        self._ram_low = low
+
+    def _add_ram_submenu(self, menu: QMenu) -> QMenu:
+        ram_menu = menu.addMenu("RAM")
+        ram_max = ram_menu.addAction("Max")
+        ram_max.setCheckable(True)
+        ram_red = ram_menu.addAction("Reduced")
+        ram_red.setCheckable(True)
+        ram_max.setChecked(not self._ram_low)
+        ram_red.setChecked(self._ram_low)
+        ram_group = QActionGroup(ram_menu)
+        ram_group.setExclusive(True)
+        ram_group.addAction(ram_max)
+        ram_group.addAction(ram_red)
+        ram_max.triggered.connect(lambda: self._set_ram_low(False))
+        ram_red.triggered.connect(lambda: self._set_ram_low(True))
+        return ram_menu
+
+    def _show_build_menu(self, btn: QPushButton, targets_list: list):
+        menu = QMenu(self)
+        for label, tgts in targets_list:
+            menu.addAction(label, lambda t=tgts: self._handle_build_engine(t))
+        menu.addSeparator()
+        self._add_ram_submenu(menu)
+        menu.exec_(btn.mapToGlobal(QPoint(0, btn.height())))
+
     def _handle_build_engine(self, targets: list):
-        worker = EngineBuildWorker(targets)
+        worker = EngineBuildWorker(targets, self._ram_low)
         dlg = BuildOutputDialog("Dusk Engine", worker, self)
         dlg.setWindowTitle(f"Building Engine — {', '.join(targets)}")
         dlg.show()
@@ -1482,6 +1530,8 @@ class ProjectManagerLite(QMainWindow):
                 lambda: self._handle_build_engine(["Editor"]))
             build_sub.addAction("AssetProcessor only",
                 lambda: self._handle_build_engine(["AssetProcessor"]))
+            build_sub.addSeparator()
+            self._add_ram_submenu(build_sub)
             menu.addSeparator()
             open_folder = menu.addAction("Open Engine Folder…")
             open_folder.triggered.connect(lambda: subprocess.Popen(["xdg-open", engine_path]))
@@ -1667,7 +1717,7 @@ class ProjectManagerLite(QMainWindow):
 
         for p in filtered:
             engine = find_engine_for_project(p)
-            row = ProjectRow(p, engine, self._list_widget)
+            row = ProjectRow(p, engine, self, self._list_widget)
 
             if p["path"] in self._building_paths:
                 row.set_status("building")
@@ -1775,7 +1825,7 @@ class ProjectManagerLite(QMainWindow):
         if row:
             row.set_status("building")
 
-        worker = BuildWorker(path, project_name)
+        worker = BuildWorker(path, project_name, self._ram_low)
         self._build_workers[path] = worker
         worker.finished.connect(lambda ok, p=path: self._on_build_finished(p, ok))
 

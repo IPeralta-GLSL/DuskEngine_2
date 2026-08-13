@@ -261,14 +261,17 @@ namespace AzQtComponents
         {
             style->repolishOnSettingsChange(browseEdit);
             auto lineEdit = browseEdit->m_data->m_lineEdit;
-            LineEdit::polish(style, lineEdit, lineEditConfig);
-
-            QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
-            if (action)
+            if (lineEdit)
             {
-                QStyleOptionFrame option;
-                option.initFrom(lineEdit);
-                action->setIcon(LineEdit::clearButtonIcon(&option, lineEdit, lineEditConfig));
+                LineEdit::polish(style, lineEdit, lineEditConfig);
+
+                QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
+                if (action)
+                {
+                    QStyleOptionFrame option;
+                    option.initFrom(lineEdit);
+                    action->setIcon(LineEdit::clearButtonIcon(&option, lineEdit, lineEditConfig));
+                }
             }
         }
         return browseEdit;
@@ -282,14 +285,17 @@ namespace AzQtComponents
         if (browseEdit)
         {
             auto lineEdit = browseEdit->m_data->m_lineEdit;
-            LineEdit::unpolish(style, lineEdit, lineEditConfig);
-
-            QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
-            if (action)
+            if (lineEdit)
             {
-                QStyleOptionFrame option;
-                option.initFrom(lineEdit);
-                action->setIcon(lineEdit->style()->standardIcon(QStyle::SP_LineEditClearButton, &option, lineEdit));
+                LineEdit::unpolish(style, lineEdit, lineEditConfig);
+
+                QAction* action = lineEdit->findChild<QAction*>(ClearButtonActionNameC);
+                if (action)
+                {
+                    QStyleOptionFrame option;
+                    option.initFrom(lineEdit);
+                    action->setIcon(lineEdit->style()->standardIcon(QStyle::SP_LineEditClearButton, &option, lineEdit));
+                }
             }
         }
         return browseEdit;

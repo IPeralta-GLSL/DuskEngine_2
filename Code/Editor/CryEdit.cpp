@@ -2731,7 +2731,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
     if (levelName.length() == 0 || !AZ::StringFunc::Path::IsValid(levelName.toUtf8().data()))
     {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Level name is invalid, please choose another name."));
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Stage name is invalid, please choose another name."));
         return false;
     }
 
@@ -2750,7 +2750,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
     if (result == ECLR_ALREADY_EXISTS)
     {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Level with this name already exists, please choose another name."));
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Stage with this name already exists, please choose another name."));
         return false;
     }
     else if (result == ECLR_DIR_CREATION_FAILED)
@@ -2777,7 +2777,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         cwd = QDir::currentPath().toUtf8();
 #endif
 
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to create level directory: %1\n Error: %2\nCurrent Path: %3").arg(szLevelRoot, windowsErrorMessage, cwd));
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to create stage directory: %1\n Error: %2\nCurrent Path: %3").arg(szLevelRoot, windowsErrorMessage, cwd));
         return false;
     }
     else if (result == ECLR_MAX_PATH_EXCEEDED)

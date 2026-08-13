@@ -9,6 +9,7 @@
 #include <Core/EditorActionsHandler.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -32,6 +33,7 @@
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
 
 #include <Core/Widgets/PrefabEditVisualModeWidget.h>
+#include <Core/Widgets/GitToolbarWidget.h>
 #include <Core/Widgets/ViewportSettingsWidgets.h>
 #include <CryEdit.h>
 #include <EditorCoreAPI.h>
@@ -247,9 +249,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.new";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "New Level";
+        actionProperties.m_name = "New Stage";
         actionProperties.m_description = "Create a new level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_category = "Stage";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -294,9 +296,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.open";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Open Level...";
+        actionProperties.m_name = "Open Stage...";
         actionProperties.m_description = "Open an existing level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_category = "Stage";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -331,7 +333,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             {
                 actionProperties.m_name = AZStd::string::format("Recent File #%i", index + 1);
             }
-            actionProperties.m_category = "Level";
+            actionProperties.m_category = "Stage";
             actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
             AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
@@ -367,7 +369,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Clear All";
         actionProperties.m_description = "Clear the recent files list.";
-        actionProperties.m_category = "Level";
+        actionProperties.m_category = "Stage";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -401,7 +403,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Save";
         actionProperties.m_description = "Save the current level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_category = "Stage";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
         
         m_actionManagerInterface->RegisterAction(
@@ -423,7 +425,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Save All";
         actionProperties.m_description = "Save all current level changes";
-        actionProperties.m_category = "Level";
+        actionProperties.m_category = "Stage";
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Save.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -444,7 +446,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Save As...";
         actionProperties.m_description = "Save the current level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_category = "Stage";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -460,13 +462,13 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, "o3de.action.file.saveAs");
     }
 
-    // Save Level Statistics
+    // Save Stage Statistics
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.saveLevelStatistics";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Save Level Statistics";
+        actionProperties.m_name = "Save Stage Statistics";
         actionProperties.m_description = "Logs Editor memory usage.";
-        actionProperties.m_category = "Level";
+        actionProperties.m_category = "Stage";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1595,6 +1597,22 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
         );
     }
 
+    // Git Version Control Widget
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Git Version Control";
+        widgetActionProperties.m_category = "Version Control";
+
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.editor.git",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return new SandboxEditor::GitToolbarWidget();
+            }
+        );
+    }
+
     // Viewport - Field of View Property Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
@@ -2094,6 +2112,10 @@ void EditorActionsHandler::OnToolBarBindingHook()
             EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.viewmode.wireframe", 1540);
         m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
             EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 1600);
+        m_toolBarManagerInterface->AddActionToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.action.editor.assetProcessorJobs", 1700);
+        m_toolBarManagerInterface->AddWidgetToToolBar(
+            EditorIdentifiers::ToolsToolBarIdentifier, "o3de.widgetAction.editor.git", 1800);
     }
 }
 
@@ -2584,6 +2606,26 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ToolBoxMacrosMenuIdentifier, toolboxMacroActionIdentifier, sortKey);
             m_toolboxMacroActionIdentifiers.push_back(AZStd::move(toolboxMacroActionIdentifier));
         }
+    }
+
+    // Asset Processor Jobs
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.editor.assetProcessorJobs";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Pending Jobs : 0  Failed Jobs : 0";
+        actionProperties.m_description = "Asset Processor status";
+        actionProperties.m_category = "Asset Processor";
+        actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystemRequestBus::Events::ShowAssetProcessor);
+            }
+        );
     }
 }
 

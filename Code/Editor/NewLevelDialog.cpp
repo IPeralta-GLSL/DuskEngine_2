@@ -69,7 +69,7 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
     ui->setupUi(this);
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    setWindowTitle(tr("New Level"));
+    setWindowTitle(tr("New Stage"));
     setStyleSheet("QListWidget::item {height: 148px; padding-left: 0px; padding-right: 0px; background-color: transparent;}");
     InitTemplateListWidget();
 

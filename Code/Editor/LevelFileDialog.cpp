@@ -64,14 +64,14 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
 
     if (m_bOpenDialog)
     {
-        setWindowTitle(tr("Open Level"));
+        setWindowTitle(tr("Open Stage"));
         ui->treeView->expandToDepth(1);
         ui->newFolderButton->setVisible(false);
         ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Open"));
     }
     else
     {
-        setWindowTitle(tr("Save Level As "));
+        setWindowTitle(tr("Save Stage As "));
         ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Save"));
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 

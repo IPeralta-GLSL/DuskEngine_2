@@ -234,7 +234,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
                         QString date = QLocale::system().toString(dateTime.date(), QLocale::ShortFormat) + " " +
                             QLocale::system().toString(dateTime.time(), QLocale::LongFormat);
                         ui->recentLevelTable->setItem(currentRow, 1, new QTableWidgetItem(date));
-                        ui->recentLevelTable->setItem(currentRow++, 2, new QTableWidgetItem(tr("Level")));
+                        ui->recentLevelTable->setItem(currentRow++, 2, new QTableWidgetItem(tr("Stage")));
                         m_levels.push_back(std::make_pair(name, recentFile));
                     }
                 }
