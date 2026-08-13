@@ -1584,7 +1584,7 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Prefab Edit Visual Mode Selection Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Prefab Edit Visual Mode Selection";
+        widgetActionProperties.m_name = "Arch Edit Visual Mode Selection";
         widgetActionProperties.m_category = "Prefabs";
 
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(

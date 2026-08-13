@@ -18,7 +18,7 @@ PrefabEditVisualModeWidget::PrefabEditVisualModeWidget()
 {
     // Create Label
     m_label = new QLabel(this);
-    m_label->setText("Prefab Edit:");
+    m_label->setText("Arch Edit:");
 
     // Create ComboBox
     m_comboBox = new QComboBox(this);
