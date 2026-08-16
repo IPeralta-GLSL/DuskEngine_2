@@ -51,6 +51,10 @@ set(FILES
 		Source/Clients/SphereColliderComponent.h
         Source/Clients/ShapeColliderComponent.cpp
 		Source/Clients/ShapeColliderComponent.h
+		Source/Clients/MeshColliderComponent.h
+		Source/Clients/MeshColliderComponent.cpp
+		Source/Clients/EditorMeshColliderComponent.h
+		Source/Clients/EditorMeshColliderComponent.cpp
 
 		Source/Debug/JoltDebug.cpp
 		Source/Debug/JoltDebug.h

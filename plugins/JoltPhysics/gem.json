@@ -23,6 +23,8 @@
     "requirements": "Notice of any requirements for this Gem i.e. This requires X other gem",
     "documentation_url": "Link to any documentation of your Gem",
     "dependencies": [
+        "Atom_RPI",
+        "CommonFeaturesAtom"
     ],
     "repo_uri": "",
     "compatible_engines": [

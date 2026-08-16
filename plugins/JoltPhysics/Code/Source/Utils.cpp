@@ -486,6 +486,8 @@ namespace JoltPhysics
 
                     const AZ::u8* dataPtr = cookedData.data();
 
+                    const JPH::Vec3 shapeScale = JoltMathConvert(shapeConfiguration.m_scale);
+
                     if (cookedConfig.GetMeshType() == Physics::CookedMeshShapeConfiguration::MeshType::Convex)
                     {
                         AZ::u32 pointCount = 0;
@@ -499,7 +501,7 @@ namespace JoltPhysics
                             JPH::Float3 float3;
                             memcpy(&float3, dataPtr, sizeof(JPH::Float3));
                             dataPtr += sizeof(JPH::Float3);
-                            points.emplace_back(JPH::Vec3(float3));
+                            points.emplace_back(JPH::Vec3(float3) * shapeScale);
                         }
 
                         const JoltPhysicsMaterial* material = inMaterials.empty() ? nullptr : inMaterials.front();
@@ -509,7 +511,9 @@ namespace JoltPhysics
                         {
                             settings.SetDensity(material->GetDensity());
                         }
+                        AZ_TracePrintf("JoltMeshCollider", "Creating convex hull with %d points", aznumeric_cast<int>(points.size()));
                         outResult = settings.Create();
+                        AZ_TracePrintf("JoltMeshCollider", "Convex hull result: %s", outResult.IsValid() ? "OK" : outResult.GetError().c_str());
                     }
                     else
                     {
@@ -524,7 +528,8 @@ namespace JoltPhysics
                             JPH::Float3 float3;
                             memcpy(&float3, dataPtr, sizeof(JPH::Float3));
                             dataPtr += sizeof(JPH::Float3);
-                            vertices.emplace_back(float3);
+                            vertices.emplace_back(JPH::Float3(
+                                float3.x * shapeScale.GetX(), float3.y * shapeScale.GetY(), float3.z * shapeScale.GetZ()));
                         }
 
                         AZ::u32 indexCount = 0;
@@ -548,7 +553,10 @@ namespace JoltPhysics
                         }
 
                         JPH::MeshShapeSettings settings(vertices, triangles, materials);
+                        AZ_TracePrintf("JoltMeshCollider", "Creating mesh shape with %d vertices %d triangles",
+                            aznumeric_cast<int>(vertices.size()), aznumeric_cast<int>(triangles.size()));
                         outResult = settings.Create();
+                        AZ_TracePrintf("JoltMeshCollider", "Mesh shape result: %s", outResult.IsValid() ? "OK" : outResult.GetError().c_str());
                     }
                     break;
                 }

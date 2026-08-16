@@ -50,14 +50,7 @@ namespace AzToolsFramework
 
     void DHQComboBox::wheelEvent(QWheelEvent* e)
     {
-        if (hasFocus())
-        {
-            QComboBox::wheelEvent(e);
-        }
-        else
-        {
-            e->ignore();
-        }
+        e->ignore();
     }
 
     bool DHQComboBox::event(QEvent* event)

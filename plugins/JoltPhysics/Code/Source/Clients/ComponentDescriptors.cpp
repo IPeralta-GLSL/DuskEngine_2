@@ -6,6 +6,7 @@
 #include <Clients/BoxColliderComponent.h>
 #include <Clients/CapsuleColliderComponent.h>
 #include <Clients/SphereColliderComponent.h>
+#include <Clients/MeshColliderComponent.h>
 #include <Clients/ShapeColliderComponent.h>
 #include <Clients/RigidBodyComponent.h>
 #include <Clients/StaticRigidBodyComponent.h>
@@ -22,6 +23,7 @@ namespace JoltPhysics
             SphereColliderComponent::CreateDescriptor(),
             CapsuleColliderComponent::CreateDescriptor(),
             ShapeColliderComponent::CreateDescriptor(),
+            MeshColliderComponent::CreateDescriptor(),
             RigidBodyComponent::CreateDescriptor(),
             StaticRigidBodyComponent::CreateDescriptor(),
         };

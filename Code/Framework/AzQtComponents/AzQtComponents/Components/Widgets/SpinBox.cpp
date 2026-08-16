@@ -440,72 +440,8 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
 
         case QEvent::Wheel:
         {
-            if (!spinBox->hasFocus())
-            {
-                // To prevent the event being turned into a focus event, be sure to install an
-                // AzQtComponents::GlobalEventFilter on your QApplication instance.
-                event->accept();
-                return true;
-            }
-
-            auto wheelEvent = static_cast<QWheelEvent*>(event);
-
-            // Emulates Qt::ScrollEnd
-            if (wheelEvent->source() != Qt::MouseEventSynthesizedBySystem)
-            {
-                QTimer* timer = SpinBoxScrollTimer(spinBox);
-                if (!timer)
-                {
-                    timer = new QTimer(spinBox);
-                    timer->setObjectName(g_spinBoxScrollTimerName);
-                    timer->setSingleShot(true);
-                    timer->setInterval(100);
-                    timer->callOnTimeout([this, timer, spinBox]() {
-                        emitValueChangeEnded(spinBox);
-                        timer->setParent(nullptr);
-                        timer->deleteLater();
-                    });
-                }
-
-                timer->start();
-            }
-
-            setInitializeSpinboxValue(spinBox, true);
-
-            // Qt::ScrollEnd is only supported on macOS and only applies to trackpads, not scroll
-            // wheels.
-            if (wheelEvent->phase() == Qt::ScrollEnd)
-            {
-                emitValueChangeEnded(spinBox);
-                break;
-            }
-
-            const auto angleDelta = wheelEvent->angleDelta();
-            if (angleDelta.isNull() || !m_spinBoxChanging.isNull())
-            {
-                break;
-            }
-            else if (angleDelta.y() != 0)
-            {
-                const auto enabledSteps = stepEnabled(spinBox);
-                if ((angleDelta.y() < 0 && (enabledSteps & QSpinBox::StepDownEnabled)) ||
-                    (angleDelta.y() > 0 && (enabledSteps & QSpinBox::StepUpEnabled)))
-                {
-                    emitValueChangeBegan(spinBox);
-                    // emitValueChangeEnded is called in QEvent::FocusOut
-                    if (angleDelta.y() < 0)
-                    {
-                        spinBox->setProperty(g_spinBoxValueDecreasingName, true);
-                        spinBox->setProperty(g_spinBoxValueIncreasingName, false);
-                    }
-                    else
-                    {
-                        spinBox->setProperty(g_spinBoxValueDecreasingName, false);
-                        spinBox->setProperty(g_spinBoxValueIncreasingName, true);
-                    }
-                }
-            }
-            break;
+            event->ignore();
+            return false;
         }
 
         case QEvent::DynamicPropertyChange:

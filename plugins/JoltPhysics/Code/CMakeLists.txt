@@ -140,6 +140,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
+            Gem::Atom_RPI.Public
+            Gem::CommonFeaturesAtom.Static
             Legacy::CryCommon
             Jolt::Jolt
         PRIVATE
@@ -244,6 +246,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 AZ::SceneCore
                 AZ::SceneData
+                Gem::Atom_RPI.Public
                 Gem::LmbrCentral.Editor
                 Legacy::Editor.Headers
                 ${gem_name}.Private.Object

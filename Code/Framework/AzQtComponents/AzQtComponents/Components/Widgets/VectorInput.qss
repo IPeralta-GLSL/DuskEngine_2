@@ -26,7 +26,7 @@ AzQtComponents--VectorElement[Coordinate="Y"] QLabel
 
 AzQtComponents--VectorElement[Coordinate="Z"] QLabel
 {
-    background-color: #4CAF50;
+    background-color: #4285F4;
 }
 
 AzQtComponents--VectorElement[Coordinate="W"] QLabel
