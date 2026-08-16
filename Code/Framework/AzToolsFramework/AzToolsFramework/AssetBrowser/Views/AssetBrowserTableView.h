@@ -108,7 +108,6 @@ namespace AzToolsFramework
             AzQtComponents::AssetFolderTableView* m_tableViewWidget = nullptr;
             AssetBrowserTableViewProxyModel* m_tableViewProxyModel = nullptr;
             AssetBrowserTreeToTableProxyModel* m_treeToTableProxyModel = nullptr;
-            AssetBrowserModel* m_assetBrowserModel{ nullptr };
             AssetBrowserFilterModel* m_assetFilterModel = nullptr;
             TableViewDelegate* m_tableViewDelegate = nullptr;
             QString m_name;

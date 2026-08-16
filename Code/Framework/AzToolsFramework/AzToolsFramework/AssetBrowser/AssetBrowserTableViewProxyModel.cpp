@@ -217,7 +217,12 @@ namespace AzToolsFramework
                         Path toPath;
                         bool isFolder{ true };
 
-                        if (entry && (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
+                        if (!entry)
+                        {
+                            continue;
+                        }
+
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                         {
                             fromPath = entry->GetFullPath();
                             PathView filename = fromPath.Filename();

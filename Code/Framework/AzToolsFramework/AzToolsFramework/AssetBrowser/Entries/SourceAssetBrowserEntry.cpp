@@ -130,7 +130,8 @@ namespace AzToolsFramework
         {
             if (EntryCache* cache = EntryCache::GetInstance())
             {
-                return cache->m_sourceUuidMap[sourceUuid];
+                auto it = cache->m_sourceUuidMap.find(sourceUuid);
+                return it != cache->m_sourceUuidMap.end() ? it->second : nullptr;
             }
             return nullptr;
         }

@@ -50,6 +50,9 @@ namespace AzToolsFramework
         AssetBrowserFavoritesModel ::~AssetBrowserFavoritesModel()
         {
             AssetBrowserFavoritesNotificationBus::Handler::BusDisconnect();
+
+            delete m_favoriteFolderContainer;
+            delete m_favoritesFolderEntry;
         }
         
         QModelIndex AssetBrowserFavoritesModel::index(int row, int column, const QModelIndex& parent) const
@@ -107,8 +110,8 @@ namespace AzToolsFramework
                         EntryAssetBrowserFavoriteItem* favoriteItem = static_cast<EntryAssetBrowserFavoriteItem*>(item);
                         const AssetBrowserEntry* entry = favoriteItem->GetEntry();
 
-                        if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product ||
-                            entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product ||
+                            entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                         {
                             return Qt::ItemIsDragEnabled | defaultFlags;
                         }
@@ -241,8 +244,8 @@ namespace AzToolsFramework
                     {
                         const EntryAssetBrowserFavoriteItem* favoriteItem = static_cast<const EntryAssetBrowserFavoriteItem*>(item);
                         const AssetBrowserEntry* entry = favoriteItem->GetEntry();
-                        if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product ||
-                            entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product ||
+                            entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                         {
                             collected.push_back(entry);
                         }
@@ -264,17 +267,17 @@ namespace AzToolsFramework
 
         void AssetBrowserFavoritesModel::FavoritesChanged()
         {
-            if (m_modifying)
-            {
-                return;
-            }
-
             LoadFavorites();
         }
 
         void AssetBrowserFavoritesModel::Select(AssetBrowserFavoriteItem* favoriteItem)
         {
             if (!favoriteItem)
+            {
+                return;
+            }
+
+            if (!m_searchWidget)
             {
                 return;
             }
@@ -287,7 +290,7 @@ namespace AzToolsFramework
 
                 const AssetBrowserEntry* selectedEntry = favoriteEntry->GetEntry();
 
-                AZStd::string fullPath = static_cast<const SourceAssetBrowserEntry*>(selectedEntry)->GetFullPath();
+                AZStd::string fullPath = selectedEntry->GetFullPath();
 
                 if (selectedEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
                 {
@@ -305,6 +308,10 @@ namespace AzToolsFramework
             {
                 SearchAssetBrowserFavoriteItem* searchItem = static_cast<SearchAssetBrowserFavoriteItem*>(favoriteItem);
 
+                if (!m_searchWidget)
+                {
+                    return;
+                }
                 m_searchWidget->ClearTextFilter();
                 m_searchWidget->ClearTypeFilter();
 
@@ -378,7 +385,10 @@ namespace AzToolsFramework
 
             m_loading = false;
 
-            m_parentView->expand(GetTopLevelIndex());
+            if (m_parentView)
+            {
+                m_parentView->expand(GetTopLevelIndex());
+            }
         }
 
     } // namespace AssetBrowser

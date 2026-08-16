@@ -53,6 +53,9 @@ namespace AzToolsFramework
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
             AssetBrowserFavoriteRequestBus::Handler::BusDisconnect();
+
+            qDeleteAll(m_favorites);
+            m_favorites.clear();
         }
 
         void AssetBrowserFavoritesManager::AddFavoriteItem(AssetBrowserFavoriteItem* item)
@@ -133,7 +136,7 @@ namespace AzToolsFramework
         void AssetBrowserFavoritesManager::RemoveEntryFromFavorites(const AssetBrowserEntry* item)
         {
             const auto favoriteIt = m_favoriteEntriesCache.find(item);
-            if (favoriteIt != m_favoriteEntriesCache.end() || !favoriteIt->second)
+            if (favoriteIt != m_favoriteEntriesCache.end() && favoriteIt->second)
             {
                 auto removeIt = AZStd::find(m_favorites.begin(), m_favorites.end(), favoriteIt->second);
 
@@ -143,6 +146,7 @@ namespace AzToolsFramework
                     return;
                 }
 
+                delete *removeIt;
                 m_favorites.erase(removeIt);
                 m_favoriteEntriesCache.erase(favoriteIt);
 
@@ -153,7 +157,7 @@ namespace AzToolsFramework
         void AssetBrowserFavoritesManager::ViewEntryInAssetBrowser(AssetBrowserFavoritesView* targetWindow, const AssetBrowserEntry* favorite)
         {
             const auto favoriteIt = m_favoriteEntriesCache.find(favorite);
-            if (favoriteIt != m_favoriteEntriesCache.end() || !favoriteIt->second)
+            if (favoriteIt != m_favoriteEntriesCache.end() && favoriteIt->second)
             {
                 AssetBrowserFavoritesModel* model = targetWindow->GetModel();
                 if (model)
@@ -180,6 +184,7 @@ namespace AzToolsFramework
                 return;
             }
 
+            delete *removeIt;
             m_favorites.erase(removeIt);
 
             SaveFavorites();
@@ -211,7 +216,8 @@ namespace AzToolsFramework
 
             m_favoriteEntriesCache.clear();
 
-            m_favorites.erase(m_favorites.begin(), m_favorites.end());
+            qDeleteAll(m_favorites);
+            m_favorites.clear();
         }
 
         void AssetBrowserFavoritesManager::LoadFavorites()
@@ -325,15 +331,34 @@ namespace AzToolsFramework
         void AssetBrowserFavoritesManager::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
         {
             // Find the source entry for this asset.
-            const auto sourceIt = EntryCache::GetInstance()->m_sourceUuidMap.find(assetId.m_guid);
-            if (sourceIt == EntryCache::GetInstance()->m_sourceUuidMap.end())
+            auto entryCache = EntryCache::GetInstance();
+            if (!entryCache)
             {
                 return;
             }
 
-            AssetBrowserEntry* entry = sourceIt->second;
+            const auto sourceIt = entryCache->m_sourceUuidMap.find(assetId.m_guid);
+            if (sourceIt == entryCache->m_sourceUuidMap.end())
+            {
+                return;
+            }
 
-            RemoveEntryFromFavorites(entry);
+            AZStd::vector<const AssetBrowserEntry*> entriesToRemove;
+            entriesToRemove.push_back(sourceIt->second);
+
+            sourceIt->second->VisitDown([&entriesToRemove](const AssetBrowserEntry* child)
+            {
+                if (child->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+                {
+                    entriesToRemove.push_back(child);
+                }
+                return true;
+            });
+
+            for (const AssetBrowserEntry* entry : entriesToRemove)
+            {
+                RemoveEntryFromFavorites(entry);
+            }
         }
 
         AZStd::vector<AssetBrowserFavoriteItem*> AssetBrowserFavoritesManager::GetFavorites()

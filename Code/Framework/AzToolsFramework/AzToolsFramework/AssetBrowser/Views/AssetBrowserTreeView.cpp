@@ -326,9 +326,9 @@ namespace AzToolsFramework
         {
             // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially
             // marked for deletion
-            if (selectionModel() && selectedIndexes().size() == 1)
+            if (selectionModel() && selectionModel()->selectedRows().size() == 1)
             {
-                QModelIndex selectedIndex = selectedIndexes().first();
+                QModelIndex selectedIndex = selectionModel()->selectedRows().first();
                 QModelIndex parentSelectedIndex = selectedIndex.parent();
                 if (parentSelectedIndex == parent && selectedIndex.row() >= start && selectedIndex.row() <= end)
                 {
@@ -440,7 +440,7 @@ namespace AzToolsFramework
                 {
                     current = next[0];
                 }
-                else if (current.isValid())
+                else
                 {
                     return nullptr;
                 }
@@ -626,7 +626,10 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::setModel(QAbstractItemModel* model)
         {
             m_assetBrowserSortFilterProxyModel = qobject_cast<AssetBrowserFilterModel*>(model);
-            AZ_Assert(m_assetBrowserSortFilterProxyModel, "Expecting AssetBrowserFilterModel");
+            if (!m_assetBrowserSortFilterProxyModel)
+            {
+                return;
+            }
             m_assetBrowserModel = qobject_cast<AssetBrowserModel*>(m_assetBrowserSortFilterProxyModel->sourceModel());
             QTreeViewWithStateSaving::setModel(model);
 
@@ -675,10 +678,20 @@ namespace AzToolsFramework
                 auto sourceIndex = m_assetBrowserSortFilterProxyModel->mapToSource(targetIndex);
 
                 const AssetBrowserEntry* targetitem = static_cast<const AssetBrowserEntry*>(sourceIndex.internalPointer());
-                while (!targetitem->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
+                while (targetitem && !targetitem->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
                 {
                     sourceIndex = sourceIndex.parent();
+                    if (!sourceIndex.isValid())
+                    {
+                        break;
+                    }
                     targetitem = static_cast<const AssetBrowserEntry*>(sourceIndex.internalPointer());
+                }
+
+                if (!targetitem)
+                {
+                    event->ignore();
+                    return;
                 }
 
                 m_assetBrowserModel->dropMimeData(
@@ -687,6 +700,11 @@ namespace AzToolsFramework
             }
 
             const AssetBrowserEntry* item = targetIndex.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (!item)
+            {
+                event->ignore();
+                return;
+            }
 
             AZStd::string pathName = item->GetFullPath();
 

@@ -95,14 +95,9 @@ namespace AzToolsFramework
                 int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
                 if (sourceEntry)
                 {
-                    if (m_showSourceControl)
-                    {
-                        DrawThumbnail(painter, iconTopLeft, iconSize, entry);
-                    }
-                    // sources with no children should be greyed out.
                     if (sourceEntry->GetChildCount() == 0)
                     {
-                        actualOption.state &= QStyle::State_Enabled;
+                        actualOption.state &= ~QStyle::State_Enabled;
                     }
                 }
 
@@ -227,9 +222,12 @@ namespace AzToolsFramework
 
         void SearchEntryDelegate::Init()
         {
-            AssetBrowserModel* assetBrowserModel;
+            AssetBrowserModel* assetBrowserModel = nullptr;
             AssetBrowserComponentRequestBus::BroadcastResult(assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
-            AZ_Assert(assetBrowserModel, "Failed to get filebrowser model");
+            if (!assetBrowserModel)
+            {
+                return;
+            }
             m_assetBrowserFilerModel = assetBrowserModel->GetFilterModel();
         }
 
@@ -290,6 +288,10 @@ namespace AzToolsFramework
                     {
                         //Get the indexes above and below our entry to see what type are they.
                         QAbstractItemView* view = qobject_cast<QAbstractItemView*>(option.styleObject);
+                        if (!view || !view->model())
+                        {
+                            return;
+                        }
                         const QAbstractItemModel* viewModel = view->model();
 
                         const QModelIndex indexBelow = viewModel->index(index.row() + 1, index.column());
@@ -386,12 +388,10 @@ namespace AzToolsFramework
         void SearchEntryDelegate::DrawBranchPixMap(
             EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const
         {
-            const QPixmap& pixmap = m_branchIcons[branchType];
-
-            pixmap.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-            const QSize sizeDelta = size - pixmap.size();
+            const QPixmap scaledPixmap = m_branchIcons[branchType].scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            const QSize sizeDelta = size - scaledPixmap.size();
             const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
-            painter->drawPixmap(point + pointDelta, pixmap);
+            painter->drawPixmap(point + pointDelta, scaledPixmap);
         }
 
     } // namespace AssetBrowser

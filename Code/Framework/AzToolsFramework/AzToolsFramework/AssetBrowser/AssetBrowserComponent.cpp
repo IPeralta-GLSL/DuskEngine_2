@@ -33,8 +33,10 @@
 
 #include <QSharedPointer>
 #include <QDesktopServices>
+#include <QTimer>
 #include <QUrl>
 #include <QMenu>
+#include <QtWidgets/QApplication>
 #include <Asset/AssetProcessorMessages.h>
 
 namespace AzToolsFramework
@@ -53,7 +55,6 @@ namespace AzToolsFramework
             , m_changeset(new AssetEntryChangeset(m_databaseConnection, m_rootEntry))
         {
             m_assetBrowserModel->SetRootEntry(m_rootEntry);
-            // Create a single StyledBusyLabel that entries can use while loading.
             m_styledBusyLabel = new AzQtComponents::StyledBusyLabel();
             m_styledBusyLabel->SetIsBusy(true);
         }
@@ -94,8 +95,13 @@ namespace AzToolsFramework
 
         void AssetBrowserComponent::Deactivate()
         {
+            if (AzFramework::SocketConnection* socketConn = AzFramework::SocketConnection::GetInstance())
+            {
+                socketConn->RemoveMessageHandler(AZ_CRC_CE("FileProcessor::FileInfosNotification"), m_cbHandle);
+            }
+
             m_disposed = true;
-            NotifyUpdateThread();
+            m_updateWait.release();
             if (m_thread.joinable())
             {
                 m_thread.join(); // wait for the thread to finish
@@ -110,6 +116,8 @@ namespace AzToolsFramework
             AZ::SystemTickBus::Handler::BusDisconnect();
             AssetSystemBus::Handler::BusDisconnect();
             m_assetBrowserModel.reset();
+            delete m_styledBusyLabel;
+            m_styledBusyLabel = nullptr;
             EntryCache::DestroyInstance();
             AssetBrowserFavoritesManager::DestroyInstance();
         }
@@ -457,7 +465,7 @@ namespace AzToolsFramework
             switch (message.m_type)
             {
             case AssetSystem::FileInfosNotificationMessage::Synced:
-                PopulateAssets();
+                QTimer::singleShot(0, qApp, [this]() { PopulateAssets(); });
                 break;
             case AssetSystem::FileInfosNotificationMessage::FileAdded:
                 AddFile(message.m_fileID);

@@ -93,7 +93,6 @@ namespace AzToolsFramework
             AssetBrowserFavoritesView* m_parentView = nullptr;
 
             bool m_loading = false;
-            bool m_modifying = false;
             bool m_searchDisabled = false;
 
             QString GetProjectName();

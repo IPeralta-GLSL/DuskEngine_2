@@ -33,7 +33,7 @@ namespace AzToolsFramework
             void SetEntry(const AssetBrowserEntry* entry);
             const AssetBrowserEntry* GetEntry() const;
         private:
-            const AssetBrowserEntry* m_entry;
+            const AssetBrowserEntry* m_entry = nullptr;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

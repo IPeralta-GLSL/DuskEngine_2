@@ -119,6 +119,8 @@ namespace AzToolsFramework
 
             for (int index = 0; index < filterCount; index++)
             {
+                settings.setArrayIndex(index);
+
                 SavedTypeFilter* typeFilter = aznew SavedTypeFilter();
                 
                 typeFilter->categoryKey = settings.value("categoryKey").toString();
@@ -141,8 +143,10 @@ namespace AzToolsFramework
 
             settings.beginWriteArray("typeFilters", m_typeFilters.size());
 
-            for (auto typeFilter : m_typeFilters)
+            for (int index = 0; index < m_typeFilters.size(); index++)
             {
+                settings.setArrayIndex(index);
+                auto typeFilter = m_typeFilters[index];
                 settings.setValue("categoryKey", typeFilter->categoryKey);
                 settings.setValue("displayName", typeFilter->displayName);
                 settings.setValue("enabled", typeFilter->enabled);

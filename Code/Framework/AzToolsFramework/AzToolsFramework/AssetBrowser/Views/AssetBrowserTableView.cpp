@@ -44,16 +44,15 @@ namespace AzToolsFramework
 
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : QWidget(parent)
-            , m_tableViewWidget(new AzQtComponents::AssetFolderTableView(parent))
-            , m_tableViewProxyModel(new AssetBrowserTableViewProxyModel(parent))
-            , m_treeToTableProxyModel(new AssetBrowserTreeToTableProxyModel(parent))
-            , m_assetFilterModel(new AssetBrowserFilterModel(parent, true))
+            , m_tableViewWidget(new AzQtComponents::AssetFolderTableView(this))
+            , m_tableViewProxyModel(new AssetBrowserTableViewProxyModel(this))
+            , m_treeToTableProxyModel(new AssetBrowserTreeToTableProxyModel(this))
+            , m_assetFilterModel(new AssetBrowserFilterModel(this, true))
             , m_tableViewDelegate(new TableViewDelegate(m_tableViewWidget))
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
             // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.
             using namespace AzToolsFramework::AssetBrowser;
-            AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
 
             m_treeToTableProxyModel->setSourceModel(m_assetFilterModel);
             m_tableViewProxyModel->setSourceModel(m_assetFilterModel);
@@ -408,6 +407,11 @@ namespace AzToolsFramework
             const AssetBrowserEntry* item = m_tableViewProxyModel->mapToSource(m_tableViewProxyModel->GetRootIndex())
                                                 .data(AssetBrowserModel::Roles::EntryRole)
                                                 .value<const AssetBrowserEntry*>();
+            if (!item)
+            {
+                event->ignore();
+                return;
+            }
             AZStd::string pathName = item->GetFullPath();
 
             using namespace AzQtComponents;
@@ -539,7 +543,7 @@ namespace AzToolsFramework
                 m_tableViewWidget->setRootIndex({});
             }
 
-            m_assetFilterModel->sort(0, Qt::DescendingOrder);
+            m_assetFilterModel->sort(0, m_assetFilterModel->GetSortOrder());
         }
 
         void AssetBrowserTableView::UpdateFilterInLocalFilterModel()

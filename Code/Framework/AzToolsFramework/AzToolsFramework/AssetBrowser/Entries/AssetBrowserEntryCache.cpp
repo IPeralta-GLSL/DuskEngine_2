@@ -46,7 +46,7 @@ namespace AzToolsFramework
         {
             AZ_Assert(g_globalInstance, "Invalid call to DestroyInstance - no instance exists.");
             AZ_Assert(*g_globalInstance, "You can only call DestroyInstance if you have called CreateInstance.");
-            if (g_globalInstance)
+            if (g_globalInstance && *g_globalInstance)
             {
                 delete *g_globalInstance;
             }

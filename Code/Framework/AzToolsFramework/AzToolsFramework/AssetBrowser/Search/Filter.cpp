@@ -475,7 +475,7 @@ namespace AzToolsFramework
             clone->m_name = m_name;
             clone->m_tag = m_tag;
             clone->m_direction = m_direction;
-            clone->m_filter = FilterConstType(m_filter->Clone());
+            clone->m_filter = m_filter ? FilterConstType(m_filter->Clone()) : nullptr;
             return clone;
         }
 

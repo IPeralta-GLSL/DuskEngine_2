@@ -52,7 +52,6 @@ namespace AzToolsFramework
         // SourceThumbnail
         //////////////////////////////////////////////////////////////////////////
         static constexpr const char* DefaultFileIconPath = "Icons/AssetBrowser/Default_16.svg";
-        QMutex SourceThumbnail::m_mutex;
 
         SourceThumbnail::SourceThumbnail(SharedThumbnailKey key)
             : Thumbnail(key)
@@ -64,7 +63,12 @@ namespace AzToolsFramework
             m_state = State::Loading;
 
             auto sourceKey = azrtti_cast<const SourceThumbnailKey*>(m_key.get());
-            AZ_Assert(sourceKey, "Incorrect key type, excpected SourceThumbnailKey");
+            if (!sourceKey)
+            {
+                m_state = State::Failed;
+                QueueThumbnailUpdated();
+                return;
+            }
 
             bool foundIt = false;
             AZStd::string watchFolder;
@@ -101,7 +105,7 @@ namespace AzToolsFramework
                         foundIt = false;
                         AssetSystemRequestBus::BroadcastResult(foundIt, &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, resultPath, assetInfo, watchFolder);
 
-                        AZ_WarningOnce("Asset Browser", foundIt, "Unable to find source icon file in any source folders or gems: %s\n", resultPath);
+                        AZ_Warning("Asset Browser", foundIt, "Unable to find source icon file in any source folders or gems: %s\n", resultPath);
 
                         if (foundIt)
                         {
@@ -121,8 +125,8 @@ namespace AzToolsFramework
                 iconPathToUse = (engineRoot / DefaultFileIconPath).c_str();
             }
 
-            m_pixmap.load(iconPathToUse);
-            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
+            m_image.load(iconPathToUse);
+            m_state = m_image.isNull() ? State::Failed : State::Ready;
             QueueThumbnailUpdated();
         }
 

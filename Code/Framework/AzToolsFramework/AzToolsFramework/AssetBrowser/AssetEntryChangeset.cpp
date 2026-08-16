@@ -134,6 +134,17 @@ namespace AzToolsFramework
         void AssetEntryChangeset::RemoveFile(const AZ::s64& fileId)
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_mutex);
+
+            m_fileIdsToAdd.erase(fileId);
+
+            AZStd::erase_if(
+                m_changes,
+                [fileId](const auto& change)
+                {
+                    auto addFileChange = azrtti_cast<AddFileChange*>(change);
+                    return addFileChange && addFileChange->GetFile().m_fileID == fileId;
+                });
+
             m_changes.emplace_back(aznew RemoveFileChange(fileId));
         }
 
@@ -146,6 +157,17 @@ namespace AzToolsFramework
         void AssetEntryChangeset::RemoveSource(const AZ::Uuid& sourceUuid)
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_mutex);
+
+            m_sourceUuidsToAdd.erase(sourceUuid);
+
+            AZStd::erase_if(
+                m_changes,
+                [sourceUuid](const auto& change)
+                {
+                    auto addSourceChange = azrtti_cast<AddSourceChange*>(change);
+                    return addSourceChange && addSourceChange->GetSource().second.m_sourceGuid == sourceUuid;
+                });
+
             m_changes.emplace_back(aznew RemoveSourceChange(sourceUuid));
         }
 

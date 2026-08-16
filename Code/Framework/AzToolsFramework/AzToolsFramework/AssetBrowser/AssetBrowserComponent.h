@@ -118,7 +118,7 @@ namespace AzToolsFramework
             AZStd::thread m_thread;
 
             //! wait until database is ready
-            bool m_dbReady;
+            AZStd::atomic_bool m_dbReady;
             //! have entries been populated yet
             bool m_entriesReady = false;
             //! is query waiting for more update requests

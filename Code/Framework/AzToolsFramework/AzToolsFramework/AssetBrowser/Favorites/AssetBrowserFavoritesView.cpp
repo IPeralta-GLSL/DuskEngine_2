@@ -179,8 +179,6 @@ namespace AzToolsFramework
             }
         }
 
-        int slideroffset = 5;
-
         void AssetBrowserFavoritesView::resizeEvent(QResizeEvent* event)
         {
             if (isExpanded(m_favoritesModel->GetTopLevelIndex()))

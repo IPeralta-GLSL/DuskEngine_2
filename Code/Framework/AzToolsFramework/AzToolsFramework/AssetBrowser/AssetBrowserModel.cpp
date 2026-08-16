@@ -73,7 +73,7 @@ namespace AzToolsFramework
 
             AssetBrowserEntry* cursor = m_rootEntry.get();
 
-            if (cursor && absoluteAssetPath.contains(cursor->GetFullPath().c_str()))
+            if (cursor && absoluteAssetPath.startsWith(cursor->GetFullPath().c_str()))
             {
                 while (true)
                 {
@@ -566,6 +566,7 @@ namespace AzToolsFramework
         void AssetBrowserModel::EndReset()
         {
             m_isResetting = false;
+            m_loaded = true;
             Q_EMIT endResetModel();
         }
 
@@ -627,7 +628,7 @@ namespace AzToolsFramework
             }
 
             int row = entry->row();
-            int column = 1;
+            int column = static_cast<int>(AssetBrowserEntry::Column::Path);
             index = createIndex(row, column, entry);
             return true;
         }
@@ -645,12 +646,21 @@ namespace AzToolsFramework
                 m_newlyCreatedAssetPathsToCreatorBusIds.erase(fullpath);
 
                 QTimer::singleShot(0, this,
-                    [this, entry]()
+                    [this, entryPath = AZ::IO::Path(entry->GetFullPath()).AsPosix()]()
                     {
-                        QModelIndex index;
-                        if (GetEntryIndex(entry, index))
+                        AZStd::vector<const AssetBrowserEntry*> entries;
+                        m_rootEntry->GetChildrenRecursively(entries);
+                        for (const AssetBrowserEntry* candidate : entries)
                         {
-                            Q_EMIT RequestOpenItemForEditing(index);
+                            if (AZ::IO::Path(candidate->GetFullPath()).AsPosix() == entryPath)
+                            {
+                                QModelIndex index;
+                                if (GetEntryIndex(const_cast<AssetBrowserEntry*>(candidate), index))
+                                {
+                                    Q_EMIT RequestOpenItemForEditing(index);
+                                }
+                                break;
+                            }
                         }
                     });
             }

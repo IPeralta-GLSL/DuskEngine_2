@@ -34,7 +34,15 @@ namespace AzToolsFramework
             {
                 if (!m_previewer || m_previewer->GetName() != factory->GetName())
                 {
-                    InstallPreviewer(factory->CreatePreviewer(this));
+                    if (Previewer* previewer = factory->CreatePreviewer(this))
+                    {
+                        InstallPreviewer(previewer);
+                    }
+                    else
+                    {
+                        Clear();
+                        return;
+                    }
                 }
                 m_previewer->Display(entry);
             }

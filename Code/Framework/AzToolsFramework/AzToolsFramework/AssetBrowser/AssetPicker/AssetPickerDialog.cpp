@@ -43,8 +43,8 @@ namespace AzToolsFramework
         AssetPickerDialog::AssetPickerDialog(AssetSelectionModel& selection, QWidget* parent)
             : QDialog(parent)
             , m_ui(new Ui::AssetPickerDialogClass())
-            , m_filterModel(new AssetBrowserFilterModel(parent))
-            , m_listModel(new AssetBrowserListModel(parent))
+            , m_filterModel(new AssetBrowserFilterModel(this))
+            , m_listModel(new AssetBrowserListModel(this))
             , m_selection(selection)
             , m_hasFilter(false)
         {
@@ -53,7 +53,13 @@ namespace AzToolsFramework
             m_ui->setupUi(this);
             m_ui->m_searchWidget->Setup(true, false);
 
-            m_ui->m_searchWidget->GetFilter()->AddFilter(m_selection.GetDisplayFilter());
+            auto displayFilter = m_selection.GetDisplayFilter();
+            if (!displayFilter)
+            {
+                AZ_Warning("AssetPickerDialog", false, "AssetSelectionModel has no display filter; using empty filter.");
+                displayFilter = FilterConstType(aznew CompositeFilter(CompositeFilter::LogicOperatorType::AND));
+            }
+            m_ui->m_searchWidget->GetFilter()->AddFilter(displayFilter);
 
             using namespace AzToolsFramework::AssetBrowser;
             AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
@@ -61,7 +67,7 @@ namespace AzToolsFramework
             m_filterModel->setSourceModel(m_assetBrowserModel);
             m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
-            QString name = m_selection.GetDisplayFilter()->GetName();
+            QString name = displayFilter->GetName();
 
             m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
             m_ui->m_assetBrowserTreeViewWidget->setSelectionMode(selection.GetMultiselect() ?
@@ -73,7 +79,7 @@ namespace AzToolsFramework
             m_ui->m_buttonBox->button(QDialogButtonBox::Ok)->setProperty("class", "Primary");
             m_ui->m_buttonBox->button(QDialogButtonBox::Cancel)->setProperty("class", "Secondary");
 
-            connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel.data(), &AssetBrowserFilterModel::filterUpdatedSlot);
+            connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetPickerDialog::OnFilterUpdated);
             connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, this, [this]()
             {
                 const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
@@ -89,17 +95,19 @@ namespace AzToolsFramework
             m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_" + name);
 
             bool selectedAsset = false;
+            bool selectedAssetId = false;
 
             for (auto& assetId : selection.GetSelectedAssetIds())
             {
                 if (assetId.IsValid())
                 {
                     selectedAsset = true;
+                    selectedAssetId = true;
                     m_ui->m_assetBrowserTreeViewWidget->SelectProduct(assetId);
                 }
             }
 
-            if (selection.GetSelectedAssetIds().empty())
+            if (!selectedAssetId)
             {
                 for (auto& filePath : selection.GetSelectedFilePaths())
                 {
@@ -123,7 +131,6 @@ namespace AzToolsFramework
             m_ui->m_assetBrowserListViewWidget->setVisible(false);
             if (ed_useNewAssetPickerView)
             {
-                m_ui->m_assetBrowserListViewWidget->setVisible(false);
                 m_ui->m_assetBrowserListViewWidget->setVisible(true);
                 m_listModel->setSourceModel(m_filterModel.get());
                 m_ui->m_assetBrowserListViewWidget->setModel(m_listModel.get());
@@ -242,7 +249,7 @@ namespace AzToolsFramework
         {
             // Until search widget is revised, Return key should not close the dialog,
             // it is used in search widget interaction
-            if (e->key() == Qt::Key_Return)
+            if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)
             {
                 if (EvaluateSelection())
                 {
@@ -263,9 +270,16 @@ namespace AzToolsFramework
             m_selection.GetResults().clear();
             AZStd::unordered_set<const AssetBrowserEntry*> entries;
 
+            auto selectionFilter = m_selection.GetSelectionFilter();
+            if (!selectionFilter)
+            {
+                AZ_Warning("AssetPickerDialog", false, "AssetSelectionModel has no selection filter.");
+                return false;
+            }
+
             for (auto entry : selectedAssets)
             {
-                m_selection.GetSelectionFilter()->Filter(entries, entry);
+                selectionFilter->Filter(entries, entry);
 
                 if (!entries.empty() && !m_selection.GetMultiselect())
                 {

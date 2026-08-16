@@ -84,6 +84,10 @@ namespace AzToolsFramework
 
         const QPixmap& Thumbnail::GetPixmap() const
         {
+            if (m_pixmap.isNull() && !m_image.isNull())
+            {
+                m_pixmap = QPixmap::fromImage(m_image);
+            }
             return m_pixmap;
         }
 

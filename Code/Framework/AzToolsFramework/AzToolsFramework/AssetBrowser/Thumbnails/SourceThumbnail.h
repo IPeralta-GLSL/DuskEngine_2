@@ -45,7 +45,6 @@ namespace AzToolsFramework
             void Load() override;
 
         private:
-            static QMutex m_mutex;
         };
 
         //! SourceAssetBrowserEntry thumbnails

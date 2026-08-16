@@ -92,12 +92,18 @@ namespace AzToolsFramework
 
         void AssetBrowserListModel::SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
         {
-            for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
+            for (auto it = m_indexMap.begin(); it != m_indexMap.end(); ++it)
             {
-                if (!m_indexMap.contains(row))
+                const QModelIndex sourceIndex = it.value();
+                if (sourceIndex.parent() == topLeft.parent() &&
+                    sourceIndex.row() >= topLeft.row() && sourceIndex.row() <= bottomRight.row() &&
+                    sourceIndex.column() >= topLeft.column() && sourceIndex.column() <= bottomRight.column())
                 {
-                    UpdateListModelMaps();
-                    return;
+                    const QModelIndex changedIndex = index(it.key(), sourceIndex.column());
+                    if (changedIndex.isValid())
+                    {
+                        Q_EMIT dataChanged(changedIndex, changedIndex);
+                    }
                 }
             }
         }
@@ -189,7 +195,6 @@ namespace AzToolsFramework
         void AssetBrowserListModel::UpdateListModelMaps()
         {
             beginResetModel();
-            emit layoutAboutToBeChanged();
 
             if (!m_indexMap.isEmpty() || !m_rowMap.isEmpty())
             {
@@ -199,7 +204,6 @@ namespace AzToolsFramework
             AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
                 m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
             BuildListModelMap(sourceModel());
-            emit layoutChanged();
             endResetModel();
         }
         
@@ -245,7 +249,12 @@ namespace AzToolsFramework
                         Path toPath;
                         bool isFolder{ true };
 
-                        if (entry && (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
+                        if (!entry)
+                        {
+                            continue;
+                        }
+
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                         {
                             fromPath = entry->GetFullPath();
                             PathView filename = fromPath.Filename();

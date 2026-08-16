@@ -150,7 +150,7 @@ namespace AzToolsFramework
             if (isFolder)
             {
                 Path tempPath = item->GetFullPath();
-                tempPath.ReplaceFilename(newVal.toStdString().c_str());
+                tempPath.ReplaceFilename(newVal.toUtf8().constData());
                 // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
                 // This code is needed until that bug is fixed. GHI 13340
                 if (isEmptyFolder)
@@ -171,7 +171,7 @@ namespace AzToolsFramework
                 fromPath = item->GetFullPath();
                 PathView extension = fromPath.Extension();
                 toPath = fromPath;
-                toPath.ReplaceFilename(newVal.toStdString().c_str());
+                toPath.ReplaceFilename(newVal.toUtf8().constData());
                 toPath.ReplaceExtension(extension);
             }
             // if the source path is the same as the destination path then we don't need to go any further
@@ -384,15 +384,15 @@ namespace AzToolsFramework
                             AssetChangeReportResponse deleteResponse;
                             if (SendRequest(deleteRequest, deleteResponse))
                             {
-                                if (!response.m_lines.empty())
+                                if (!deleteResponse.m_lines.empty())
                                 {
                                     AZStd::string deleteMessage;
-                                    AZ::StringFunc::Join(deleteMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
+                                    AZ::StringFunc::Join(deleteMessage, deleteResponse.m_lines.begin(), deleteResponse.m_lines.end(), "\n");
                                     AzQtComponents::FixedWidthMessageBox deleteMsgBox(
                                         600,
                                         QObject::tr(isFolder ? "After Delete Folder Information" : "After Delete Asset Information"),
-                                        response.m_success ? QObject::tr("The asset has been deleted.") :
-                                                             QObject::tr("Deletion has failed."),
+                                        deleteResponse.m_success ? QObject::tr("The asset has been deleted.") :
+                                                                   QObject::tr("Deletion has failed."),
                                         QObject::tr("More information can be found by pressing \"Show Details...\"."),
                                         deleteMessage.c_str(),
                                         QMessageBox::Information,
@@ -403,7 +403,7 @@ namespace AzToolsFramework
                                 }
                                 else
                                 {
-                                    if (!response.m_success)
+                                    if (!deleteResponse.m_success)
                                     {
                                         AzQtComponents::FixedWidthMessageBox deleteMsgBox(
                                             600,
@@ -615,18 +615,18 @@ namespace AzToolsFramework
                                 toPath);
                         }
 
-                        if (!response.m_lines.empty())
+                        if (!moveResponse.m_lines.empty())
                         {
                             AZStd::string moveMessage;
-                            AZ::StringFunc::Join(moveMessage, response.m_lines.begin(), response.m_lines.end(), "\n");
+                            AZ::StringFunc::Join(moveMessage, moveResponse.m_lines.begin(), moveResponse.m_lines.end(), "\n");
                             AzQtComponents::FixedWidthMessageBox moveMsgBox(
                                 600,
                                 QObject::tr(isFolder ? "After Move Folder Information" : "After Move Asset Information"),
-                                response.m_success ? QObject::tr("The asset has been moved.") :
-                                                     QObject::tr("The asset could not be moved."),
+                                moveResponse.m_success ? QObject::tr("The asset has been moved.") :
+                                                         QObject::tr("The asset could not be moved."),
                                 QObject::tr("More information can be found by pressing \"Show Details...\"."),
                                 moveMessage.c_str(),
-                                response.m_success ? QMessageBox::Information : QMessageBox::Critical,
+                                moveResponse.m_success ? QMessageBox::Information : QMessageBox::Critical,
                                 QMessageBox::Ok,
                                 QMessageBox::Ok,
                                 parent);
@@ -634,7 +634,7 @@ namespace AzToolsFramework
                         }
                         else
                         {
-                            if (!response.m_success) // failed with no reason given
+                            if (!moveResponse.m_success) // failed with no reason given
                             {
                                 AzQtComponents::FixedWidthMessageBox moveMsgBox(
                                     600,
@@ -666,8 +666,8 @@ namespace AzToolsFramework
         void AssetBrowserViewUtils::CopyEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder)
         {
             using namespace AZ::IO;
-            Path oldPath = fromPath.data();
-            Path newPath = toPath.data();
+            Path oldPath(fromPath);
+            Path newPath(toPath);
 
             if (oldPath == newPath)
             {

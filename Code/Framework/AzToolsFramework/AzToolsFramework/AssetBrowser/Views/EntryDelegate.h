@@ -88,7 +88,7 @@ namespace AzToolsFramework
             void DrawBranchPixMap(EntryBranchType branchType, QPainter* painter, const QPoint& point, const QSize& size) const;
 
         private:
-            AssetBrowserFilterModel* m_assetBrowserFilerModel;
+            AssetBrowserFilterModel* m_assetBrowserFilerModel = nullptr;
             QMap<EntryBranchType, QPixmap> m_branchIcons;
         };
     } // namespace AssetBrowser

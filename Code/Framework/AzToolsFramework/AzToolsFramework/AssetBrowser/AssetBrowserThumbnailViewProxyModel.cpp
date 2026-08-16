@@ -49,7 +49,7 @@ namespace AzToolsFramework
                 }
             case Qt::ToolTipRole:
                 {
-                    return assetBrowserEntry->data(11).toString();
+                    return assetBrowserEntry->data(static_cast<int>(AssetBrowserEntry::Column::DisplayName)).toString();
                 }
             case static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExpandable):
                 {
@@ -155,7 +155,12 @@ namespace AzToolsFramework
                         Path toPath;
                         bool isFolder{ true };
 
-                        if (entry && (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
+                        if (!entry)
+                        {
+                            continue;
+                        }
+
+                        if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                         {
                             fromPath = entry->GetFullPath();
                             PathView filename = fromPath.Filename();

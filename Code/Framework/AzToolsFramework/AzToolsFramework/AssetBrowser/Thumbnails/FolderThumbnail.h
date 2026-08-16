@@ -29,7 +29,6 @@ namespace AzToolsFramework
 
             FolderThumbnailKey(const char* folderPath);
             const AZStd::string& GetFolderPath() const;
-            bool IsGem() const;
             bool Equals(const ThumbnailKey* other) const override;
 
         protected:

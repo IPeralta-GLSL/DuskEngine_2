@@ -25,7 +25,6 @@ namespace AzToolsFramework
 
         class AZTF_API AssetBrowserListModel
             : public QSortFilterProxyModel
-            , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
 

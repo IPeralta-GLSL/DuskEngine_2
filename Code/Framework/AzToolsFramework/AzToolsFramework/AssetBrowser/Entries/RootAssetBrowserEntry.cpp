@@ -54,8 +54,10 @@ namespace AzToolsFramework
         void RootAssetBrowserEntry::PrepareForReset()
         {
             RemoveChildren();
-            auto entryCache = EntryCache::GetInstance();
-            entryCache->Clear();
+            if (auto entryCache = EntryCache::GetInstance())
+            {
+                entryCache->Clear();
+            }
         }
 
         void RootAssetBrowserEntry::Update(const char* enginePath)
@@ -102,11 +104,16 @@ namespace AzToolsFramework
         void RootAssetBrowserEntry::AddScanFolder(const AssetDatabase::ScanFolderDatabaseEntry& scanFolderDatabaseEntry)
         {
             auto entryCache = EntryCache::GetInstance();
+            auto fileIO = AZ::IO::FileIOBase::GetInstance();
+            if (!entryCache || !fileIO)
+            {
+                return;
+            }
 
             // if it doesn't exist on disk yet, don't create it on the gui, yet.  We cache its info for later.
             entryCache->m_knownScanFolders[scanFolderDatabaseEntry.m_scanFolderID] = scanFolderDatabaseEntry.m_scanFolder;
 
-            if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(scanFolderDatabaseEntry.m_scanFolder.c_str()))
+            if (fileIO->IsDirectory(scanFolderDatabaseEntry.m_scanFolder.c_str()))
             {
                 const auto& scanFolder = CreateFolders(scanFolderDatabaseEntry.m_scanFolder, this, true);
                 entryCache->m_scanFolderIdMap[scanFolderDatabaseEntry.m_scanFolderID] = scanFolder;
@@ -185,17 +192,20 @@ namespace AzToolsFramework
                     {
                         auto& doc = result.GetValue();
 
-                        const rapidjson::Value& metadata = doc["metadata"];
-                        if (metadata.HasMember("dimension"))
+                        if (doc.HasMember("metadata") && doc["metadata"].IsObject())
                         {
-                            const rapidjson::Value& dimension = metadata["dimension"];
-                            if (dimension.IsArray())
+                            const rapidjson::Value& metadata = doc["metadata"];
+                            if (metadata.HasMember("dimension"))
                             {
-                                source->m_dimension.SetX(static_cast<float>(dimension[0].GetDouble()));
-                                source->m_dimension.SetY(static_cast<float>(dimension[1].GetDouble()));
-                                source->m_dimension.SetZ(static_cast<float>(dimension[2].GetDouble()));
+                                const rapidjson::Value& dimension = metadata["dimension"];
+                                if (dimension.IsArray() && dimension.Size() >= 3 &&
+                                    dimension[0].IsNumber() && dimension[1].IsNumber() && dimension[2].IsNumber())
+                                {
+                                    source->m_dimension.SetX(static_cast<float>(dimension[0].GetDouble()));
+                                    source->m_dimension.SetY(static_cast<float>(dimension[1].GetDouble()));
+                                    source->m_dimension.SetZ(static_cast<float>(dimension[2].GetDouble()));
+                                }
                             }
-                        }
                         if (metadata.HasMember("vertices"))
                         {
                             const rapidjson::Value& vertices = metadata["vertices"];
@@ -203,6 +213,7 @@ namespace AzToolsFramework
                             {
                                 source->m_vertices = vertices.GetUint();
                             }
+                        }
                         }
                     }
                 }

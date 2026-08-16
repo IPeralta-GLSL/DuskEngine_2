@@ -134,6 +134,19 @@ namespace AzToolsFramework
                     inputString = AZStd::string_view(inputString.begin() + newline_pos + 1, inputString.end());
                     newline_pos = inputString.find('\n', 0);
                 }
+                if (!inputString.empty())
+                {
+                    const AssetBrowserEntry* target = FindFromString(inputString);
+                    if (target)
+                    {
+                        anyFound = true;
+                        if (!alreadyAdded.contains(target))
+                        {
+                            entries.push_back(target);
+                            alreadyAdded.insert(target);
+                        }
+                    }
+                }
                 return anyFound;
             }
 

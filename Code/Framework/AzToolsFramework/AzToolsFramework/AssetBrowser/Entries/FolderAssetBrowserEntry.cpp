@@ -19,7 +19,10 @@ namespace AzToolsFramework
         FolderAssetBrowserEntry::FolderAssetBrowserEntry()
             : m_folderUuid(AZ::Uuid::CreateRandom())
         {
-            EntryCache::GetInstance()->m_folderUuidMap[m_folderUuid] = this;
+            if (EntryCache* cache = EntryCache::GetInstance())
+            {
+                cache->m_folderUuidMap[m_folderUuid] = this;
+            }
         }
 
         FolderAssetBrowserEntry::~FolderAssetBrowserEntry()
@@ -83,7 +86,8 @@ namespace AzToolsFramework
         {
             if (EntryCache* cache = EntryCache::GetInstance())
             {
-                return cache->m_folderUuidMap[folderUuid];
+                auto it = cache->m_folderUuidMap.find(folderUuid);
+                return it != cache->m_folderUuidMap.end() ? it->second : nullptr;
             }
             return nullptr;
         }

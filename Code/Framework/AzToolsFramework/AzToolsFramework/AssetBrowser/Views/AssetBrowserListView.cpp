@@ -109,7 +109,10 @@ namespace AzToolsFramework
         void AssetBrowserListView::setModel(QAbstractItemModel* model)
         {
             m_listModel = qobject_cast<AssetBrowserListModel*>(model);
-            AZ_Assert(m_listModel, "Expecting AssetBrowserListModel");
+            if (!m_listModel)
+            {
+                return;
+            }
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_listModel->sourceModel());
             m_delegate->Init();
             AzQtComponents::TableView::setModel(model);
@@ -118,7 +121,10 @@ namespace AzToolsFramework
             header()->setStretchLastSection(true);
             header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
             header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
-            UpdateSizeSlot(parentWidget()->width());
+            if (parentWidget())
+            {
+                UpdateSizeSlot(parentWidget()->width());
+            }
             header()->setSortIndicatorShown(false);
             header()->setSectionsClickable(false);
         }
@@ -129,6 +135,7 @@ namespace AzToolsFramework
                 event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
             {
                 event->accept();
+                return;
             }
             event->ignore();
         }
@@ -286,7 +293,10 @@ namespace AzToolsFramework
 
         void AssetBrowserListView::OnAssetBrowserComponentReady()
         {
-            UpdateSizeSlot(parentWidget()->width());
+            if (parentWidget())
+            {
+                UpdateSizeSlot(parentWidget()->width());
+            }
         }
 
         void AssetBrowserListView::UpdateSizeSlot(int newWidth)

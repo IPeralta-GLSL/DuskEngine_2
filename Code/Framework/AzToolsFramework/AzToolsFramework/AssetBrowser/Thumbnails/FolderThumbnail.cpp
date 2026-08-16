@@ -45,11 +45,16 @@ namespace AzToolsFramework
         void FolderThumbnail::Load()
         {
             m_state = State::Loading;
-            AZ_Assert(azrtti_cast<const FolderThumbnailKey*>(m_key.get()), "Incorrect key type, excpected FolderThumbnailKey");
+            if (!azrtti_cast<const FolderThumbnailKey*>(m_key.get()))
+            {
+                m_state = State::Failed;
+                QueueThumbnailUpdated();
+                return;
+            }
 
             auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / FolderIconPath;
-            m_pixmap.load(absoluteIconPath.c_str());
-            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
+            m_image.load(absoluteIconPath.c_str());
+            m_state = m_image.isNull() ? State::Failed : State::Ready;
             QueueThumbnailUpdated();
         }
 

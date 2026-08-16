@@ -365,7 +365,7 @@ namespace AzToolsFramework
 
         const AssetBrowserEntry* AssetBrowserEntry::GetChild(int index) const
         {
-            if (index < m_children.size())
+            if (index >= 0 && index < m_children.size())
             {
                 return m_children[index];
             }
@@ -374,7 +374,7 @@ namespace AzToolsFramework
 
         AssetBrowserEntry* AssetBrowserEntry::GetChild(int index)
         {
-            if (index < m_children.size())
+            if (index >= 0 && index < m_children.size())
             {
                 return m_children[index];
             }

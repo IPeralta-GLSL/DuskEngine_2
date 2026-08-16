@@ -18,6 +18,7 @@ AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: con
                                                                     // 4251: 'QLocale::d': class 'QSharedDataPointer<QLocalePrivate>' needs to have dll-interface to be used by clients of class 'QLocale'
                                                                     // 4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
 
+#include <QImage>
 #include <QObject>
 #include <QPixmap>
 AZ_POP_DISABLE_WARNING
@@ -106,7 +107,8 @@ namespace AzToolsFramework
             AZStd::chrono::steady_clock::time_point m_lastTimeUpdated = AZStd::chrono::steady_clock::now();
             AZStd::atomic<State> m_state;
             SharedThumbnailKey m_key;
-            QPixmap m_pixmap;
+            QImage m_image;
+            mutable QPixmap m_pixmap;
         };
 
         typedef QSharedPointer<Thumbnail> SharedThumbnail;

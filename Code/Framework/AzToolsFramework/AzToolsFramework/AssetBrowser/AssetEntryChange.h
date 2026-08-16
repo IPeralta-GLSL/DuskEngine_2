@@ -57,6 +57,8 @@ namespace AzToolsFramework
             AddFileChange(const AssetDatabase::FileDatabaseEntry& file)
                 : m_file(file) {}
 
+            const AssetDatabase::FileDatabaseEntry& GetFile() const { return m_file; }
+
             bool Apply(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry) override
             {
                 rootEntry->AddFile(m_file);
@@ -93,6 +95,8 @@ namespace AzToolsFramework
 
             AddSourceChange(const SourceWithFileID& source)
                 : m_source(source) {}
+
+            const SourceWithFileID& GetSource() const { return m_source; }
 
             bool Apply(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry) override
             {

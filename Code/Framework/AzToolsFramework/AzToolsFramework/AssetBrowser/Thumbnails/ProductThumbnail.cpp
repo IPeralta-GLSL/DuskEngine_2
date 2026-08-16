@@ -35,7 +35,7 @@ namespace AzToolsFramework
 
         size_t ProductThumbnailKey::GetHash() const
         {
-            return m_assetType.GetHash();
+            return AZStd::hash<AZ::Data::AssetId>()(m_assetId);
         }
 
         bool ProductThumbnailKey::Equals(const ThumbnailKey* other) const
@@ -44,7 +44,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            // products displayed in Asset Browser have icons based on asset type, so multiple different products with same asset type will have same thumbnail
+            // products are keyed by asset id so each product gets its own thumbnail
             return m_assetId == azrtti_cast<const ProductThumbnailKey*>(other)->GetAssetId();
         }
 
@@ -62,7 +62,12 @@ namespace AzToolsFramework
             m_state = State::Loading;
 
             auto productKey = azrtti_cast<const ProductThumbnailKey*>(m_key.get());
-            AZ_Assert(productKey, "Incorrect key type, excpected ProductThumbnailKey");
+            if (!productKey)
+            {
+                m_state = State::Failed;
+                QueueThumbnailUpdated();
+                return;
+            }
 
             QString iconPath;
             AZ::AssetTypeInfoBus::EventResult(iconPath, productKey->GetAssetType(), &AZ::AssetTypeInfo::GetBrowserIcon);
@@ -96,8 +101,8 @@ namespace AzToolsFramework
                 iconPath = QString::fromUtf8(DEFAULT_PRODUCT_ICON_PATH);
             }
 
-            m_pixmap.load(iconPath);
-            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
+            m_image.load(iconPath);
+            m_state = m_image.isNull() ? State::Failed : State::Ready;
             QueueThumbnailUpdated();
         }
 
