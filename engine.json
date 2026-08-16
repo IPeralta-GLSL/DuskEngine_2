@@ -94,7 +94,8 @@
         "plugins/UiBasics",
         "plugins/VideoPlaybackFramework",
         "plugins/VirtualGamepad",
-        "plugins/WhiteBox"
+        "plugins/WhiteBox",
+        "plugins/JoltPhysics"
     ],
     "gem_names": [
         "Atom_Bootstrap",
