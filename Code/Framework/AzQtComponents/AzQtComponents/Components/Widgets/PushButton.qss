@@ -29,7 +29,7 @@
 
 QPushButton
 {
-    color: #cccccc;
+    color: #C9C9CE;
     font-family: "Open Sans";
     font-size: 12px;
 }
@@ -42,7 +42,7 @@ QPushButton:pressed
 
 QPushButton:disabled
 {
-    color: #999999;
+    color: #8E8E94;
 }
 
 QPushButton:flat

@@ -14,7 +14,7 @@
 *
 {
     background-color: transparent;
-    color: #cccccc;
+    color: #C9C9CE;
     font-family: "Manrope";
     font-weight: 400;
 }
@@ -25,7 +25,7 @@ QTreeView
 {
     /* give a background color to views without parent (completer popups)
        it is reset to transparent in the next setting for views with a parent */
-    background-color: #1e1e1e;
+    background-color: #1B1B1F;
 }
 
 QWidget > QTableView,
@@ -43,25 +43,25 @@ QWidget > QTreeView
 .QFrame[frameShape="5"],
 .QFrame[frameShape="6"]
 {
-    background-color: #3a3a3a;
+    background-color: #3A3A41;
 }
 
 QMainWindow:separator
 {
-    background-color: #3a3a3a;
+    background-color: #3A3A41;
 }
 
 QMainWindow::separator:hover
 {
-    background-color: #555555;
+    background-color: #5A5A60;
 }
 
 QMainWindow,
 QDialog,
 QDockWidget
 {
-    color: #cccccc;
-    background-color: #1e1e1e;
+    color: #C9C9CE;
+    background-color: #1B1B1F;
 }
 
 QTextEdit,
@@ -72,12 +72,12 @@ QSpinBox,
 QDoubleSpinBox,
 QComboBox
 {
-    background-color: #3a3a3a;
-    color: #cccccc;
+    background-color: #3A3A41;
+    color: #C9C9CE;
     font-family: "Manrope";
     border-radius: 0;
     border-width: 0px;
-    border-color: #555555;
+    border-color: #5A5A60;
     font-size: 12px;
     line-height: 16px;
 }
@@ -86,8 +86,8 @@ QTextEdit,
 QPlainText,
 QPlainTextEdit
 {
-    background-color: #3a3a3a;
-    color: #cccccc;
+    background-color: #3A3A41;
+    color: #C9C9CE;
     margin: 2px;
     border-width: 0px;
     border-style: solid;
@@ -100,7 +100,7 @@ QPlainTextEdit:hover
     margin: 1px;
     border-width: 1px;
     border-style: solid;
-    border-color: #555555;
+    border-color: #5A5A60;
 }
 
 QTextEdit:focus,
@@ -109,8 +109,8 @@ QPlainTextEdit:focus
 {
     margin: 1px;
     border-width: 1px;
-    border-color: #666666;
-    background-color: #3a3a3a;
+    border-color: #5A5A60;
+    background-color: #3A3A41;
 }
 
 @import "AssetFolderListView.qss";

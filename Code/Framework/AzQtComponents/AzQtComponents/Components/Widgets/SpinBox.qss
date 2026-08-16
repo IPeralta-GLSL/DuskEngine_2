@@ -33,7 +33,7 @@ QDoubleSpinBox:hover
 QSpinBox:hover,
 QDoubleSpinBox:hover
 {
-    border-color: #222222;
+    border-color: #232327;
     background-image: url(:/SpinBox/hoverBackground.svg);
     background-repeat: no-repeat;
     background-position: right;
@@ -42,7 +42,7 @@ QDoubleSpinBox:hover
 QSpinBox:focus,
 QDoubleSpinBox:focus
 {
-    border-color: #94D2FF;
+    border-color: #4CAF50;
     background-color: #FFFFFF;
 }
 
@@ -69,8 +69,8 @@ QDoubleSpinBox:enabled[HasError=true]
 QSpinBox:disabled,
 QDoubleSpinBox:disabled
 {
-    background-color: #666666;
-    color: #999999;
+    background-color: #5A5A60;
+    color: #8E8E94;
 }
 
 QSpinBox::up-button,

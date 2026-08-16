@@ -15,7 +15,7 @@ QMenuBar
     margin: 0px;
     spacing: 0px;
     border-bottom-width: 2px;
-    border-bottom-color: #111111;
+    border-bottom-color: #1B1B1F;
     border-bottom-style: solid;
 }
 
@@ -27,10 +27,10 @@ QMenuBar::item
 
 QMenuBar::item:selected
 {
-    background-color: #111111;
+    background-color: #1B1B1F;
 }
 
 QMenuBar::item:pressed
 {
-    background-color: #111111;
+    background-color: #1B1B1F;
 }

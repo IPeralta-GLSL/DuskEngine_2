@@ -10,7 +10,7 @@
 QTabWidget,
 QTabBar
 {
-    background-color: #1e1e1e;
+    background-color: #1B1B1F;
 }
 
 QTabBar::tab
@@ -20,12 +20,12 @@ QTabBar::tab
 
 AzQtComponents--TabWidget
 {
-    background-color: #1e1e1e;
+    background-color: #1B1B1F;
 }
 
 AzQtComponents--TabWidget > QWidget
 {
-    background-color: #1e1e1e;
+    background-color: #1B1B1F;
 }
 
 AzQtComponents--TabWidget:pane
@@ -41,18 +41,18 @@ AzQtComponents--TabWidget.Empty:pane
 AzQtComponents--TabBar
 {
     qproperty-drawBase: false; /* Stop the base being visible during tab position change animation */
-    background-color: #2d2d2d;
+    background-color: #232327;
     margin-bottom: 0;
-    min-height: 28px;
+    min-height: 24px;
 }
 
 AzQtComponents--TabBar:tab
 {
-    border: 1px solid #3a3a3a;
-    background-color: #2d2d2d;
+    border: 1px solid #34343A;
+    background-color: #232327;
 
     text-align: left;
-    padding: 6px -2px 6px 9px; /* top, right, bottom, left */
+    padding: 4px -2px 4px 9px; /* top, right, bottom, left */
 }
 
 AzQtComponents--TabBar::tab:text
@@ -63,13 +63,13 @@ AzQtComponents--TabBar::tab:text
 
 AzQtComponents--TabBar::tab:selected
 {
-    border-bottom: 1px solid #555555;
+    border-bottom: 2px solid #4CAF50;
 }
 
 AzQtComponents--TabBar::tab:selected,
 AzQtComponents--TabBar::tab:hover
 {
-    background-color: #3a3a3a;
+    background-color: #3A3A41;
 }
 
 AzQtComponents--TabBar:focus
@@ -82,18 +82,18 @@ AzQtComponents--TabBar:focus
 
 AzQtComponents--TabWidget.Secondary
 {
-    background-color: #1e1e1e;
+    background-color: #1B1B1F;
 }
 
 AzQtComponents--TabWidget.Secondary.Bordered
 {
-    border: 1px solid #3a3a3a;
+    border: 1px solid #3A3A41;
 }
 
 AzQtComponents--TabWidget.Secondary:pane
 {
     border: 0 none;
-    border-top: 2px solid #3a3a3a;
+    border-top: 2px solid #3A3A41;
     padding: 3px;
     padding-top: 0;
 }
@@ -111,15 +111,15 @@ AzQtComponents--TabBar.Secondary
 
 AzQtComponents--TabBar.Secondary.Bordered
 {
-    border-left: 1px solid #3a3a3a;
-    border-top: 1px solid #3a3a3a;
+    border-left: 1px solid #3A3A41;
+    border-top: 1px solid #3A3A41;
 }
 
 AzQtComponents--TabBar.Secondary::tab
 {
-    background-color: #2d2d2d;
+    background-color: #2C2C31;
     border: 0 none;
-    border-bottom: 3px solid #2d2d2d;
+    border-bottom: 3px solid #2C2C31;
     text-align: center;
     padding: 7px 0 5px 14px;
     color: #959595;
@@ -133,18 +133,18 @@ AzQtComponents--TabBar.Secondary::close-button
 AzQtComponents--TabBar.Secondary::tab:hover
 {
     background: rgba(255,255,255,0.15);
-    border-bottom: 3px solid #3a3a3a;
+    border-bottom: 3px solid #3A3A41;
     color: #FFFFFF;
 }
 
 AzQtComponents--TabBar.Secondary.Bordered::tab
 {
-    border-top: 1px solid #3a3a3a;
+    border-top: 1px solid #3A3A41;
     padding: 6px 0 6px 14px;
 }
 
 AzQtComponents--TabBar.Secondary::tab:selected
 {
-    border-bottom: 3px solid #555555;
+    border-bottom: 3px solid #5A5A60;
     color: #FFFFFF;
 }

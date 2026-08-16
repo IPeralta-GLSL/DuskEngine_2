@@ -6,9 +6,9 @@
 
 .QDockWidget::title
 {
-    background-color: #2d2d2d;
-    border-bottom: 1px solid #3a3a3a;
-    padding: 4px;
+    background-color: #232327;
+    border-bottom: 1px solid #34343A;
+    padding: 2px 4px;
 }
 
 .QDockWidget::close-button,

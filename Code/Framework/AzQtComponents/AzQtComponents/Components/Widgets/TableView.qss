@@ -18,9 +18,9 @@ QTreeView
 {
     /* Use opaque colours because the ::branch subcontrol background is painted slightly differently
        to the rest of the row */
-    alternate-background-color: #1e1e1e;
+    alternate-background-color: #26262B;
 
-    selection-background-color: rgb(101, 101, 101);
+    selection-background-color: rgba(76, 175, 80, 38);
     selection-color: #ffffff;
 
     show-decoration-selected: 1;
@@ -37,7 +37,7 @@ QTreeView::item
 
     padding-left: 4px; /* QStyle::PM_FocusFrameHMargin (2) + 1 + 4 = 7 */
     border: none; /* A border, background or image is required to actually make use of the padding */
-    border-bottom: 1px solid #3a3a3a;
+    border-bottom: 1px solid #3A3A41;
 }
 
 AzQtComponents--TableView::branch:selected,
@@ -67,7 +67,7 @@ QTreeView QHeaderView::section
 {
     height: 24px;
 
-    background: #2d2d2d;
+    background: #2C2C31;
     border: none;
 
     font-size: 12px;
@@ -87,7 +87,7 @@ QTreeView::indicator
 
 QTreeView::branch
 {
-    border-bottom: 1px solid #3a3a3a;
+    border-bottom: 1px solid #3A3A41;
 }
 
 QTreeView::branch:has-children:!has-siblings:closed,
@@ -104,7 +104,7 @@ QTreeView::branch:open:has-children:has-siblings  {
 
 QTreeView::item:disabled 
 { 
-    color: #777777; 
+    color: #5A5A60; 
 }
 
 AzQtComponents--TableView::branch:open:has-children,

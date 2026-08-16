@@ -9,9 +9,9 @@
 
 QToolTip
 {
-    color: #ffffff;
-    background-color: black;
-    border: 1px transparent black;
+    color: #C9C9CE;
+    background-color: #232327;
+    border: 1px solid #34343A;
     margin-left: 2px;
     font-size: 12px;
     margin-top: 4px;

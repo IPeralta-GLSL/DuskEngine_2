@@ -17,7 +17,7 @@ QCheckBox
 
 QCheckBox:disabled
 {
-    color: #999999;
+    color: #8E8E94;
 }
 
 QAbstractItemView::indicator,

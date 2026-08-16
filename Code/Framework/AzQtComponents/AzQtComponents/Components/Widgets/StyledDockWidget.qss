@@ -9,12 +9,12 @@
 AzQtComponents--StyledDockWidget
 {
     border: none;
-    background-color: #1e1e1e;
+    background-color: #1B1B1F;
 }
 
 AzQtComponents--StyledDockWidget[floating="true"]
 {
-    border: 1px solid #3a3a3a;
+    border: 1px solid #3A3A41;
 }
 
 AzQtComponents--DockTabWidget::pane

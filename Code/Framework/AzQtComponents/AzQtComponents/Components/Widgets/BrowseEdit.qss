@@ -44,7 +44,7 @@ AzQtComponents--BrowseEdit QLineEdit:focus
 
 AzQtComponents--BrowseEdit QLineEdit:disabled
 {
-    border-color: #777777;
+    border-color: #5A5A60;
 }
 
 AzQtComponents--BrowseEdit #attached-button
@@ -60,7 +60,7 @@ AzQtComponents--BrowseEdit #attached-button
     qproperty-iconSize: 12px 12px;
 
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #666666, stop: 1 #555555);
+                                      stop: 0 #5A5A60, stop: 1 #5A5A60);
 
     border-width: 0px;
     border-style: solid;
@@ -74,16 +74,16 @@ AzQtComponents--BrowseEdit #attached-button
 AzQtComponents--BrowseEdit #attached-button:hover
 {
     background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #777777, stop: 1 #666666);
+                                      stop: 0 #5A5A60, stop: 1 #5A5A60);
 }
 
 AzQtComponents--BrowseEdit #attached-button:pressed
 {
-    background-color: #111111;
+    background-color: #1B1B1F;
 }
 
 AzQtComponents--BrowseEdit #attached-button:disabled
 {
-    background-color: #666666;
-    border-left: 1px solid #555555;
+    background-color: #5A5A60;
+    border-left: 1px solid #5A5A60;
 }

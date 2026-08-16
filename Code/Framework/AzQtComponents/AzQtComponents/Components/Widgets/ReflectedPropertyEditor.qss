@@ -8,7 +8,7 @@
 
 AzToolsFramework--PropertyRowWidget
 {
-    border-bottom: 1px solid #3a3a3a;
+    border-bottom: 1px solid #3A3A41;
 }
 
 AzToolsFramework--PropertyRowWidget QLabel#Name

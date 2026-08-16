@@ -8,8 +8,8 @@
 
 AzQtComponents--TitleBar
 {
-    background-color: #2d2d2d;
-    border: 1px solid #3a3a3a;
+    background-color: #232327;
+    border: 1px solid #34343A;
 }
 
 AzQtComponents--TitleBar[drawAsTabBar="true"]
@@ -19,8 +19,8 @@ AzQtComponents--TitleBar[drawAsTabBar="true"]
 
 AzQtComponents--TitleBar[drawSimple="true"]
 {
-    background-color: #2d2d2d;
-    border-bottom: 3px solid #2d2d2d;
+    background-color: #232327;
+    border-bottom: 1px solid #34343A;
 }
 
 AzQtComponents--TitleBar *
@@ -44,11 +44,11 @@ AzQtComponents--TitleBar #buttons
 AzQtComponents--DockBarButton
 {
     border: 0 none;
-    qproperty-iconSize: 16px 16px;
-    min-width: 32px;
-    max-width: 32px;
-    min-height: 32px;
-    max-height: 32px;
+    qproperty-iconSize: 14px 14px;
+    min-width: 24px;
+    max-width: 24px;
+    min-height: 24px;
+    max-height: 24px;
 }
 
 AzQtComponents--TitleBar[drawAsTabBar="true"] #tabButtons
@@ -90,12 +90,12 @@ QToolButton#minimizeButton,
 QToolButton#maximizeButton,
 QToolButton#closeButton 
 {
-    qproperty-iconSize: 14px 14px;
+    qproperty-iconSize: 13px 13px;
     background: transparent;
-    max-width: 24px;
-    min-width: 24px;
-    min-height: 24px;
-    max-height: 24px;
+    max-width: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    max-height: 22px;
 }
 
 QToolButton#minimizeButton:hover,
