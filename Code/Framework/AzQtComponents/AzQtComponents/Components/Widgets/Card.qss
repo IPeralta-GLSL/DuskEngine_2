@@ -10,37 +10,34 @@
 AzQtComponents--Card
 {
     margin: 0px;
-    margin-bottom: 4px;
-    padding: -4px -5px -4px -5px;
+    margin-bottom: 0px;
+    padding: 0px;
 
     border-color: transparent;
-    border-width: 5px 7px 9px 7px;
-    border-image: url(:/Cards/img/UI20/Cards/shadow.png) 5 7 9 7;
+    border-width: 0px;
+    border-image: none;
 }
 
 AzQtComponents--Card #contentContainer
 {
-    background-color: #1f1f22;
-    /* 1px border with background colour so the contents doesn't move when selected */
-    border: 1px solid #1f1f22;
+    background-color: transparent;
+    border: none;
     border-top: none;
     margin: 0px;
-    /* Take the border into account with the padding */
-    padding: 8px 7px 7px 7px;
+    padding: 4px 7px 7px 7px;
     spacing: 4px;
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
+    border-radius: 0px;
 }
 
 AzQtComponents--Card[selected="true"] > #contentContainer
 {
-    border: 1px solid #4CAF50;
+    border: none;
     border-top: none;
 }
 
 AzQtComponents--Card #contentContainer
 {
-    background-color: #1f1f22;
+    background-color: transparent;
 }
 
 AzQtComponents--Card[hideFrame=true]
@@ -65,7 +62,7 @@ AzQtComponents--CardNotification #Icon,
 AzQtComponents--CardNotification #Title
 {
     background-color: #1a1a1d;
-    border-radius: 3px;
+    border-radius: 0px;
     border: none;
 }
 
@@ -92,24 +89,22 @@ AzQtComponents--CardHeader #Background
 {
     margin: 0px;
     padding: 2px 7px 3px 7px;
-    border: 1px solid transparent;
-    border-bottom: none;
+    border: none;
+    border-bottom: 1px solid #34343A;
     background-image: none;
     background-color: transparent;
 }
 
 AzQtComponents--Card[selected="true"] > AzQtComponents--CardHeader #Background
 {
-    border: 1px solid #4CAF50;
-    border-bottom: none;
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
+    border: none;
+    border-bottom: 2px solid #4CAF50;
 }
 
 AzQtComponents--Card[selected="true"][expanded="false"] > AzQtComponents--CardHeader #Background
 {
-    border: 1px solid #4CAF50;
-    border-radius: 2px
+    border: none;
+    border-bottom: 2px solid #4CAF50;
 }
 
 AzQtComponents--Card[class~="ContainerCard"]

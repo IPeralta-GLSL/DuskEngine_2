@@ -119,10 +119,10 @@ AzQtComponents--TabBar.Secondary::tab
 {
     background-color: #1f1f22;
     border: 0 none;
-    border-bottom: 3px solid #1f1f22;
+    border-bottom: 2px solid #1f1f22;
     text-align: center;
-    padding: 7px 0 5px 14px;
-    color: #959595;
+    padding: 3px 0 3px 10px;
+    color: #8E8E94;
 }
 
 AzQtComponents--TabBar.Secondary::close-button
@@ -132,19 +132,19 @@ AzQtComponents--TabBar.Secondary::close-button
 
 AzQtComponents--TabBar.Secondary::tab:hover
 {
-    background: rgba(255,255,255,0.15);
-    border-bottom: 3px solid #3A3A41;
-    color: #FFFFFF;
+    background: rgba(255,255,255,0.08);
+    border-bottom: 2px solid #3A3A41;
+    color: #C9C9CE;
 }
 
 AzQtComponents--TabBar.Secondary.Bordered::tab
 {
     border-top: 1px solid #3A3A41;
-    padding: 6px 0 6px 14px;
+    padding: 3px 0 3px 10px;
 }
 
 AzQtComponents--TabBar.Secondary::tab:selected
 {
-    border-bottom: 3px solid #5A5A60;
-    color: #FFFFFF;
+    border-bottom: 2px solid #4CAF50;
+    color: #C9C9CE;
 }

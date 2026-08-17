@@ -60,6 +60,9 @@
     <file>img/logging/warning-yellow.svg</file>
     <file>img/branch_open.png</file>
     <file>img/branch_closed.png</file>
+    <file>img/branch_line.png</file>
+    <file>img/branch_more.png</file>
+    <file>img/branch_end.png</file>
     <file>img/UI20/checkbox/off-disabled.svg</file>
     <file>img/UI20/checkbox/off-focus.svg</file>
     <file>img/UI20/checkbox/off.svg</file>

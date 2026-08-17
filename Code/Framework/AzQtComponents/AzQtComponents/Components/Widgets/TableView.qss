@@ -90,6 +90,21 @@ QTreeView::branch
     border-bottom: 1px solid #3A3A41;
 }
 
+QTreeView::branch:has-siblings:!adjoins-item
+{
+    border-image: url(:/stylesheet/img/branch_line.png) 0;
+}
+
+QTreeView::branch:has-siblings:adjoins-item
+{
+    border-image: url(:/stylesheet/img/branch_more.png) 0;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item
+{
+    border-image: url(:/stylesheet/img/branch_end.png) 0;
+}
+
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
     image: url(:/TreeView/closed.svg);
