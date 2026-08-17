@@ -18,7 +18,7 @@ QTreeView
 {
     /* Use opaque colours because the ::branch subcontrol background is painted slightly differently
        to the rest of the row */
-    alternate-background-color: #26262B;
+    alternate-background-color: #1c1c1f;
 
     selection-background-color: rgba(76, 175, 80, 38);
     selection-color: #ffffff;
@@ -67,7 +67,7 @@ QTreeView QHeaderView::section
 {
     height: 24px;
 
-    background: #2C2C31;
+    background: #1f1f22;
     border: none;
 
     font-size: 12px;

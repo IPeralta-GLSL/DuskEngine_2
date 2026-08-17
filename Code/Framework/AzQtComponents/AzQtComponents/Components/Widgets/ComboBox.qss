@@ -78,7 +78,7 @@ QComboBox::down-arrow:disabled
 
 QComboBox QAbstractItemView
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     padding: 0px;
     outline: none; /* Disable focus rect */
     show-decoration-selected: 1;
@@ -100,7 +100,7 @@ QComboBox QAbstractItemView::item
 */
 QComboBox QAbstractItemView::item:selected
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     color: #FFFFFF;
 }
 
@@ -112,7 +112,7 @@ QComboBox QAbstractItemView::item:disabled
 QComboBox QAbstractItemView::separator
 {
     height: 1px;
-    background: #1B1B1F;
+    background: #1a1a1d;
 }
 
 QComboBox QAbstractItemView::indicator

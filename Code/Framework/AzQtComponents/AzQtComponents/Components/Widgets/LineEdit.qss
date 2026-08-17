@@ -31,7 +31,7 @@ QPlainText:disabled,
 QPlainTextEdit:disabled,
 QLineEdit:disabled
 {
-    background-color: #2C2C31;
+    background-color: #1f1f22;
     color: #5A5A60;
 }
 

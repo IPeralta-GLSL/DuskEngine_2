@@ -9,7 +9,7 @@
 AzQtComponents--StyledDockWidget
 {
     border: none;
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 AzQtComponents--StyledDockWidget[floating="true"]

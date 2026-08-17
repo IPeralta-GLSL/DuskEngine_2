@@ -33,7 +33,7 @@ QDoubleSpinBox:hover
 QSpinBox:hover,
 QDoubleSpinBox:hover
 {
-    border-color: #232327;
+    border-color: #1f1f22;
     background-image: url(:/SpinBox/hoverBackground.svg);
     background-repeat: no-repeat;
     background-position: right;

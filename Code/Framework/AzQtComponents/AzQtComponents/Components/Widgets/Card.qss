@@ -20,9 +20,9 @@ AzQtComponents--Card
 
 AzQtComponents--Card #contentContainer
 {
-    background-color: #232327;
+    background-color: #1f1f22;
     /* 1px border with background colour so the contents doesn't move when selected */
-    border: 1px solid #232327;
+    border: 1px solid #1f1f22;
     border-top: none;
     margin: 0px;
     /* Take the border into account with the padding */
@@ -40,7 +40,7 @@ AzQtComponents--Card[selected="true"] > #contentContainer
 
 AzQtComponents--Card #contentContainer
 {
-    background-color: #232327;
+    background-color: #1f1f22;
 }
 
 AzQtComponents--Card[hideFrame=true]
@@ -50,7 +50,7 @@ AzQtComponents--Card[hideFrame=true]
 
 AzQtComponents--CardNotification
 {
-    background-color: #232327;
+    background-color: #1f1f22;
     spacing: 4px;
 }
 
@@ -64,7 +64,7 @@ AzQtComponents--CardNotification #HeaderFrame,
 AzQtComponents--CardNotification #Icon,
 AzQtComponents--CardNotification #Title
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     border-radius: 3px;
     border: none;
 }
@@ -85,7 +85,7 @@ AzQtComponents--CardHeader
 
 AzQtComponents--CardHeader *
 {
-    background-color: #232327;
+    background-color: #1f1f22;
 }
 
 AzQtComponents--CardHeader #Background
@@ -126,7 +126,7 @@ AzQtComponents--Card[class~="ContainerCard"] > #contentContainer
 
 AzQtComponents--CardHeader[class~="ContainerCardHeader"]
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     border-radius: 0px;
     border: none;
 }
@@ -152,14 +152,14 @@ AzQtComponents--CardHeader[class~="SectionCardHeader"]
 
 .primaryCardHeader
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
 }
 
 .secondaryCardHeader
 {
-    background-color: #232327;
+    background-color: #1f1f22;
     padding: 0px;
 }
 

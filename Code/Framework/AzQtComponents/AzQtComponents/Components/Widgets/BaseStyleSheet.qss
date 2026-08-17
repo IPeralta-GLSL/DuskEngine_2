@@ -25,7 +25,7 @@ QTreeView
 {
     /* give a background color to views without parent (completer popups)
        it is reset to transparent in the next setting for views with a parent */
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 QWidget > QTableView,
@@ -61,7 +61,7 @@ QDialog,
 QDockWidget
 {
     color: #C9C9CE;
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 QTextEdit,

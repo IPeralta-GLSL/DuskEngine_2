@@ -6,7 +6,7 @@
 
 .QDockWidget::title
 {
-    background-color: #232327;
+    background-color: #1f1f22;
     border-bottom: 1px solid #34343A;
     padding: 2px 4px;
 }

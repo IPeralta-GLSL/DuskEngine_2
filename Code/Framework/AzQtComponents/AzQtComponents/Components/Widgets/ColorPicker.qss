@@ -82,11 +82,11 @@ AzQtComponents--ColorPicker QDoubleSpinBox::up-button
 
 AzQtComponents--ColorPicker .HorizontalSeparator
 {
-    border-top: 1px solid #1B1B1F;
-    border-bottom: 1px solid #1B1B1F;
+    border-top: 1px solid #1a1a1d;
+    border-bottom: 1px solid #1a1a1d;
     border-left: none;
     border-right: none;
-    background: #232327;
+    background: #1f1f22;
 }
 
 AzQtComponents--ColorPicker .HorizontalSeparatorContainer
@@ -105,7 +105,7 @@ AzQtComponents--Swatch,
 AzQtComponents--ColorPicker #addColorButton
 {
     /* Note: Swatches will ignore any 'background*' property set here */
-    border: 1px solid #1B1B1F;
+    border: 1px solid #1a1a1d;
     border-radius: 2px;
 }
 

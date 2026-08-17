@@ -11,15 +11,15 @@ QWidget#EditorPreferencesDialog
 {
     margin: 0px;
     padding: -4px -5px -4px -5px;
-    background-color: #111111;
+    background-color: #1a1a1d;
     border-color: transparent;
 }
 
 QWidget#EditorPreferencesDialog QTreeWidget#pageTree
 {
     font-size: 11px;
-    border: 1px solid #111111;
-    background-color: #111111;
+    border: 1px solid #1a1a1d;
+    background-color: #1a1a1d;
     margin: 0px;
 }
 
@@ -31,8 +31,8 @@ QWidget#EditorPreferencesDialog QTreeWidget#pageTree::item
 
 QWidget#EditorPreferencesDialog AzToolsFramework--ReflectedPropertyEditor#propertyEditor
 {
-    background-color: #111111;
-    border: 1px solid #111111;
+    background-color: #1a1a1d;
+    border: 1px solid #1a1a1d;
     margin: 0px 2px 0px 5px
 }
 

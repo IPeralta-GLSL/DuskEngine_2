@@ -13,31 +13,31 @@ ActionWidget #LinkButton
 
 AzAssetBrowserWindow #previewWidgetWrapper
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     border: 0 none;
 }
 
 AzAssetBrowserWindow #searchButtonContainer
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     border: 0 none;
 }
 
 AzAssetBrowserWindow #m_separator
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 /* Component Palette Widget */
 AzToolsFramework--ComponentPaletteWidget
 {
     border: 1px solid #34343A;
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 AzToolsFramework--ComponentPaletteWidget > QTreeView
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 AzToolsFramework--PropertyRowWidget[canBeReordered="true"]  QLabel#Name
@@ -63,7 +63,7 @@ Ui--AssetEditorHeader
 Ui--AssetEditorHeader *
 {
     height: 16px;
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 Ui--AssetEditorHeader #Background
@@ -73,7 +73,7 @@ Ui--AssetEditorHeader #Background
     border: 1px solid transparent;
     border-bottom: none;
     background-image: none;
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 Ui--AssetEditorHeader #Name
@@ -138,13 +138,13 @@ AzToolsFramework--SlicePushWidget QWidget#WarningBottomLine
 AzToolsFramework--SlicePushWidget QTreeWidget#WarningTreeWidget::item:pressed
 , AzToolsFramework--SlicePushWidget QTreeWidget#WarningTreeWidget::item:selected
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }
 
 /* Toolbar borders (Editor UI Window) */
 EditorWindow QToolBar
 {
-    border-bottom: 2px solid #1B1B1F;
+    border-bottom: 2px solid #1a1a1d;
 }
 
 DockWidgetTitleBar #DockWidgetContextMenu
@@ -160,7 +160,7 @@ DockWidgetTitleBar #DockWidgetContextMenu
 #EMFX_Menu
 {
     border-bottom-width: 2px;
-    border-bottom-color: #1B1B1F;
+    border-bottom-color: #1a1a1d;
     border-bottom-style: solid;
 }
 
@@ -172,14 +172,14 @@ DockWidgetTitleBar #DockWidgetContextMenu
 
 PanelTitleBar
 {
-    border-top: 1px solid #1B1B1F;
+    border-top: 1px solid #1a1a1d;
 }
 
 /* Asset Editor */
 
 #AssetEditorStatusBar
 {
-    border-top: 2px solid #1B1B1F;
+    border-top: 2px solid #1a1a1d;
 }
 
 /* Console and Python Console */
@@ -193,7 +193,7 @@ ConsoleTextEdit:focus,
 {
     margin: 0;
     margin-top: 6px;
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
     border-radius: 0px;
     border-width: 0px;
     border-color: #34343A;
@@ -201,7 +201,7 @@ ConsoleTextEdit:focus,
 }
 
 QMenu {
-    background-color: #232327;
+    background-color: #1f1f22;
     margin: 3 5 5 5;
 }
 
@@ -233,21 +233,21 @@ QComboBox {
     color: white;
     padding: 2px 8px 2px;
     border: 1px solid #34343A;
-    background-color: #2C2C31;
+    background-color: #1f1f22;
 }
 
 QComboBox:enabled:!focus {
-    background-color: #2C2C31;
+    background-color: #1f1f22;
     border: 1px solid #34343A;
 }
 
 QComboBox:enabled:!focus:on {
-    background-color: #2C2C31;
+    background-color: #1f1f22;
     border: 1px solid #4CAF50;
 }
 
 QComboBox:focus {
-    background-color: #2C2C31;
+    background-color: #1f1f22;
     border: 1px solid #4CAF50;
 }
 
@@ -257,13 +257,13 @@ QComboBox::drop-down {
 }
 
 QComboBox QListView {
-    background-color: #232327;
+    background-color: #1f1f22;
     color: white;
     font-size: 12px;
     outline: none;
     padding: 5 0 8 8;
     selection-color: #4CAF50;
-    selection-background-color: #232327;
+    selection-background-color: #1f1f22;
     border: 1px solid #34343A;
 }
 
@@ -273,6 +273,6 @@ QComboBox QListView::item {
 }
 
 QComboBox QListView::item:selected {
-    background-color: #232327;
+    background-color: #1f1f22;
     color: #4CAF50;
 }

@@ -13,8 +13,8 @@ AzQtComponents--SegmentBar
 
 AzQtComponents--SegmentBar QAbstractButton
 {
-    background-color: #1B1B1F;
-    border-color: #232327;
+    background-color: #1a1a1d;
+    border-color: #1f1f22;
     border-style: solid;
     border-width: 1px;
 
@@ -67,11 +67,11 @@ AzQtComponents--SegmentBar[orientation="2"] QAbstractButton.TabLast
 
 AzQtComponents--SegmentBar QAbstractButton:checked
 {
-    background-color: #232327;
+    background-color: #1f1f22;
 }
 
 AzQtComponents--SegmentBar QAbstractButton:hover:!checked,
 AzQtComponents--SegmentBar QAbstractButton:pressed:!checked
 {
-    background-color: #1B1B1F;
+    background-color: #1a1a1d;
 }

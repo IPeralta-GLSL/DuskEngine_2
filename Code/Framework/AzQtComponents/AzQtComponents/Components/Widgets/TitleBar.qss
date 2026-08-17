@@ -8,7 +8,7 @@
 
 AzQtComponents--TitleBar
 {
-    background-color: #232327;
+    background-color: #1f1f22;
     border: 1px solid #34343A;
 }
 
@@ -19,7 +19,7 @@ AzQtComponents--TitleBar[drawAsTabBar="true"]
 
 AzQtComponents--TitleBar[drawSimple="true"]
 {
-    background-color: #232327;
+    background-color: #1f1f22;
     border-bottom: 1px solid #34343A;
 }
 
