@@ -56,6 +56,19 @@ QMainWindow::separator:hover
     background-color: #5A5A60;
 }
 
+QMenu
+{
+    background-color: #1f1f22;
+    border: 1px solid #34343A;
+}
+
+QMenu::separator
+{
+    height: 1px;
+    background: #34343A;
+    margin: 4px 6px 4px 6px;
+}
+
 QMainWindow,
 QDialog,
 QDockWidget

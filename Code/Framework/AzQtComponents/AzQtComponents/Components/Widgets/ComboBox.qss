@@ -25,7 +25,7 @@ QComboBox:hover
     border-width: 1px;
     border-style: solid;
     border-radius: 0px;
-    border-color: rgba(0, 0, 0, 50);
+    border-color: #34343A;
 }
 
 QComboBox:focus,
