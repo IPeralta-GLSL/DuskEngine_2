@@ -238,7 +238,16 @@ set(FILES
     Passes/SplashScreen.pass
     Passes/SsaoCompute.pass
     Passes/SsaoParent.pass
+    Passes/SsgiComposite.pass
+    Passes/SsgiCompute.pass
+    Passes/SsgiParent.pass
+    Passes/RestirInitial.pass
+    Passes/RestirParent.pass
+    Passes/RestirSpatial.pass
+    Passes/RestirDebug.pass
+    Passes/RestirApply.pass
     Passes/SubsurfaceScattering.pass
+
     Passes/Taa.pass
     Passes/TaaParent.pass
     Passes/CasPass.pass
@@ -289,6 +298,7 @@ set(FILES
     ShaderLib/Atom/Features/LightCulling/LightCullingShared.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingTileIterator.azsli
     ShaderLib/Atom/Features/LightCulling/NVLC.azsli
+    ShaderLib/Atom/Features/LightCulling/RestirReservoir.azsli
     ShaderLib/Atom/Features/Materials/MaterialSrg.azsli
     ShaderLib/Atom/Features/Materials/SceneMaterialSrg.azsli
     ShaderLib/Atom/Features/Materials/SingleMaterialSrg.azsli
@@ -434,6 +444,18 @@ set(FILES
     Shaders/LightCulling/LightCullingRemap.shader
     Shaders/LightCulling/LightCullingTilePrepare.azsl
     Shaders/LightCulling/LightCullingTilePrepare.shader
+    Shaders/LightCulling/RestirInitial.azsl
+    Shaders/LightCulling/RestirInitial.shader
+    Shaders/LightCulling/RestirInitial.shadervariantlist
+    Shaders/LightCulling/RestirSpatial.azsl
+    Shaders/LightCulling/RestirSpatial.shader
+    Shaders/LightCulling/RestirSpatial.shadervariantlist
+    Shaders/LightCulling/RestirDebug.azsl
+    Shaders/LightCulling/RestirDebug.shader
+    Shaders/LightCulling/RestirDebug.shadervariantlist
+    Shaders/LightCulling/RestirApply.azsl
+    Shaders/LightCulling/RestirApply.shader
+    Shaders/LightCulling/RestirApply.shadervariantlist
     Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli
     Shaders/Materials/BasePBR/BasePBR_LightingData.azsli
     Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli
@@ -629,6 +651,11 @@ set(FILES
     Shaders/PostProcessing/SMAAUtils.azsli
     Shaders/PostProcessing/SsaoCompute.azsl
     Shaders/PostProcessing/SsaoCompute.shader
+    Shaders/PostProcessing/SsgiComposite.azsl
+    Shaders/PostProcessing/SsgiComposite.shader
+    Shaders/PostProcessing/SsgiCompute.azsl
+    Shaders/PostProcessing/SsgiCompute.shader
+    Shaders/PostProcessing/SsgiCompute.shadervariantlist
     Shaders/PostProcessing/Taa.azsl
     Shaders/PostProcessing/Taa.shader
     Shaders/PostProcessing/CasPass.azsl

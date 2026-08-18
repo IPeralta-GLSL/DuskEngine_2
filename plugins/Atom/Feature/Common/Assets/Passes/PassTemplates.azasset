@@ -309,6 +309,38 @@
                 "Path": "Passes/SsaoCompute.pass"
             },
             {
+                "Name": "SsgiParentTemplate",
+                "Path": "Passes/SsgiParent.pass"
+            },
+            {
+                "Name": "SsgiComputeTemplate",
+                "Path": "Passes/SsgiCompute.pass"
+            },
+            {
+                "Name": "SsgiCompositeTemplate",
+                "Path": "Passes/SsgiComposite.pass"
+            },
+            {
+                "Name": "RestirParentTemplate",
+                "Path": "Passes/RestirParent.pass"
+            },
+            {
+                "Name": "RestirInitialTemplate",
+                "Path": "Passes/RestirInitial.pass"
+            },
+            {
+                "Name": "RestirSpatialTemplate",
+                "Path": "Passes/RestirSpatial.pass"
+            },
+            {
+                "Name": "RestirDebugTemplate",
+                "Path": "Passes/RestirDebug.pass"
+            },
+            {
+                "Name": "RestirApplyTemplate",
+                "Path": "Passes/RestirApply.pass"
+            },
+            {
                 "Name": "CacaoPrepareDepthsTemplate",
                 "Path": "Passes/CacaoPrepareDepths.pass"
             },

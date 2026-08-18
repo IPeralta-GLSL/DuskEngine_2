@@ -1,0 +1,43 @@
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/LightCulling/RestirReservoir.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<uint4> m_reservoirInput;
+    RWTexture2D<float4> m_debugOutput;
+    uint m_debugMode;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_debugOutput.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    RestirReservoir r = UnpackRestirReservoir(PassSrg::m_reservoirInput[dispatchId.xy]);
+    float3 color = float3(0.0, 0.0, 0.0);
+    if (PassSrg::m_debugMode == 0)
+    {
+        color = float3(1.0, 1.0, 1.0) * saturate(log2(1.0 + r.m_W) / 16.0);
+    }
+    else if (PassSrg::m_debugMode == 1)
+    {
+        color = (r.m_lightSample.m_lightIndex == 0xFFFFFFFF)
+            ? float3(0.0, 0.0, 0.0)
+            : frac(float3(float(r.m_lightSample.m_lightIndex % 97u) * float3(0.1031, 0.11369, 0.13787)));
+    }
+    else
+    {
+        color = float3(1.0, 1.0, 1.0) * saturate(r.m_M / 40.0);
+    }
+
+    PassSrg::m_debugOutput[dispatchId.xy] = float4(color, 1.0);
+}

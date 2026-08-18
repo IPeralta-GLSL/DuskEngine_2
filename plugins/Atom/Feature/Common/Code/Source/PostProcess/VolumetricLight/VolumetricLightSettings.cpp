@@ -7,6 +7,7 @@
  */
 
 #include <PostProcess/VolumetricLight/VolumetricLightSettings.h>
+#include <PostProcess/PostProcessSettings.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 

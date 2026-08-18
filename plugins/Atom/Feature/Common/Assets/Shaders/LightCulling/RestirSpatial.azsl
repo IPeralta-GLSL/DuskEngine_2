@@ -1,0 +1,146 @@
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+#include <Atom/Features/LightCulling/RestirReservoir.azsli>
+
+static const int RESTIR_SPATIAL_NEIGHBOR_COUNT = 4;
+static const float RESTIR_SPATIAL_RADIUS = 16.0;
+static const float RESTIR_NORMAL_SIMILARITY_THRESHOLD = 0.9;
+static const float RESTIR_DEPTH_SIMILARITY_THRESHOLD = 0.1;
+static const float RESTIR_MAX_M = 20.0;
+static const float RESTIR_TWO_PI = 6.2831853;
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_depthLinear;
+    Texture2D<uint4> m_reservoirInput;
+    RWTexture2D<uint4> m_reservoirOutput;
+    uint m_frameIndex;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float RestirIgn(uint2 pixel, uint frame)
+{
+    float2 p = float2(pixel) + float2(5.392753, 5.287193) * frame;
+    return frac(52.9829189 * frac(dot(p, float2(0.06711056, 0.00583715))));
+}
+
+float3 RestirCameraForward()
+{
+    return normalize(mul(ViewSrg::m_viewMatrixInverse, float4(0.0, 0.0, 1.0, 0.0)).xyz);
+}
+
+float3 RestirWorldPosition(float2 uv, float linearDepth, float3 camPos, float3 camFwd)
+{
+    float4 ndc = float4(uv * 2.0 - 1.0, 1.0, 1.0);
+    float3 farPoint = mul(ViewSrg::m_viewProjectionInverseMatrix, ndc).xyz;
+    float3 rayDir = normalize(farPoint - camPos);
+    float t = linearDepth / max(dot(rayDir, camFwd), 1e-6);
+    return camPos + rayDir * t;
+}
+
+float3 RestirDecodeNormalFromDepth(float2 uv, uint2 dims, float3 camPos, float3 camFwd)
+{
+    float2 texel = 1.0 / float2(dims);
+    float d0 = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, uv, 0);
+    float dx = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(texel.x, 0.0), 1.0), 0);
+    float dy = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(0.0, texel.y), 1.0), 0);
+    float3 p0 = RestirWorldPosition(uv, d0, camPos, camFwd);
+    float3 px = RestirWorldPosition(uv + float2(texel.x, 0.0), dx, camPos, camFwd);
+    float3 py = RestirWorldPosition(uv + float2(0.0, texel.y), dy, camPos, camFwd);
+    float3 n = normalize(cross(px - p0, py - p0));
+    return dot(n, camFwd) < 0.0 ? -n : n;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_reservoirOutput.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    float2 uv = (dispatchId.xy + 0.5) / float2(dims);
+    float3 camPos = ViewSrg::m_worldPosition.xyz;
+    float3 camFwd = RestirCameraForward();
+
+    float depth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, uv, 0);
+    if (depth <= 0.0)
+    {
+        PassSrg::m_reservoirOutput[dispatchId.xy] = PassSrg::m_reservoirInput[dispatchId.xy];
+        return;
+    }
+
+    float3 worldPos = RestirWorldPosition(uv, depth, camPos, camFwd);
+    float3 normal = RestirDecodeNormalFromDepth(uv, dims, camPos, camFwd);
+
+    RestirReservoir centerReservoir = UnpackRestirReservoir(PassSrg::m_reservoirInput[dispatchId.xy]);
+    RestirClampM(centerReservoir, RESTIR_MAX_M);
+
+    RestirReservoirUpdater updater = MakeRestirReservoirUpdater();
+    if (centerReservoir.m_lightSample.m_lightIndex != 0xFFFFFFFF)
+    {
+        updater.m_reservoir = centerReservoir;
+        updater.m_targetPdf = RestirEvaluateTargetPdf(centerReservoir.m_lightSample.m_lightIndex, worldPos, normal);
+        updater.m_weightSum = updater.m_targetPdf * centerReservoir.m_W;
+    }
+
+    for (uint n = 0; n < RESTIR_SPATIAL_NEIGHBOR_COUNT; ++n)
+    {
+        float angle = RestirIgn(dispatchId.xy, PassSrg::m_frameIndex * 13 + n) * RESTIR_TWO_PI;
+        float radius = RESTIR_SPATIAL_RADIUS * sqrt(RestirIgn(dispatchId.xy + uint2(97, 13), n));
+        int2 neighborPixel = int2(dispatchId.xy) + int2(round(float2(cos(angle), sin(angle)) * radius));
+        if (any(neighborPixel <= 0) || any(neighborPixel >= int2(dims) - 1))
+        {
+            continue;
+        }
+
+        float2 neighborUv = (float2(neighborPixel) + 0.5) / float2(dims);
+        float neighborDepth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, neighborUv, 0);
+        if (neighborDepth <= 0.0)
+        {
+            continue;
+        }
+
+        float depthSimilarity = 1.0 - saturate(abs(neighborDepth - depth) / max(depth * RESTIR_DEPTH_SIMILARITY_THRESHOLD, 1e-6));
+        if (depthSimilarity <= 0.0)
+        {
+            continue;
+        }
+
+        float neighborNormalSim = saturate(dot(RestirDecodeNormalFromDepth(neighborUv, dims, camPos, camFwd), normal));
+        if (neighborNormalSim < RESTIR_NORMAL_SIMILARITY_THRESHOLD)
+        {
+            continue;
+        }
+
+        RestirReservoir neighborReservoir = UnpackRestirReservoir(PassSrg::m_reservoirInput[uint2(neighborPixel)]);
+        RestirClampM(neighborReservoir, RESTIR_MAX_M);
+
+        if (neighborReservoir.m_lightSample.m_lightIndex == 0xFFFFFFFF || neighborReservoir.m_M <= 0.0)
+        {
+            continue;
+        }
+
+        float u = RestirIgn(uint2(neighborPixel), PassSrg::m_frameIndex * 31 + n);
+        float neighborTargetPdf = RestirEvaluateTargetPdf(neighborReservoir.m_lightSample.m_lightIndex, worldPos, normal);
+        RestirMerge(updater, neighborReservoir, u, neighborTargetPdf, 1.0);
+    }
+
+    PassSrg::m_reservoirOutput[dispatchId.xy] = PackRestirReservoir(updater.m_reservoir);
+}

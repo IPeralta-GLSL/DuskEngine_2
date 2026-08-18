@@ -1,0 +1,62 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "RestirSpatialTemplate",
+            "PassClass": "RestirComputePass",
+            "Slots": [
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "ReservoirInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear",
+                        "StoreAction": "Store"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ReservoirB",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "RGBA32_UINT"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ReservoirB"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/LightCulling/RestirSpatial.shader"
+                },
+                "FullscreenDispatch": true
+            }
+        }
+    }
+}

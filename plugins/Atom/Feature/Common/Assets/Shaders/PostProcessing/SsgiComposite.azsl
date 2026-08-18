@@ -1,0 +1,38 @@
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_ssgi;
+    RWTexture2D<float4> m_inputOutput;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+[numthreads(16, 16, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_inputOutput.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    float2 pixelSize = 1.0 / float2(dims);
+    float2 uv = (dispatchId.xy + 0.5) * pixelSize;
+
+    float4 ssgi = PassSrg::m_ssgi.SampleLevel(PassSrg::LinearSampler, uv, 0);
+
+    float3 lighting = PassSrg::m_inputOutput[dispatchId.xy].rgb;
+    float3 result = lighting + ssgi.rgb;
+
+    PassSrg::m_inputOutput[dispatchId.xy] = float4(result, 1.0);
+}

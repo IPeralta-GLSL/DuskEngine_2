@@ -1,0 +1,101 @@
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+#include <Atom/Features/LightCulling/RestirReservoir.azsli>
+
+static const uint RESTIR_LIGHTING_CHANNEL_MASK = 4;
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_depthLinear;
+    Texture2D<uint4> m_reservoirInput;
+    RWTexture2D<float4> m_lightingInOut;
+    float m_intensity;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float3 RestirCameraForward()
+{
+    return normalize(mul(ViewSrg::m_viewMatrixInverse, float4(0.0, 0.0, 1.0, 0.0)).xyz);
+}
+
+float3 RestirWorldPosition(float2 uv, float linearDepth, float3 camPos, float3 camFwd)
+{
+    float4 ndc = float4(uv * 2.0 - 1.0, 1.0, 1.0);
+    float3 farPoint = mul(ViewSrg::m_viewProjectionInverseMatrix, ndc).xyz;
+    float3 rayDir = normalize(farPoint - camPos);
+    float t = linearDepth / max(dot(rayDir, camFwd), 1e-6);
+    return camPos + rayDir * t;
+}
+
+float3 RestirDecodeNormalFromDepth(float2 uv, uint2 dims, float3 camPos, float3 camFwd)
+{
+    float2 texel = 1.0 / float2(dims);
+    float d0 = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, uv, 0);
+    float dx = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(texel.x, 0.0), 1.0), 0);
+    float dy = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(0.0, texel.y), 1.0), 0);
+    float3 p0 = RestirWorldPosition(uv, d0, camPos, camFwd);
+    float3 px = RestirWorldPosition(uv + float2(texel.x, 0.0), dx, camPos, camFwd);
+    float3 py = RestirWorldPosition(uv + float2(0.0, texel.y), dy, camPos, camFwd);
+    float3 n = normalize(cross(px - p0, py - p0));
+    return dot(n, camFwd) < 0.0 ? -n : n;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_lightingInOut.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    RestirReservoir reservoir = UnpackRestirReservoir(PassSrg::m_reservoirInput[dispatchId.xy]);
+    if (reservoir.m_lightSample.m_lightIndex == 0xFFFFFFFF || reservoir.m_W <= 0.0)
+    {
+        return;
+    }
+
+    float2 uv = (dispatchId.xy + 0.5) / float2(dims);
+    float depth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, uv, 0);
+    if (depth <= 0.0)
+    {
+        return;
+    }
+
+    float3 camPos = ViewSrg::m_worldPosition.xyz;
+    float3 camFwd = RestirCameraForward();
+    float3 worldPos = RestirWorldPosition(uv, depth, camPos, camFwd);
+    float3 normal = RestirDecodeNormalFromDepth(uv, dims, camPos, camFwd);
+
+    SimplePointLight light = ViewSrg::m_simplePointLights[reservoir.m_lightSample.m_lightIndex];
+    if ((light.m_lightingChannelMask & RESTIR_LIGHTING_CHANNEL_MASK) == 0)
+    {
+        return;
+    }
+
+    float3 toLight = light.m_position - worldPos;
+    float distanceSq = dot(toLight, toLight);
+    float3 lightDir = toLight / max(sqrt(distanceSq), 1e-6);
+    float NdotL = saturate(dot(normal, lightDir));
+    float falloff = saturate(distanceSq * light.m_invAttenuationRadiusSquared);
+    float window = 1.0 - falloff * falloff;
+
+    float3 contribution = light.m_rgbIntensityCandelas.rgb * NdotL * window * reservoir.m_W * PassSrg::m_intensity;
+
+    PassSrg::m_lightingInOut[dispatchId.xy] = float4(PassSrg::m_lightingInOut[dispatchId.xy].rgb + contribution, 1.0);
+}

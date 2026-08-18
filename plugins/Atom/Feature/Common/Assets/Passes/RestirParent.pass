@@ -1,0 +1,157 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "RestirParentTemplate",
+            "PassClass": "RestirParentPass",
+            "Slots": [
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Modulate",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "LightingOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DebugOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "RestirSpatial",
+                        "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "LightingOutput",
+                    "AttachmentRef": {
+                        "Pass": "RestirApply",
+                        "Attachment": "Lighting"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "RestirInitial",
+                    "TemplateName": "RestirInitialTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightListRemapped"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "RestirSpatial",
+                    "TemplateName": "RestirSpatialTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReservoirInput",
+                            "AttachmentRef": {
+                                "Pass": "RestirInitial",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "RestirApply",
+                    "TemplateName": "RestirApplyTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReservoirInput",
+                            "AttachmentRef": {
+                                "Pass": "RestirSpatial",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Lighting",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Modulate"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "RestirDebug",
+                    "TemplateName": "RestirDebugTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ReservoirInput",
+                            "AttachmentRef": {
+                                "Pass": "RestirSpatial",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

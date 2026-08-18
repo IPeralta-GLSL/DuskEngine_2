@@ -1,0 +1,142 @@
+#pragma once
+
+struct RestirLightSample
+{
+    uint m_lightIndex;
+    float2 m_sampleParams;
+};
+
+struct RestirReservoir
+{
+    RestirLightSample m_lightSample;
+    float m_M;
+    float m_W;
+};
+
+struct RestirReservoirUpdater
+{
+    RestirReservoir m_reservoir;
+    float m_targetPdf;
+    float m_weightSum;
+};
+
+float RestirLuminance(float3 c)
+{
+    return dot(c, float3(0.2126, 0.7152, 0.0722));
+}
+
+float RestirEvaluateTargetPdf(uint lightIndex, float3 worldPos, float3 normal)
+{
+    SimplePointLight light = ViewSrg::m_simplePointLights[lightIndex];
+
+    float3 toLight = light.m_position - worldPos;
+    float distanceSq = dot(toLight, toLight);
+    float distance = sqrt(distanceSq);
+    float3 lightDir = toLight / max(distance, 1e-6);
+    float NdotL = saturate(dot(normal, lightDir));
+
+    float falloff = saturate(distanceSq * light.m_invAttenuationRadiusSquared);
+    falloff = falloff * falloff;
+    float window = 1.0 - falloff;
+
+    return RestirLuminance(light.m_rgbIntensityCandelas.rgb) * NdotL * window;
+}
+
+RestirReservoir MakeRestirReservoir()
+{
+    RestirReservoir r;
+    r.m_lightSample.m_lightIndex = 0xFFFFFFFF;
+    r.m_lightSample.m_sampleParams = float2(0.0, 0.0);
+    r.m_M = 0.0;
+    r.m_W = 0.0;
+    return r;
+}
+
+RestirReservoirUpdater MakeRestirReservoirUpdater()
+{
+    RestirReservoirUpdater u;
+    u.m_reservoir = MakeRestirReservoir();
+    u.m_targetPdf = 0.0;
+    u.m_weightSum = 0.0;
+    return u;
+}
+
+void RestirUpdate(inout RestirReservoirUpdater updater, float randomValue, uint lightIndex, float2 sampleParams, float targetPdf, float sourcePdf)
+{
+    if (targetPdf <= 0.0 || sourcePdf <= 0.0)
+    {
+        return;
+    }
+
+    float w = targetPdf / sourcePdf;
+    updater.m_weightSum += w;
+
+    if (randomValue * updater.m_weightSum < w)
+    {
+        updater.m_reservoir.m_lightSample.m_lightIndex = lightIndex;
+        updater.m_reservoir.m_lightSample.m_sampleParams = sampleParams;
+        updater.m_targetPdf = targetPdf;
+    }
+
+    updater.m_reservoir.m_M += 1.0;
+}
+
+void RestirFinalize(inout RestirReservoirUpdater updater)
+{
+    if (updater.m_reservoir.m_M > 0.0 && updater.m_targetPdf > 0.0)
+    {
+        updater.m_reservoir.m_W = updater.m_weightSum / updater.m_targetPdf;
+    }
+    else
+    {
+        updater.m_reservoir = MakeRestirReservoir();
+    }
+}
+
+void RestirMerge(inout RestirReservoirUpdater updater, RestirReservoir candidate, float randomValue, float candidateTargetPdf, float similarity)
+{
+    if (candidate.m_M <= 0.0 || candidateTargetPdf <= 0.0 || similarity <= 0.0)
+    {
+        return;
+    }
+
+    float misWeight1 = updater.m_reservoir.m_M / max(updater.m_reservoir.m_M + candidate.m_M, 1e-6);
+    float misWeight2 = candidate.m_M / max(updater.m_reservoir.m_M + candidate.m_M, 1e-6);
+
+    float weight1 = misWeight1 * updater.m_targetPdf * updater.m_reservoir.m_W * similarity;
+    float weight2 = misWeight2 * candidateTargetPdf * candidate.m_W * similarity;
+    float weightSum = weight1 + weight2;
+
+    if (randomValue * weightSum < weight2)
+    {
+        updater.m_reservoir.m_lightSample = candidate.m_lightSample;
+        updater.m_targetPdf = candidateTargetPdf;
+    }
+
+    updater.m_reservoir.m_W = weightSum / max(updater.m_targetPdf, 1e-6);
+    updater.m_reservoir.m_M += candidate.m_M;
+}
+
+uint4 PackRestirReservoir(RestirReservoir reservoir)
+{
+    return uint4(
+        reservoir.m_lightSample.m_lightIndex,
+        f32tof16(reservoir.m_lightSample.m_sampleParams.x) | (f32tof16(reservoir.m_lightSample.m_sampleParams.y) << 16),
+        asuint(reservoir.m_W),
+        f32tof16(reservoir.m_M));
+}
+
+RestirReservoir UnpackRestirReservoir(uint4 data)
+{
+    RestirReservoir r;
+    r.m_lightSample.m_lightIndex = data.x;
+    r.m_lightSample.m_sampleParams = float2(f16tof32(data.y & 0xFFFF), f16tof32(data.y >> 16));
+    r.m_W = asfloat(data.z);
+    r.m_M = f16tof32(data.w & 0xFFFF);
+    return r;
+}
+
+void RestirClampM(inout RestirReservoir reservoir, float maxM)
+{
+    reservoir.m_M = min(reservoir.m_M, maxM);
+}

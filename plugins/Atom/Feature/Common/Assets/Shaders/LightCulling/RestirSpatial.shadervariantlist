@@ -1,0 +1,10 @@
+{
+    "unshadedVariants":
+    [
+        { "options": [], "hash": "autogen", "stages": [] }
+    ],
+    "shadedVariants":
+    [
+        { "options": [], "hash": "autogen", "stages": [] }
+    ]
+}

@@ -52,6 +52,8 @@ set(FILES
     Source/CoreLights/EsmShadowmapsPass.h
     Source/CoreLights/EsmShadowmapsPass.cpp
     Source/CoreLights/LightCullingPass.cpp
+    Source/CoreLights/RestirPasses.cpp
+    Source/CoreLights/RestirPasses.h
     Source/CoreLights/LightCullingPass.h
     Source/CoreLights/LightTreeBuilder.cpp
     Source/CoreLights/LightTreeBuilder.h
@@ -267,6 +269,8 @@ set(FILES
     Source/PostProcessing/SMAANeighborhoodBlendingPass.h
     Source/PostProcessing/SsaoPasses.cpp
     Source/PostProcessing/SsaoPasses.h
+    Source/PostProcessing/SsgiPasses.cpp
+    Source/PostProcessing/SsgiPasses.h
     Source/PostProcessing/SubsurfaceScatteringPass.cpp
     Source/PostProcessing/SubsurfaceScatteringPass.h
     Source/PostProcessing/TaaPass.h

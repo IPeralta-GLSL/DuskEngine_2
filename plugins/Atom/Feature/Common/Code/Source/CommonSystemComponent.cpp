@@ -75,6 +75,7 @@
 #include <PostProcessing/SMAAFeatureProcessor.h>
 #include <PostProcessing/SMAANeighborhoodBlendingPass.h>
 #include <PostProcessing/SsaoPasses.h>
+#include <PostProcessing/SsgiPasses.h>
 #include <PostProcessing/SubsurfaceScatteringPass.h>
 #include <PostProcessing/TaaPass.h>
 #include <PostProcessing/CasPass.h>
@@ -96,6 +97,8 @@
 
 #include <CoreLights/LightCullingTilePreparePass.h>
 #include <CoreLights/LightCullingPass.h>
+#include <CoreLights/RestirPasses.h>
+
 #include <Shadows/FullscreenShadowPass.h>
 #include <CoreLights/LightCullingRemap.h>
 #include <Decals/DecalTextureArrayFeatureProcessor.h>
@@ -287,6 +290,14 @@ namespace AZ
             // Add SSAO passes
             passSystem->AddPassCreator(Name("SsaoParentPass"), &SsaoParentPass::Create);
             passSystem->AddPassCreator(Name("SsaoComputePass"), &SsaoComputePass::Create);
+
+            // Add SSGI passes
+            passSystem->AddPassCreator(Name("SsgiParentPass"), &SsgiParentPass::Create);
+            passSystem->AddPassCreator(Name("SsgiComputePass"), &SsgiComputePass::Create);
+
+            // Add ReSTIR passes
+            passSystem->AddPassCreator(Name("RestirParentPass"), &RestirParentPass::Create);
+            passSystem->AddPassCreator(Name("RestirComputePass"), &RestirComputePass::Create);
 
             // Add Subsurface Scattering pass
             passSystem->AddPassCreator(Name("SubsurfaceScatteringPass"), &RPI::SubsurfaceScatteringPass::Create);

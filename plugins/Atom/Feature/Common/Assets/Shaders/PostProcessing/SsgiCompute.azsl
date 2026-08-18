@@ -1,0 +1,196 @@
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+struct SsgiConstants
+{
+    float m_uvRadius;
+    float m_falloffMul;
+    float m_falloffAdd;
+    float m_intensity;
+    float m_aoStrength;
+    uint m_sliceCount;
+    uint m_stepCount;
+    uint m_frameIndex;
+    float m_padding;
+};
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_depthLinear;
+    Texture2D<float4> m_lighting;
+    RWTexture2D<float4> m_ssgiOutput;
+    SsgiConstants m_constants;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+static const float SSGI_PI = 3.14159265359;
+static const float SSGI_HALF_PI = 1.57079632679;
+
+float SsgiLuminance(float3 c)
+{
+    return dot(c, float3(0.2126, 0.7152, 0.0722));
+}
+
+float SsgiIgn(uint2 pixel, uint frame)
+{
+    float2 p = float2(pixel) + float2(5.392753, 5.287193) * frame;
+    return frac(52.9829189 * frac(dot(p, float2(0.06711056, 0.00583715))));
+}
+
+float3 SsgiCameraForward()
+{
+    return normalize(mul(ViewSrg::m_viewMatrixInverse, float4(0.0, 0.0, 1.0, 0.0)).xyz);
+}
+
+float3 SsgiWorldPosition(float2 uv, float linearDepth, float3 camPos, float3 camFwd)
+{
+    float4 ndc = float4(uv * 2.0 - 1.0, 1.0, 1.0);
+    float3 farPoint = mul(ViewSrg::m_viewProjectionInverseMatrix, ndc).xyz;
+    float3 rayDir = normalize(farPoint - camPos);
+    float t = linearDepth / max(dot(rayDir, camFwd), 1e-6);
+    return camPos + rayDir * t;
+}
+
+float SsgiIntersectDirPlaneOneSided(float3 dir, float3 normal, float3 pt)
+{
+    float d = -dot(pt, normal);
+    float t = d / max(1e-5, -dot(dir, normal));
+    return t;
+}
+
+float SsgiIntegrateHalfArc(float horizonAngle, float normalAngle)
+{
+    return (cos(normalAngle) + 2.0 * horizonAngle * sin(normalAngle) - cos(2.0 * horizonAngle - normalAngle)) / 4.0;
+}
+
+float3 SsgiComputeNormal(float2 uv, float depth, uint2 dims, float3 camPos, float3 camFwd)
+{
+    float2 texel = 1.0 / float2(dims);
+    float dx = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(texel.x, 0), 1.0), 0);
+    float dy = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(0, texel.y), 1.0), 0);
+    float3 p = SsgiWorldPosition(uv, depth, camPos, camFwd);
+    float3 px = SsgiWorldPosition(uv + float2(texel.x, 0), dx, camPos, camFwd);
+    float3 py = SsgiWorldPosition(uv + float2(0, texel.y), dy, camPos, camFwd);
+    float3 n = normalize(cross(px - p, py - p));
+    return dot(n, camFwd) < 0.0 ? -n : n;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_ssgiOutput.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    float2 uv = (dispatchId.xy + 0.5) / float2(dims);
+    float depth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, uv, 0);
+    if (depth <= 0.0)
+    {
+        PassSrg::m_ssgiOutput[dispatchId.xy] = float4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
+
+    float3 camPos = ViewSrg::m_worldPosition.xyz;
+    float3 camFwd = SsgiCameraForward();
+    float3 worldPos = SsgiWorldPosition(uv, depth, camPos, camFwd);
+    float3 worldNormal = SsgiComputeNormal(uv, depth, dims, camPos, camFwd);
+    float3 eyeDir = normalize(camPos - worldPos);
+
+    float noise = SsgiIgn(dispatchId.xy, PassSrg::m_constants.m_frameIndex);
+
+    float sliceUvRadius = PassSrg::m_constants.m_uvRadius / max(depth, 1e-4);
+    float ambientOcclusion = 0.0;
+    float3 globalLighting = float3(0.0, 0.0, 0.0);
+
+    [loop]
+    for (uint sliceIndex = 0; sliceIndex < PassSrg::m_constants.m_sliceCount; ++sliceIndex)
+    {
+        float sliceAngle = ((sliceIndex + noise) / PassSrg::m_constants.m_sliceCount) * SSGI_PI;
+        float sliceCos = cos(sliceAngle);
+        float sliceSin = sin(sliceAngle);
+        float2 sliceUvDir = float2(sliceCos, -sliceSin) * sliceUvRadius;
+
+        float3 sliceViewDir = float3(sliceCos, sliceSin, 0.0);
+        float3 sliceWorldDir = mul(ViewSrg::m_viewMatrixInverse, float4(sliceViewDir, 0.0)).xyz;
+        float3 orthoWorldDir = sliceWorldDir - dot(sliceWorldDir, eyeDir) * eyeDir;
+        float3 projAxisDir = normalize(cross(orthoWorldDir, eyeDir));
+        float3 projWorldNormal = worldNormal - dot(worldNormal, projAxisDir) * projAxisDir;
+        float projWorldNormalLen = length(projWorldNormal);
+        float projWorldNormalCos = saturate(dot(projWorldNormal, eyeDir) / max(projWorldNormalLen, 1e-6));
+        float projWorldNormalAngle = sign(dot(orthoWorldDir, projWorldNormal)) * acos(projWorldNormalCos);
+
+        float sideSigns[2] = { 1.0, -1.0 };
+        float horizonAngles[2];
+        [unroll]
+        for (int sideIndex = 0; sideIndex < 2; ++sideIndex)
+        {
+            float horizonMin = cos(projWorldNormalAngle + sideSigns[sideIndex] * SSGI_HALF_PI);
+            float horizonCos = horizonMin;
+            float3 prevSampleWorldPos = float3(0.0, 0.0, 0.0);
+
+            [loop]
+            for (uint stepIndex = 0; stepIndex < PassSrg::m_constants.m_stepCount; ++stepIndex)
+            {
+                float sampleStep = ((stepIndex + noise) / PassSrg::m_constants.m_stepCount);
+                float2 sampleUv = uv + sideSigns[sideIndex] * sampleStep * sliceUvDir;
+                sampleUv = clamp(sampleUv, float2(0.0, 0.0), float2(1.0, 1.0));
+                float sampleDepth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, sampleUv, 0);
+                if (sampleDepth <= 0.0)
+                {
+                    prevSampleWorldPos = worldPos;
+                    continue;
+                }
+                float3 sampleWorldPos = SsgiWorldPosition(sampleUv, sampleDepth, camPos, camFwd);
+
+                float3 horizonWorldDir = sampleWorldPos - worldPos;
+                float horizonWorldLen = length(horizonWorldDir);
+                horizonWorldDir /= max(horizonWorldLen, 1e-6);
+                float sampleWeight = saturate(horizonWorldLen * PassSrg::m_constants.m_falloffMul + PassSrg::m_constants.m_falloffAdd);
+                float sampleCos = lerp(horizonMin, dot(horizonWorldDir, eyeDir), sampleWeight);
+                float prevHorizonCos = horizonCos;
+                horizonCos = max(horizonCos, sampleCos);
+
+                [branch]
+                if (sampleCos >= prevHorizonCos && horizonWorldLen > 1e-3)
+                {
+                    float3 sampleLighting = PassSrg::m_lighting.SampleLevel(PassSrg::PointSampler, sampleUv, 0).rgb;
+                    float3 sampleWorldNormal = SsgiComputeNormal(sampleUv, sampleDepth, dims, camPos, camFwd);
+
+                    float horizonAngle0 = projWorldNormalAngle + max(sideSigns[sideIndex] * acos(clamp(prevHorizonCos, -1.0, 1.0)) - projWorldNormalAngle, -SSGI_HALF_PI);
+                    float horizonAngle1 = projWorldNormalAngle + min(sideSigns[sideIndex] * acos(clamp(horizonCos, -1.0, 1.0)) - projWorldNormalAngle, SSGI_HALF_PI);
+                    float sampleOcclusion = SsgiIntegrateHalfArc(horizonAngle0, projWorldNormalAngle) - SsgiIntegrateHalfArc(horizonAngle1, projWorldNormalAngle);
+
+                    float backface = step(0.0, dot(-horizonWorldDir, sampleWorldNormal));
+                    globalLighting += sampleLighting * sampleOcclusion * backface;
+                }
+
+                prevSampleWorldPos = sampleWorldPos;
+            }
+
+            horizonAngles[sideIndex] = sideSigns[sideIndex] * acos(clamp(horizonCos, -1.0, 1.0));
+            ambientOcclusion += projWorldNormalLen * SsgiIntegrateHalfArc(horizonAngles[sideIndex], projWorldNormalAngle);
+            globalLighting *= projWorldNormalLen;
+        }
+    }
+
+    ambientOcclusion = saturate(ambientOcclusion / PassSrg::m_constants.m_sliceCount);
+    globalLighting = globalLighting / PassSrg::m_constants.m_sliceCount * PassSrg::m_constants.m_intensity;
+
+    PassSrg::m_ssgiOutput[dispatchId.xy] = float4(globalLighting, ambientOcclusion);
+}

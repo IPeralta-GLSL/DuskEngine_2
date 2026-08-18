@@ -571,13 +571,67 @@
                     }
                 },
                 {
+                    "Name": "Restir",
+                    "TemplateName": "RestirParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightListRemapped"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Modulate",
+                            "AttachmentRef": {
+                                "Pass": "SubsurfaceScatteringPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "Ssao",
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "Modulate",
                             "AttachmentRef": {
-                                "Pass": "SubsurfaceScatteringPass",
+                                "Pass": "Restir",
+                                "Attachment": "LightingOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Ssgi",
+                    "TemplateName": "SsgiParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Modulate",
+                            "AttachmentRef": {
+                                "Pass": "Ssao",
                                 "Attachment": "Output"
                             }
                         },
@@ -598,7 +652,7 @@
                         {
                             "LocalSlot": "DiffuseInput",
                             "AttachmentRef": {
-                                "Pass": "Ssao",
+                                "Pass": "Ssgi",
                                 "Attachment": "Output"
                             }
                         },

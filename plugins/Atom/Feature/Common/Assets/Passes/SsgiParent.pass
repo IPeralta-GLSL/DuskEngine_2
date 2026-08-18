@@ -1,0 +1,81 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SsgiParentTemplate",
+            "PassClass": "SsgiParentPass",
+            "Slots": [
+                {
+                    "Name": "Modulate",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "SsgiComposite",
+                        "Attachment": "InputOutput"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "SsgiCompute",
+                    "TemplateName": "SsgiComputeTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Lighting",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Modulate"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SsgiComposite",
+                    "TemplateName": "SsgiCompositeTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Ssgi",
+                            "AttachmentRef": {
+                                "Pass": "SsgiCompute",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Modulate"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

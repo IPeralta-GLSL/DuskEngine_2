@@ -1,0 +1,156 @@
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+#include <Atom/Features/LightCulling/LightCullingShared.azsli>
+#include <Atom/Features/LightCulling/RestirReservoir.azsli>
+
+#define RESTIR_CANDIDATE_COUNT 8
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_depthLinear;
+    Texture2D<uint4> m_tileLightData;
+    StructuredBuffer<uint> m_lightListRemapped;
+    RWTexture2D<uint4> m_reservoirOutput;
+    uint m_frameIndex;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float RestirIgn(uint2 pixel, uint frame)
+{
+    float2 p = float2(pixel) + float2(5.392753, 5.287193) * frame;
+    return frac(52.9829189 * frac(dot(p, float2(0.06711056, 0.00583715))));
+}
+
+float3 RestirCameraForward()
+{
+    return normalize(mul(ViewSrg::m_viewMatrixInverse, float4(0.0, 0.0, 1.0, 0.0)).xyz);
+}
+
+float3 RestirWorldPosition(float2 uv, float linearDepth, float3 camPos, float3 camFwd)
+{
+    float4 ndc = float4(uv * 2.0 - 1.0, 1.0, 1.0);
+    float3 farPoint = mul(ViewSrg::m_viewProjectionInverseMatrix, ndc).xyz;
+    float3 rayDir = normalize(farPoint - camPos);
+    float t = linearDepth / max(dot(rayDir, camFwd), 1e-6);
+    return camPos + rayDir * t;
+}
+
+float3 RestirDecodeNormalFromDepth(float2 uv, uint2 dims, float3 camPos, float3 camFwd)
+{
+    float2 texel = 1.0 / float2(dims);
+    float d0 = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, uv, 0);
+    float dx = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(texel.x, 0.0), 1.0), 0);
+    float dy = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, min(uv + float2(0.0, texel.y), 1.0), 0);
+    float3 p0 = RestirWorldPosition(uv, d0, camPos, camFwd);
+    float3 px = RestirWorldPosition(uv + float2(texel.x, 0.0), dx, camPos, camFwd);
+    float3 py = RestirWorldPosition(uv + float2(0.0, texel.y), dy, camPos, camFwd);
+    float3 n = normalize(cross(px - p0, py - p0));
+    return dot(n, camFwd) < 0.0 ? -n : n;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_reservoirOutput.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    RestirReservoirUpdater updater = MakeRestirReservoirUpdater();
+
+    float depth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, (dispatchId.xy + 0.5) / float2(dims), 0);
+    if (depth <= 0.0)
+    {
+        PassSrg::m_reservoirOutput[dispatchId.xy] = PackRestirReservoir(updater.m_reservoir);
+        return;
+    }
+
+    float2 uv = (dispatchId.xy + 0.5) / float2(dims);
+    float3 camPos = ViewSrg::m_worldPosition.xyz;
+    float3 camFwd = RestirCameraForward();
+    float3 worldPos = RestirWorldPosition(uv, depth, camPos, camFwd);
+    float3 normal = RestirDecodeNormalFromDepth(uv, dims, camPos, camFwd);
+
+    uint2 tileId = ComputeTileId(dispatchId.xy + 0.5);
+    uint tileWidth;
+    uint tileHeight;
+    PassSrg::m_tileLightData.GetDimensions(tileWidth, tileHeight);
+    TileLightData tileLightData = Tile_UnpackData(PassSrg::m_tileLightData[tileId]);
+    uint bin = NVLC_GetBin(abs(depth), tileLightData);
+    uint readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN;
+
+    uint tileLightCount = 0;
+    uint value = PassSrg::m_lightListRemapped.Load(int(readIndex)).x;
+    while (value < NVLC_END_OF_GROUP)
+    {
+        if (value < ViewSrg::m_visibleSimplePointLightCount)
+        {
+            tileLightCount++;
+        }
+        readIndex++;
+        value = PassSrg::m_lightListRemapped.Load(int(readIndex)).x;
+    }
+
+    if (tileLightCount == 0)
+    {
+        PassSrg::m_reservoirOutput[dispatchId.xy] = PackRestirReservoir(updater.m_reservoir);
+        return;
+    }
+
+    uint candidateCapacity = min(RESTIR_CANDIDATE_COUNT, tileLightCount);
+    uint candidateIndices[RESTIR_CANDIDATE_COUNT];
+    uint candidateCount = 0;
+
+    readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN;
+    value = PassSrg::m_lightListRemapped.Load(int(readIndex)).x;
+    uint lightCursor = 0;
+    while (value < NVLC_END_OF_GROUP && candidateCount < candidateCapacity)
+    {
+        if (value < ViewSrg::m_visibleSimplePointLightCount)
+        {
+            float u = RestirIgn(dispatchId.xy + uint2(lightCursor * 53, lightCursor * 29), PassSrg::m_frameIndex);
+            float keepProb = float(candidateCapacity) / float(tileLightCount);
+            if (u < keepProb || candidateCount == 0)
+            {
+                candidateIndices[candidateCount] = value;
+                candidateCount++;
+            }
+            lightCursor++;
+        }
+        readIndex++;
+        value = PassSrg::m_lightListRemapped.Load(int(readIndex)).x;
+    }
+
+    if (candidateCount == 0)
+    {
+        PassSrg::m_reservoirOutput[dispatchId.xy] = PackRestirReservoir(updater.m_reservoir);
+        return;
+    }
+
+    for (uint i = 0; i < candidateCount; ++i)
+    {
+        float targetPdf = RestirEvaluateTargetPdf(candidateIndices[i], worldPos, normal);
+        float u = RestirIgn(dispatchId.xy + uint2(i * 37, i * 17), PassSrg::m_frameIndex);
+        RestirUpdate(updater, u, candidateIndices[i], float2(u, 0.0), targetPdf, 1.0 / float(tileLightCount));
+    }
+
+    RestirFinalize(updater);
+
+    PassSrg::m_reservoirOutput[dispatchId.xy] = PackRestirReservoir(updater.m_reservoir);
+}
