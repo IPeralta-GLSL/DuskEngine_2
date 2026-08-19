@@ -10,7 +10,7 @@
 QTabWidget,
 QTabBar
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 QTabBar::tab
@@ -20,12 +20,12 @@ QTabBar::tab
 
 AzQtComponents--TabWidget
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 AzQtComponents--TabWidget > QWidget
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 AzQtComponents--TabWidget:pane
@@ -82,7 +82,7 @@ AzQtComponents--TabBar:focus
 
 AzQtComponents--TabWidget.Secondary
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 AzQtComponents--TabWidget.Secondary.Bordered

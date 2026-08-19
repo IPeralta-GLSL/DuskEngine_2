@@ -125,13 +125,13 @@ namespace AzQtComponents
             palette.setColor(QPalette::Window, QColor("#1f1f22"));
             palette.setColor(QPalette::WindowText, QColor("#C9C9CE"));
             palette.setColor(QPalette::Base, QColor("#1f1f22"));
-            palette.setColor(QPalette::AlternateBase, QColor("#1c1c1f"));
+            palette.setColor(QPalette::AlternateBase, QColor("#232327"));
             palette.setColor(QPalette::Text, QColor("#C9C9CE"));
             palette.setColor(QPalette::Button, QColor("#1f1f22"));
             palette.setColor(QPalette::ButtonText, QColor("#C9C9CE"));
             palette.setColor(QPalette::PlaceholderText, QColor("#8E8E94"));
             palette.setColor(QPalette::Highlight, QColor("#4CAF50"));
-            palette.setColor(QPalette::HighlightedText, QColor("#1a1a1d"));
+            palette.setColor(QPalette::HighlightedText, QColor("#1f1f22"));
             palette.setColor(QPalette::ToolTipBase, QColor("#1f1f22"));
             palette.setColor(QPalette::ToolTipText, QColor("#C9C9CE"));
             palette.setColor(QPalette::Link, QColor("#4CAF50"));

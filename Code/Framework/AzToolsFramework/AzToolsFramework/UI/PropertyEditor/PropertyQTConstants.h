@@ -15,7 +15,7 @@
 // Provides a shared set of values used by properties as they initialize QT components.
 namespace AzToolsFramework
 {
-    static const int PropertyQTConstant_DefaultHeight = 18;
+    static const int PropertyQTConstant_DefaultHeight = 22;
     static const int PropertyQTConstant_MinimumWidth = 30;
 
     static const int PropertyQTConstant_LeftMargin = 2;

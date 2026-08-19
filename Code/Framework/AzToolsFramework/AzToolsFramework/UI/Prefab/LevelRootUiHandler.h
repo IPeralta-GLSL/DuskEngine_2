@@ -47,8 +47,8 @@ namespace AzToolsFramework
         QString m_levelRootIconPath = QString(":/Level/level.svg");
         QColor m_levelRootBorderColor = QColor("#656565");
 
-        QColor m_prefabCapsuleColor = QColor("#1E252F");
-        QColor m_prefabCapsuleDisabledColor = QColor("#35383C");
-        QColor m_prefabCapsuleEditColor = QColor("#4CAF50");
+        QColor m_prefabCapsuleColor = QColor("#4CAF50");
+        QColor m_prefabCapsuleDisabledColor = QColor("#5A5A60");
+        QColor m_prefabCapsuleEditColor = QColor("#66BB6A");
     };
 } // namespace AzToolsFramework

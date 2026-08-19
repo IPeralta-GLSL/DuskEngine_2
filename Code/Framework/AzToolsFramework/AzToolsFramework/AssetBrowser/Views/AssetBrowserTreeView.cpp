@@ -178,7 +178,7 @@ namespace AzToolsFramework
         {
             if (!index.parent().isValid() && ! selectedIndexes().contains(index))
             {
-                painter->fillRect(rect, 0x333333);
+                painter->fillRect(rect, 0x232327);
             }
 
             QTreeView::drawBranches(painter, rect, index);

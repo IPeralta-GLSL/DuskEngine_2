@@ -79,9 +79,9 @@ namespace AzToolsFramework
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");
         QColor m_backgroundSelectedColor = QColor("#656565");
-        QColor m_prefabCapsuleColor = QColor("#1E252F");
-        QColor m_prefabCapsuleDisabledColor = QColor("#35383C");
-        QColor m_prefabCapsuleEditColor = QColor("#4CAF50");
+        QColor m_prefabCapsuleColor = QColor("#4CAF50");
+        QColor m_prefabCapsuleDisabledColor = QColor("#5A5A60");
+        QColor m_prefabCapsuleEditColor = QColor("#66BB6A");
         QString m_prefabIconPath = QString(":/Entity/prefab.svg");
         QString m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
         QString m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");

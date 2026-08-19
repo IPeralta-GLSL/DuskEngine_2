@@ -36,7 +36,7 @@ VectorElement::VectorElement(QWidget* parent)
 
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setContentsMargins(0,0,0,0);
-    layout->setSpacing(2);
+    layout->setSpacing(4);
 
     VectorElement::layout(this, m_spinBox, m_label, false);
 
@@ -252,8 +252,8 @@ VectorInput::VectorInput(QWidget* parent, int elementCount, int elementsPerRow, 
 {
     // Set up Qt layout
     QGridLayout* pLayout = new QGridLayout(this);
-    pLayout->setSpacing(2);
-    pLayout->setContentsMargins(1, 0, 1, 0);
+    pLayout->setSpacing(4);
+    pLayout->setContentsMargins(2, 1, 2, 1);
 
     AZ_Warning("Property Editor", elementCount >= 2,
         "Vector controls with less than 2 elements are not supported");

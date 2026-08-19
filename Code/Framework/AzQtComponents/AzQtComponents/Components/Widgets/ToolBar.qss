@@ -17,7 +17,7 @@ QToolBar
     /* QToolBar required a background colour to ensure it has a background when
      * displaying an overflow menu, or when floating
      */
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
     qproperty-iconSize: 16px 16px;
     border: 0 none;
 

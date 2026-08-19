@@ -13,31 +13,31 @@ ActionWidget #LinkButton
 
 AzAssetBrowserWindow #previewWidgetWrapper
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
     border: 0 none;
 }
 
 AzAssetBrowserWindow #searchButtonContainer
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
     border: 0 none;
 }
 
 AzAssetBrowserWindow #m_separator
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 /* Component Palette Widget */
 AzToolsFramework--ComponentPaletteWidget
 {
     border: 1px solid #34343A;
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 AzToolsFramework--ComponentPaletteWidget > QTreeView
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 AzToolsFramework--PropertyRowWidget[canBeReordered="true"]  QLabel#Name
@@ -63,7 +63,7 @@ Ui--AssetEditorHeader
 Ui--AssetEditorHeader *
 {
     height: 16px;
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 Ui--AssetEditorHeader #Background
@@ -73,7 +73,7 @@ Ui--AssetEditorHeader #Background
     border: 1px solid transparent;
     border-bottom: none;
     background-image: none;
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 Ui--AssetEditorHeader #Name
@@ -138,13 +138,13 @@ AzToolsFramework--SlicePushWidget QWidget#WarningBottomLine
 AzToolsFramework--SlicePushWidget QTreeWidget#WarningTreeWidget::item:pressed
 , AzToolsFramework--SlicePushWidget QTreeWidget#WarningTreeWidget::item:selected
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
 }
 
 /* Toolbar borders (Editor UI Window) */
 EditorWindow QToolBar
 {
-    border-bottom: 2px solid #1a1a1d;
+    border-bottom: 1px solid #34343A;
 }
 
 DockWidgetTitleBar #DockWidgetContextMenu
@@ -160,7 +160,7 @@ DockWidgetTitleBar #DockWidgetContextMenu
 #EMFX_Menu
 {
     border-bottom-width: 2px;
-    border-bottom-color: #1a1a1d;
+    border-bottom-color: #34343A;
     border-bottom-style: solid;
 }
 
@@ -172,14 +172,14 @@ DockWidgetTitleBar #DockWidgetContextMenu
 
 PanelTitleBar
 {
-    border-top: 1px solid #1a1a1d;
+    border-top: 1px solid #34343A;
 }
 
 /* Asset Editor */
 
 #AssetEditorStatusBar
 {
-    border-top: 2px solid #1a1a1d;
+    border-top: 1px solid #34343A;
 }
 
 /* Console and Python Console */
@@ -193,7 +193,7 @@ ConsoleTextEdit:focus,
 {
     margin: 0;
     margin-top: 6px;
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
     border-radius: 0px;
     border-width: 0px;
     border-color: #34343A;

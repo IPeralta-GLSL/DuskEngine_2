@@ -411,8 +411,8 @@ PushButton::Config PushButton::defaultConfig()
     config.primary.normal.start = QColor("#3a3a3a");
     config.primary.normal.end = QColor("#3a3a3a");
 
-    config.secondary.disabled.start = QColor("#222222");
-    config.secondary.disabled.end = QColor("#222222");
+    config.secondary.disabled.start = QColor("#1f1f22");
+    config.secondary.disabled.end = QColor("#1f1f22");
 
     config.secondary.sunken.start = QColor("#1e1e1e");
     config.secondary.sunken.end = QColor("#1e1e1e");

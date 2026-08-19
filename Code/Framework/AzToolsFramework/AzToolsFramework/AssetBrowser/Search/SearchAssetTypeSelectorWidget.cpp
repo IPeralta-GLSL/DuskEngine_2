@@ -55,7 +55,7 @@ namespace AzToolsFramework
             }
             AddAssetTypeGroup(menu, "Other");
             menu->setLayoutDirection(Qt::LeftToRight);
-            menu->setStyleSheet("border: none; background-color: #333333;");
+            menu->setStyleSheet("border: none; background-color: #1f1f22;");
             m_ui->m_showSelectionButton->setMenu(menu);
 
             m_filter->SetTag("AssetTypes");

@@ -144,7 +144,7 @@ namespace AzToolsFramework
             m_detailsButton->setCheckable(true);
             m_detailsButton->setFlat(true);
             m_detailsButton->setStyleSheet(
-                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
+                "QPushButton {background-color: #232327; border-color #222222; border-style: solid; border-width: 1px;"
                 "border-top-left-radius: 3px; border-bottom-left-radius: 3px; border-top-right-radius: 0px;"
                 "border-bottom-right-radius: 0px; font-size: 12px; height: 28px;}"
                 "QPushButton:checked {background-color: #4CAF50;}"
@@ -155,7 +155,7 @@ namespace AzToolsFramework
             m_sceneSettingsButton->setCheckable(true);
             m_sceneSettingsButton->setFlat(true);
             m_sceneSettingsButton->setStyleSheet(
-                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
+                "QPushButton {background-color: #232327; border-color #222222; border-style: solid; border-width: 1px;"
                 "border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 3px;"
                 "border-bottom-right-radius: 0px; margin-left: -1px; font-size: 12px; height: 28px;}"
                 "QPushButton:checked {background-color: #4CAF50;}"
@@ -166,7 +166,7 @@ namespace AzToolsFramework
 
             // Create the layout for the asset icon preview
             m_previewImage = new AzQtComponents::ExtendedLabel(m_populatedLayoutWidget);
-            m_previewImage->setStyleSheet("QLabel {background-color: #333333;}");
+            m_previewImage->setStyleSheet("QLabel {background-color: #232327;}");
             m_previewImage->setAlignment(Qt::AlignCenter);
             m_previewImage->setWordWrap(true);
 

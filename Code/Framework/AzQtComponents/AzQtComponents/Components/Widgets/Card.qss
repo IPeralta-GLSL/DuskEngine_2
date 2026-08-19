@@ -61,7 +61,7 @@ AzQtComponents--CardNotification #HeaderFrame,
 AzQtComponents--CardNotification #Icon,
 AzQtComponents--CardNotification #Title
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
     border-radius: 0px;
     border: none;
 }
@@ -121,7 +121,7 @@ AzQtComponents--Card[class~="ContainerCard"] > #contentContainer
 
 AzQtComponents--CardHeader[class~="ContainerCardHeader"]
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
     border-radius: 0px;
     border: none;
 }
@@ -147,7 +147,7 @@ AzQtComponents--CardHeader[class~="SectionCardHeader"]
 
 .primaryCardHeader
 {
-    background-color: #1a1a1d;
+    background-color: #1f1f22;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
 }
