@@ -12,7 +12,7 @@ namespace AzToolsFramework
 {
     namespace PrefabUIConstants
     {
-        const int prefabCapsuleRadius = 6;
+        const int prefabCapsuleRadius = 0;
         const int prefabBorderThickness = 2;
         const int prefabFileNameFontSize = 10;
         const int prefabEditIconSize = 16;

@@ -336,7 +336,6 @@ namespace AzToolsFramework
     {
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (PrefabUIConstants::prefabBorderThickness / 2) - 1;
-        const int curveRectSize = PrefabUIConstants::prefabCapsuleRadius * 2;
         const bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
@@ -364,39 +363,13 @@ namespace AzToolsFramework
 
             if (isFirstColumn)
             {
-                // Left border, curve on the bottom left, bottom border
-
-                // Define curve start, end and size
-                QPoint curveStart = fullRect.bottomLeft();
-                curveStart.setY(curveStart.y() - PrefabUIConstants::prefabCapsuleRadius);
-                QPoint curveEnd = fullRect.bottomLeft();
-                curveEnd.setX(curveEnd.x() + PrefabUIConstants::prefabCapsuleRadius);
-                QRect curveRect = QRect(fullRect.left(), fullRect.bottom() - curveRectSize, curveRectSize, curveRectSize);
-
-                // Curved Corner
-                QPainterPath curvedCorner;
-                curvedCorner.moveTo(fullRect.topLeft());
-                curvedCorner.lineTo(curveStart);
-                curvedCorner.arcTo(curveRect, 180, 90);
-                curvedCorner.lineTo(fullRect.bottomRight());
-                painter->drawPath(curvedCorner);
+                painter->drawLine(fullRect.topLeft(), fullRect.bottomLeft());
+                painter->drawLine(fullRect.bottomLeft(), fullRect.bottomRight());
             }
             else if (isLastColumn)
             {
-                // Right border, curve on the bottom right, bottom border
-
-                // Define curve start, end and size
-                QPoint curveStart = fullRect.bottomRight();
-                curveStart.setY(curveStart.y() - PrefabUIConstants::prefabCapsuleRadius);
-                QRect curveRect = QRect(fullRect.right() - curveRectSize, fullRect.bottom() - curveRectSize, curveRectSize, curveRectSize);
-
-                // Curved Corner
-                QPainterPath curvedCorner;
-                curvedCorner.moveTo(fullRect.topRight());
-                curvedCorner.lineTo(curveStart);
-                curvedCorner.arcTo(curveRect, 0, -90);
-                curvedCorner.lineTo(rect.bottomLeft());
-                painter->drawPath(curvedCorner);
+                painter->drawLine(fullRect.topRight(), fullRect.bottomRight());
+                painter->drawLine(fullRect.bottomRight(), fullRect.bottomLeft());
             }
             else
             {

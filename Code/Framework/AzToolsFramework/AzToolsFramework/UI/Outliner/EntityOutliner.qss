@@ -76,7 +76,7 @@ AzToolsFramework--EntityOutlinerCheckBox#VisibilityMixed::indicator:checked
 , AzToolsFramework--EntityOutlinerCheckBox#LockMixedHover::indicator:indeterminate
 {
     background: rgba(0, 0, 0, 80);
-    border-radius: 5px;
+    border-radius: 0px;
 }
 
 
