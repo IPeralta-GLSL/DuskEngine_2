@@ -53,7 +53,7 @@ namespace AzQtComponents
         config.dropIndicator.ballFillColor = QColor("#111111");
         config.dropIndicator.ballOutlineColor = QColor("#94D2FF");
 
-        config.dragIndicator.rectBorderRadius = 2;
+        config.dragIndicator.rectBorderRadius = 0;
         config.dragIndicator.rectFillColor = QColor("#888888");
 
         return config;

@@ -62,7 +62,7 @@ namespace AzQtComponents
         config.shadowMargins.bottom = 7;
         config.shadowMargins.left = 7;
         config.backgroundColor = QStringLiteral("#1f1f22");
-        config.radius = 2;
+        config.radius = 0;
         config.horizontalMargin = 5;
         config.verticalMargin = 5;
         config.horizontalPadding = 0;

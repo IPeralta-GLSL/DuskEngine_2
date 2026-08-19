@@ -36,7 +36,6 @@ namespace AzToolsFramework
 
         m_checkBox->setFocusPolicy(Qt::StrongFocus);
 
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_checkBox);
 
         setLayout(layout);
         setFocusProxy(m_checkBox);

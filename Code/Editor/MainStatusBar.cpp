@@ -338,7 +338,6 @@ void SourceControlItem::InitMenu()
         m_settingsAction = m_menu->addAction(tr("Settings"));
         m_checkBox = new QCheckBox(m_menu.get());
         m_checkBox->setText(tr("Enable"));
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_checkBox);
         m_enableAction = new QWidgetAction(m_menu.get());
         m_enableAction->setDefaultWidget(m_checkBox);
         m_menu->addAction(m_settingsAction);

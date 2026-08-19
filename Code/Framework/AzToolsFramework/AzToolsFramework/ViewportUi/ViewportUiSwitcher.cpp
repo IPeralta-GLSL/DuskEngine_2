@@ -20,7 +20,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         setOrientation(Qt::Orientation::Horizontal);
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
         setStyleSheet(QString("QToolBar {background-color: none; border: none; spacing: 3px;}"
-                              "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
+                              "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 0px; "
                               "border-width: 2px; padding: 7px; color: white;}"));
 
         // Add am empty active button (is set in the call to SetActiveMode)

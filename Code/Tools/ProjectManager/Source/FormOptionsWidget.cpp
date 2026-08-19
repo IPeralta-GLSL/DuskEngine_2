@@ -76,7 +76,6 @@ namespace O3DE::ProjectManager
                         Clear();
                     }
                 });
-                AzQtComponents::CheckBox::applyToggleSwitchStyle(m_allOptionsToggle);
 
                 optionLayout->addWidget(m_allOptionsToggle);
 

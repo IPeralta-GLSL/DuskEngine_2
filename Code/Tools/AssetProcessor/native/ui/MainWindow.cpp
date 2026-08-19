@@ -604,10 +604,6 @@ void MainWindow::Activate()
     // Settings tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
 
-    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->modtimeSkippingCheckBox);
-    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->disableStartupScanCheckBox);
-    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->debugOutputCheckBox);
-    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->verboseLoggingCheckbox);
 
     const auto apm = m_guiApplicationManager->GetAssetProcessorManager();
 

@@ -394,7 +394,7 @@ namespace AzQtComponents
 
         config.rootThumbnail.width = 96;
         config.rootThumbnail.height = 96;
-        config.rootThumbnail.borderRadius = 2.0;
+        config.rootThumbnail.borderRadius = 0.0;
         config.rootThumbnail.padding = 12;
         config.rootThumbnail.backgroundColor = QColor(0x11, 0x11, 0x11);
         config.rootThumbnail.borderThickness = 1.0;
@@ -404,7 +404,7 @@ namespace AzQtComponents
 
         config.childThumbnail.width = 70;
         config.childThumbnail.height = 80;
-        config.childThumbnail.borderRadius = 2.0;
+        config.childThumbnail.borderRadius = 0.0;
         config.childThumbnail.padding = 9;
         config.childThumbnail.backgroundColor = QColor(0x11, 0x11, 0x11);
         config.childThumbnail.borderThickness = 1.0;
@@ -414,7 +414,7 @@ namespace AzQtComponents
 
         config.expandButton.width = 15;
         config.expandButton.caretWidth = 8.0;
-        config.expandButton.borderRadius = 2.0;
+        config.expandButton.borderRadius = 0.0;
         config.expandButton.backgroundColor = QColor(0x22, 0x22, 0x22);
         config.expandButton.caretColor = QColor(0xff, 0xff, 0xff);
 

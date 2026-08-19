@@ -52,7 +52,7 @@ namespace AzToolsFramework
         , m_filterEnabled(true)
         , m_mouseHover(false)
     {
-        m_baseStyleSheet = styleSheet() + "padding: 0ex; border-radius: 2px;";
+        m_baseStyleSheet = styleSheet() + "padding: 0ex; border-radius: 0px;";
         setToolTip("Filter by " + m_tagText + " for \"" + m_criteriaText + "\"");
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         setMinimumSize(60, 24);

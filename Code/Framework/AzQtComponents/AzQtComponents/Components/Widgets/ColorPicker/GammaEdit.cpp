@@ -39,7 +39,6 @@ GammaEdit::GammaEdit(QWidget* parent)
     layout->addWidget(m_edit);
 
     m_toggleSwitch = new QCheckBox(this);
-    CheckBox::applyToggleSwitchStyle(m_toggleSwitch);
     m_toggleSwitch->setChecked(false);
     connect(m_toggleSwitch, &QAbstractButton::toggled, this, &GammaEdit::toggled);
     connect(m_toggleSwitch, &QAbstractButton::toggled, m_edit, &QWidget::setEnabled);

@@ -98,7 +98,6 @@ namespace O3DE::ProjectManager
 
         m_autoBuild = new QCheckBox(this);
         m_autoBuild->setChecked(true);
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_autoBuild);
         buildHLayout->addWidget(m_autoBuild);
 
         buildHLayout->addSpacing(10);

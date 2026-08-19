@@ -36,7 +36,6 @@ namespace AzToolsFramework
             SourceControlConnectionRequestBus::BroadcastResult(state, &SourceControlConnectionRequestBus::Events::GetSourceControlState);
 
             bool onlineMode = state == SourceControlState::Disabled ? false : true;
-            AzQtComponents::CheckBox::applyToggleSwitchStyle(m_ui->workOnlineCheckbox);
             m_ui->workOnlineCheckbox->setChecked(onlineMode);
         }
     }
