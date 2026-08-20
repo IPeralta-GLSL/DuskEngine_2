@@ -2071,11 +2071,14 @@ namespace AzToolsFramework
         QColor transparentColor(0, 0, 0, 0);
         checkboxPalette.setColor(QPalette::ColorRole::Window, transparentColor);
 
-        // Disable hover rendering for read-only entities
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
         {
             isHovered = false;
+        }
+        else
+        {
+            isHovered = true;
         }
 
         // We're only using these check boxes as renderers so their actual state doesn't matter.
