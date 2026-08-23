@@ -5,12 +5,7 @@
 
 #include <Atom/Features/LightCulling/RestirReservoir.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<uint4> m_reservoirInput;
-    RWTexture2D<float4> m_debugOutput;
-    uint m_debugMode;
-}
+#include <Atom/Features/LightCulling/RestirDebugSrg.srgi>
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 dispatchId : SV_DispatchThreadID)

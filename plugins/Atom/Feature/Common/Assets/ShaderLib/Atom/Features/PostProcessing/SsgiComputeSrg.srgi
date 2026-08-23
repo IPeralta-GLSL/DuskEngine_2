@@ -1,0 +1,19 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_depthLinear;
+    Texture2D<float4> m_lighting;
+    RWTexture2D<float4> m_ssgiOutput;
+    SsgiConstants m_constants;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}

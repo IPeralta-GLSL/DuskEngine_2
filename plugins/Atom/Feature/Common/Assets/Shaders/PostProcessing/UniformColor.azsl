@@ -11,10 +11,7 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    float4 m_color;
-}
+#include <Atom/Features/PostProcessing/UniformColorSrg.srgi>
 
 PSOutput MainPS(VSOutput IN)
 {

@@ -12,20 +12,7 @@
 
 #include <viewsrg_all.srgi>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_colorTexture;
-    Texture2D<float4> m_depthTexture;
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/DepthOfFieldPrepareSrg.srgi>
 
 PSOutput MainPS(VSOutput IN)
 {

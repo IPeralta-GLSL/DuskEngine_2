@@ -1,0 +1,67 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Slot 0: DepthStencilTextureInput – full-res MSAA depth
+    Texture2DMS<float>  m_depth;
+
+    // Slot 1: NormalInput – full-res MSAA normals (RGB10 SignedOctahedron)
+    Texture2DMS<float4> m_normal;
+
+    // Slot 2: SpecularF0Input – full-res MSAA specularF0 (roughness in .a)
+    Texture2DMS<float4> m_specularF0;
+
+    // Slot 3: ScreenSpaceReflectionInputOutput – half-res RT trace
+    //         .rgb = radiance, .a = ray confidence (0 = no reflection)
+    Texture2D<float4>   m_traceReflection;
+
+    // Slot 4: History – half-res denoised history from previous frame
+    //         .rgb = accumulated radiance, .a = sampleCount / MAX_SAMPLE_COUNT
+    Texture2D<float4>   m_history;
+
+    // ---- Constants set by ReflectionScreenSpaceFilterPass ----
+    // Note: C++ safely skips constants not present in the SRG layout.
+
+    // Scale from half-res output to full-res (e.g. 2.0 at 0.5x output scale)
+    float m_invOutputScale;
+
+    // Half-res output dimensions
+    uint  m_outputWidth;
+    uint  m_outputHeight;
+
+    // Temporal blend strength – higher value = less temporal weight (more responsive)
+    // Mapped from SpecularReflections::SSROptions::m_temporalFilteringStrength
+    float m_invTemporalFilteringStrength;
+
+    // Skip denoising for pixels with roughness above this threshold
+    float m_maxRoughness;
+
+    // Feature flags / extra constants (declared to prevent "not found" warnings)
+    bool  m_temporalFiltering;
+    bool  m_coneTracing;       // unused
+    bool  m_rayTracing;        // unused
+    float m_roughnessBias;     // unused
+    bool  m_luminanceClamp;
+    float m_maxLuminance;
+    uint  m_mipLevels;         // unused
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+}

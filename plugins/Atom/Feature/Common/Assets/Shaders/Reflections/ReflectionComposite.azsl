@@ -22,10 +22,7 @@
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2DMS<float4>  m_reflection;
-}
+#include <Atom/Features/Reflections/ReflectionCompositeSrg.srgi>
 
 // Vertex Shader
 VSOutput MainVS(VSInput input)

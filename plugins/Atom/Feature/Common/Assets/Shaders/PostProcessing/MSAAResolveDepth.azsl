@@ -11,10 +11,7 @@
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2DMS<float> m_depthTexture;
-}
+#include <Atom/Features/PostProcessing/MSAAResolveDepthSrg.srgi>
 
 
 struct PSOutput

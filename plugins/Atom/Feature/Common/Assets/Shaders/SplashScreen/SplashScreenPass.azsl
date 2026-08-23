@@ -9,22 +9,7 @@
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Sampler m_imageSampler
-    {
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Texture2D<float4> m_splashScreenImage;
-
-    struct SplashScreenParams
-    {
-        float m_fadingFactor;
-    } m_splashScreenParams;
-}
+#include <Atom/Features/SplashScreen/SplashScreenPassSrg.srgi>
 
 struct VSInput
 {

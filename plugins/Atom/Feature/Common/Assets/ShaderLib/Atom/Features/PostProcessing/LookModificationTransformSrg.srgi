@@ -1,0 +1,24 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2D<float4> m_framebuffer;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    // These parameters contain exposure control parameters.
+    StructuredBuffer<EyeAdaptation> m_eyeAdaptation;
+
+    Texture3D<float4> m_gradingLut;
+
+    int m_shaperType;
+    float m_shaperBias;
+    float m_shaperScale;
+}

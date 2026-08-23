@@ -11,10 +11,7 @@
 #include <Atom/Features/PBR/Hammersley.azsli>
 #include <Atom/Features/PBR/Microfacet/Ggx.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    RWTexture2D<float2> m_outputTexture;
-} 
+#include <Atom/Features/BRDFTexture/BRDFTextureCSSrg.srgi> 
 
 // See Real Shading in Unreal Engine 4 (page 7)
 // https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf

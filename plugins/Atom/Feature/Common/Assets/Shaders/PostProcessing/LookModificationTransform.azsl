@@ -15,28 +15,7 @@
 #include <Atom/Features/PostProcessing/Shapers.azsli>
 #include "EyeAdaptationUtil.azsli"
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float4> m_framebuffer;
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    // These parameters contain exposure control parameters.
-    StructuredBuffer<EyeAdaptation> m_eyeAdaptation;
-
-    Texture3D<float4> m_gradingLut;
-
-    int m_shaperType;
-    float m_shaperBias;
-    float m_shaperScale;
-}
+#include <Atom/Features/PostProcessing/LookModificationTransformSrg.srgi>
 
 // Option shader variable to enable the exposure control feature.
 option bool o_enableExposureControlFeature = false;

@@ -14,64 +14,7 @@
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    [[input_attachment_index(0)]]
-    SubpassInputDS      m_depthStencilTexture;
-    Texture2D<float>    m_linearDepthTexture;
-    Texture2DArray<float> m_directionalLightShadowmap;
-    Texture2DArray<float> m_directionalLightExponentialShadowmap;
-    Texture2D<float>    m_fullscreenShadow;
-
-    float3              m_lightColor;
-    float               m_lightIntensity;
-    float               m_density;
-    float               m_scattering;
-    float               m_extinction;
-    float               m_anisotropy;
-    float               m_steps;
-    float               m_maxDistance;
-    float               m_startDistance;
-    float               m_fogMinHeight;
-    float               m_fogMaxHeight;
-    float               m_noiseScale;
-    float               m_noiseSpeed;
-    float               m_noiseStrength;
-    float               m_time;
-    bool                m_enableShadows;
-
-    float2              m_depthTextureDimensions;
-
-    Sampler DepthSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-};
+#include <Atom/Features/PostProcessing/VolumetricLightSrg.srgi>
 
 #define ENABLE_FULLSCREEN_SHADOW 0
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>

@@ -1,0 +1,38 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4>     m_diffuseTexture;
+    Texture2D<float>       m_linearDepthTexture;
+    Texture2D<float3>     m_scatterDistanceTexture;
+    
+    RWTexture2D<float4>  m_outputTexture;
+
+    // Passed by SubsurfaceScatterPass.cpp from cpu
+    float2 m_screenSize;
+
+    // float3 -> diffuse color
+    // float  -> linear depth
+    groupshared float  sColorR[SHARED_MEMORY_SIZE];
+    groupshared float  sColorG[SHARED_MEMORY_SIZE];
+    groupshared float  sColorB[SHARED_MEMORY_SIZE];
+    groupshared float  sDepth [SHARED_MEMORY_SIZE];
+ 
+    void SetColorDepth(uint index, float3 color, float depth)
+    {
+        sColorR[index] = color.r;
+        sColorG[index] = color.g;
+        sColorB[index] = color.b;
+        sDepth[index] = depth;
+    }
+    
+    float3 GetRadiance(uint index)
+    {
+        return float3(sColorR[index], sColorG[index], sColorB[index]);
+    }
+    
+    float GetDepth(uint index)
+    {
+        return sDepth[index];
+    }
+}

@@ -1,0 +1,39 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_linearDepth;
+    RWTexture2D<float> m_ssaoOutput;
+
+    // Must match the struct in SsaoPasses.cpp
+    struct SsaoConstants
+    {
+        // The texture dimensions of SSAO output
+        uint2 m_outputSize;
+
+        // The size of a pixel relative to screenspace UV
+        // Calculated by taking the inverse of the texture dimensions
+        float2 m_pixelSize;
+    
+        // The size of half a pixel relative to screenspace UV
+        float2 m_halfPixelSize;
+
+        // The strength of the SSAO effect
+        float m_strength;
+
+        // The sampling radius calculated in screen UV space 
+        float m_samplingRadius;
+
+    };
+    SsaoConstants m_constants;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}

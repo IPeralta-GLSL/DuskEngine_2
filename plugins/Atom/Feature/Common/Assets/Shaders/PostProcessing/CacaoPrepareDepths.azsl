@@ -8,11 +8,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float>           m_linearDepth;
-    RWTexture2DArray<float>    m_deinterleavedDepths;
-}
+#include <Atom/Features/PostProcessing/CacaoPrepareDepthsSrg.srgi>
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)

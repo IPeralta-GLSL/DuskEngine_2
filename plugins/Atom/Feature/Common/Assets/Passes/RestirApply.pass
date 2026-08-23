@@ -28,7 +28,8 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/LightCulling/RestirApply.shader"
                 },
-                "FullscreenDispatch": true
+                "FullscreenDispatch": true,
+                "BindViewSrg": true
             }
         }
     }

@@ -13,19 +13,7 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float> m_linearDepthTexture;
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-};
+#include <Atom/Features/Debug/WireframeDebugOverlaySrg.srgi>
 
 PSOutput MainPS(VSOutput IN)
 {

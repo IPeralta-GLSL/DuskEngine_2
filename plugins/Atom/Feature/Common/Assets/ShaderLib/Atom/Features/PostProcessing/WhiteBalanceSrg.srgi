@@ -1,0 +1,18 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+
+    // Must match the struct in WhiteBalancePass.cpp
+    struct Constants
+    {
+        uint2 m_outputSize; // texture size of output
+        float2 m_outputCenter; // center of image in pixel coords
+        float m_temperature; // Color temperature. Higher values result in a warmer color temperature and lower values result in a colder color temperature.
+        float m_tint; // Factor for compensate for a green or magenta tint
+        [[pad_to(16)]]
+    };
+    Constants m_constants;
+}

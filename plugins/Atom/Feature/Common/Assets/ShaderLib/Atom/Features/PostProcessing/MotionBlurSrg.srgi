@@ -1,0 +1,30 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    Texture2D<float4> m_linearDepth;
+    Texture2D<float2> m_inputVelocity;
+    Texture2D<float2> m_inputTileVelocity;
+
+    RWTexture2D<float4> m_outputColor;
+
+    struct Constants
+    {
+        uint m_sampleNumber;
+        float m_strength; // Multiplier for sampling offset
+        uint2 m_outputSize; // Texture size of output
+    };
+    Constants m_constants;
+
+    // Sampler for tile velocity, use linear interpolation to avoid tile artifacts
+    Sampler LinearClampSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}

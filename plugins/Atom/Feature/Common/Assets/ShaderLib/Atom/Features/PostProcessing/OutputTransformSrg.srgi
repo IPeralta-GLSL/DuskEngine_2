@@ -1,0 +1,26 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    [[input_attachment_index(0)]]
+    SubpassInput m_framebuffer;
+
+    Texture3D<float4> m_lut;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    // Reference white and black luminance values
+    float2 m_cinemaLimits;
+
+    // LDR color grading
+    int m_shaperType;
+    float m_shaperBias;
+    float m_shaperScale;
+}

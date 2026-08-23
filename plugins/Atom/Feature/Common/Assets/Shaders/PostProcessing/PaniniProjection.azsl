@@ -8,21 +8,7 @@
 
 #include <scenesrg_all.srgi>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_inputColor;
-    RWTexture2D<float4> m_outputColor;
-
-    // Must match the struct in PaniniProjectionPass.cpp
-    struct Constants
-    {
-        uint2 m_outputSize; // texture size of output
-        float2 m_outputCenter; // center of image in pixel coords
-        float m_depth; // factor for modifying projection
-        [[pad_to(16)]]
-    };
-    Constants m_constants;
-}
+#include <Atom/Features/PostProcessing/PaniniProjectionSrg.srgi>
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)

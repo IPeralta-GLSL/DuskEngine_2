@@ -10,11 +10,7 @@
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include "MotionBlur.azsli"
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float2> m_inputVelocity;
-    RWTexture2D<float2> m_outputVelocity;
-}
+#include <Atom/Features/PostProcessing/MotionBlurTileMaxHorSrg.srgi>
 
 // The first pass of motion blur calculates max velocity in NxN tiles, called `Tile Max`. 
 // The NxN max operation could be split into a 1xN max and a Nx1 max. 

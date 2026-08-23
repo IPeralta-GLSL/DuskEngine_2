@@ -16,23 +16,7 @@
 #include <scenesrg_all.srgi>
 #include <viewsrg_all.srgi>
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float4> m_colorAndDofFactorTexture;
-    float m_radiusMin;
-    float m_radiusMax;
-    float4 m_sampleTexcoordsRadius[SampleMax];
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/DepthOfFieldBlurBokehSrg.srgi>
 
 // The number of points to sample.
 // Sample 6 points around center pixel.

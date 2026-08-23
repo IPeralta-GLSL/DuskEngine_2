@@ -9,52 +9,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4>       m_sourceTexture;
-    RWTexture2D<float4>     m_targetTexture;  
-
-    RWTexture2D<float4>     m_targetMipLevel0;
-    RWTexture2D<float4>     m_targetMipLevel1;
-    RWTexture2D<float4>     m_targetMipLevel2;
-    RWTexture2D<float4>     m_targetMipLevel3;
-    RWTexture2D<float4>     m_targetMipLevel4;
-
-    Sampler LinearSampler
-    {
-        AddressU = Clamp;
-        AddressV = Clamp;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-    };
-
-    // 1.0 / source image size
-    float2 m_sourceImageTexelSize;
-
-    // Elements:
-    // x -> threshold
-    // y -> (knee - 1) * threshold
-    // z -> 2 * knee * threshold
-    // w -> 1 / (4 * threshold * knee + EPSILON(1e-5))
-    float4 m_thresholdConstants;
-
-    groupshared float3 smColor1[256];
-    groupshared float3 smColor2[64];
-
-    float3 Threshold(float3 color)
-    {
-        float luminance = CalculateLuminance(color, ColorSpaceId::ACEScg);
-        float softMin = luminance + m_thresholdConstants.y;
-        softMin = clamp(softMin, 0.0, m_thresholdConstants.z);
-        softMin = softMin * softMin * m_thresholdConstants.w;
-
-        float weight = max(softMin, luminance - m_thresholdConstants.x);
-        weight /= max(luminance, 1e-5);
-        return weight * color;
-    }
-
-}
+#include <Atom/Features/PostProcessing/BloomDownsampleCSSrg.srgi>
 
 // This function is used to reorder texels in the shared memory in a way of:
 // -+---+---+---+---+-         

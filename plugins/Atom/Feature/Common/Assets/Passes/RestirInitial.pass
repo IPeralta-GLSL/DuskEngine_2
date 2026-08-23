@@ -42,7 +42,7 @@
                         }
                     },
                     "ImageDescriptor": {
-                        "Format": "RGBA32_UINT"
+                        "Format": "R32G32B32A32_UINT"
                     }
                 }
             ],
@@ -60,7 +60,8 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/LightCulling/RestirInitial.shader"
                 },
-                "FullscreenDispatch": true
+                "FullscreenDispatch": true,
+                "BindViewSrg": true
             }
         }
     }

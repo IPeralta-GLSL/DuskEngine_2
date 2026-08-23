@@ -17,32 +17,7 @@
 #define MaxNumberResolveTextures 3
 #define MaxNumberResolveTexturesDouble 6
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    // input depth
-    Texture2DMS<float> m_depth0;    // current frame
-    Texture2DMS<float> m_depth1;    // previous frame
-
-    // An array of color textures to be resolved
-    // Each two of continuous textures are for one render target 
-    // which 2*n is the render target of current frame, 2*n + 1 is the render target of last frame
-    Texture2DMS<float4> m_color[MaxNumberResolveTexturesDouble]; 
-
-    struct Constants
-    {
-        float m_frameOffset;    // values can be 0 or 1; 0 means current frame is even frame; 1 means current frame is odd frame
-        float m_depthTolerance;
-        uint m_debugRenderflags;
-        uint m_checkOcclusion;
-        row_major float4x4 m_prevClipToWorld;  
-        uint m_numResolveTextures;
-        float3 m_padding;
-    };    
-    Constants m_constants;
-
-    // result of resolving
-    RWTexture2D<float4> m_outputColor[MaxNumberResolveTextures];
-}
+#include <Atom/Features/Checkerboard/CheckerboardColorResolveCSSrg.srgi>
 
 // given a pixel's position in render target with its depth, find its position from previous render target
 uint2 GetPreviousPixel(float2 currentPixelUV, float currentDepth, float2 screenResolution)

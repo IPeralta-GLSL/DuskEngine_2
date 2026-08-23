@@ -1,0 +1,16 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Resolved (non-MSAA) diffuse buffer, output of Ssao pass
+    Texture2D<float4>   m_diffuse;
+
+    // MSAA forward normal buffer (R10G10B10A2_UNORM, SignedOctahedral)
+    Texture2DMS<float4> m_normal;
+
+    // CSM precomputed fullscreen shadow (R8_UNORM, 1=lit 0=shadow)
+    Texture2D<float>    m_csmShadow;
+
+    // RT denoised shadow (R16G16B16A16_FLOAT, .r = visibility, 1=lit 0=shadow)
+    Texture2D<float4>   m_rtShadow;
+}

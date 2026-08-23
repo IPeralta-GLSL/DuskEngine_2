@@ -1,0 +1,28 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4>   m_reflection;
+    Texture2D<float>    m_depthLinear;
+    Texture2D<float2>   m_downsampledDepthLinear;
+    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
+
+    // output image scale and dimensions    
+    float m_outputScale;
+    uint  m_outputWidth;
+    uint  m_outputHeight;
+
+    // SSR settings
+    float m_maxRoughness;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}

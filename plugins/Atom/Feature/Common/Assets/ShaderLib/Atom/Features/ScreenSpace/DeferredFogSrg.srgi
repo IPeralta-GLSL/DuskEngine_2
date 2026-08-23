@@ -1,0 +1,62 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    [[input_attachment_index(0)]]
+    SubpassInputDS      m_depthStencilTexture;  // Need to use SubpassInputDS to signal that we are reading from a depth/stencil texture
+                                                // since some platforms don't support reading from it.
+    Texture2D<float>    m_linearDepthTexture;
+    float3              m_fogColor;
+    float               m_fogStartDistance; // Distance at which the fog starts to appear
+    float               m_fogEndDistance;   // Distance for complete fog color taking over
+    float               m_fogDensity;
+    float               m_fogDensityClamp;
+
+#if ENABLE_FOG_LAYER
+    float               m_fogMinHeight;     // Minmum and Maximum fog layer heights
+    float               m_fogMaxHeight;
+
+    // Fog texture scale and animation parameters
+    float2              m_noiseScaleUV;
+    float2              m_noiseVelocityUV;
+
+    float2              m_noiseScaleUV2;
+    float2              m_noiseVelocityUV2;
+
+    float               m_octavesBlendFactor;
+
+    Texture2D           m_noiseTexture;     // Defines fog pattern 
+
+    float2              m_depthTextureDimentions;
+#endif //ENABLE_FOG_LAYER
+
+    Sampler DepthSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler LinearMirrorSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Mirror;
+        AddressV = Mirror;
+        AddressW = Mirror;
+    };
+}

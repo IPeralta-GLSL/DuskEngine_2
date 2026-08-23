@@ -240,6 +240,7 @@ set(FILES
     Passes/SsaoParent.pass
     Passes/SsgiComposite.pass
     Passes/SsgiCompute.pass
+    Passes/SsgiBlur.pass
     Passes/SsgiParent.pass
     Passes/RestirInitial.pass
     Passes/RestirParent.pass
@@ -298,7 +299,15 @@ set(FILES
     ShaderLib/Atom/Features/LightCulling/LightCullingShared.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingTileIterator.azsli
     ShaderLib/Atom/Features/LightCulling/NVLC.azsli
+    ShaderLib/Atom/Features/LightCulling/LightCullingTilePrepareSrg.srgi
+    ShaderLib/Atom/Features/LightCulling/LightCullingHeatmapSrg.srgi
+    ShaderLib/Atom/Features/LightCulling/LightCullingRemapSrg.srgi
+    ShaderLib/Atom/Features/LightCulling/LightCullingSrg.srgi
     ShaderLib/Atom/Features/LightCulling/RestirReservoir.azsli
+    ShaderLib/Atom/Features/LightCulling/RestirInitialSrg.srgi
+    ShaderLib/Atom/Features/LightCulling/RestirSpatialSrg.srgi
+    ShaderLib/Atom/Features/LightCulling/RestirApplySrg.srgi
+    ShaderLib/Atom/Features/LightCulling/RestirDebugSrg.srgi
     ShaderLib/Atom/Features/Materials/MaterialSrg.azsli
     ShaderLib/Atom/Features/Materials/SceneMaterialSrg.azsli
     ShaderLib/Atom/Features/Materials/SingleMaterialSrg.azsli
@@ -414,12 +423,16 @@ set(FILES
     Shaders/AuxGeom/ObjectSrg.azsli
     Shaders/AuxGeom/ObjectSrgLit.azsli
     Shaders/BRDFTexture/BRDFTextureCS.azsl
+    ShaderLib/Atom/Features/BRDFTexture/BRDFTextureCSSrg.srgi
     Shaders/BRDFTexture/BRDFTextureCS.shader
     Shaders/Checkerboard/CheckerboardColorResolveCS.azsl
+    ShaderLib/Atom/Features/Checkerboard/CheckerboardColorResolveCSSrg.srgi
     Shaders/Checkerboard/CheckerboardColorResolveCS.shader
     Shaders/ColorGrading/LutGeneration.azsl
+    ShaderLib/Atom/Features/ColorGrading/LutGenerationSrg.srgi
     Shaders/ColorGrading/LutGeneration.shader
     Shaders/Debug/RayTracingDebugClosestHit.azsl
+    ShaderLib/Atom/Features/Debug/WireframeDebugOverlaySrg.srgi
     Shaders/Debug/RayTracingDebugClosestHit.shader
     Shaders/Debug/RayTracingDebugClosestHitProcedural.azsl
     Shaders/Debug/RayTracingDebugClosestHitProcedural.shader
@@ -431,10 +444,12 @@ set(FILES
     Shaders/Depth/DepthPass.azsl
     Shaders/Depth/DepthPass.shader
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
+    ShaderLib/Atom/Features/DiffuseGlobalIllumination/DiffuseGlobalFullscreenSrg.srgi
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
     Shaders/ForwardPassSrg.azsl
     Shaders/ForwardPassSrg.shader
     Shaders/ImGui/ImGui.azsl
+    ShaderLib/Atom/Features/ImGui/ImGuiSrg.srgi
     Shaders/ImGui/ImGui.shader
     Shaders/LightCulling/LightCulling.azsl
     Shaders/LightCulling/LightCulling.shader
@@ -531,8 +546,70 @@ set(FILES
     Shaders/MorphTargets/MorphTargetCS.shader
     Shaders/MorphTargets/MorphTargetSRG.azsli
     Shaders/MotionVector/CameraMotionVector.azsl
+    ShaderLib/Atom/Features/MotionVector/CameraMotionVectorSrg.srgi
     Shaders/MotionVector/CameraMotionVector.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
+    ShaderLib/Atom/Features/PostProcessing/FastDepthAwareBlurVerSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/BloomCompositeCSSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/NewDepthOfFieldFilterSmallSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/ApplyShaperLookupTableSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/WhiteBalanceSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/ConvertToAcescgSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/TaaSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DownsampleMinAvgMaxCSSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/SMAAEdgeDetectionSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/MSAAResolveDepthSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/ScreenSpaceSubsurfaceScatteringCSSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/NewDepthOfFieldTileReduceSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/LookModificationTransformSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DisplayMapperSRGBSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/AcesOutputTransformLutSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/CacaoGenerateQ2Srg.srgi
+    ShaderLib/Atom/Features/PostProcessing/CacaoEdgeSensitiveBlurSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/ContrastAdaptiveSharpeningSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/UniformColorSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthToLinearDepthSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/HDRColorGradingSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthDownsampleSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/ModulateTextureSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/LuminanceHeatmapSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/PaniniProjectionSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthOfFieldPrepareSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/NewDepthOfFieldFilterLargeSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/EyeAdaptationSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/NewDepthOfFieldTile3x3Srg.srgi
+    ShaderLib/Atom/Features/PostProcessing/BlendColorGradingLutsSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/FullscreenCopySrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/CacaoPrepareDepthsSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/VolumetricLightSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthUpsampleSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/NewDepthOfFieldDownsampleSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/SMAANeighborhoodBlendingSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/ChromaticAberrationSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/NewDepthOfFieldCompositeSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/VignetteSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/BakeAcesOutputTransformLutCSSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/MotionBlurTileMaxHorSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/OutputTransformSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/MSAAResolveCustomSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DownsampleLuminanceMinAvgMaxCSSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DownsampleSinglePassLuminanceSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/BloomDownsampleCSSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/MotionBlurTileFilterSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/FilmGrainSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/LuminanceHistogramGeneratorSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/MotionBlurTileMaxVerSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/HbaoComputeSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthOfFieldDownSampleSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/SMAABlendingWeightCalculationSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/FastDepthAwareBlurHorSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DiffuseSpecularMergeSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DisplayMapperSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/MotionBlurSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/BloomBlurCSSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/SMAAConvertToPerceptualColorSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthOfFieldBlurBokehSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/CacaoApplySrg.srgi
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl
     Shaders/PostProcessing/ApplyShaperLookupTable.shader
@@ -651,11 +728,21 @@ set(FILES
     Shaders/PostProcessing/SMAAUtils.azsli
     Shaders/PostProcessing/SsaoCompute.azsl
     Shaders/PostProcessing/SsaoCompute.shader
+    ShaderLib/Atom/Features/PostProcessing/SsgiComputeSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/SsgiCompositeSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/SsgiBlurSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/SsaoComputeSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/CasPassSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthOfFieldMaskSrg.srgi
+    ShaderLib/Atom/Features/PostProcessing/DepthOfFieldCompositeSrg.srgi
+    ShaderLib/Atom/Features/ScreenSpace/DeferredFogSrg.srgi
     Shaders/PostProcessing/SsgiComposite.azsl
     Shaders/PostProcessing/SsgiComposite.shader
     Shaders/PostProcessing/SsgiCompute.azsl
     Shaders/PostProcessing/SsgiCompute.shader
     Shaders/PostProcessing/SsgiCompute.shadervariantlist
+    Shaders/PostProcessing/SsgiBlur.azsl
+    Shaders/PostProcessing/SsgiBlur.shader
     Shaders/PostProcessing/Taa.azsl
     Shaders/PostProcessing/Taa.shader
     Shaders/PostProcessing/CasPass.azsl
@@ -667,6 +754,16 @@ set(FILES
     Shaders/PostProcessing/WhiteBalance.azsl
     Shaders/PostProcessing/WhiteBalance.shader
     Shaders/Reflections/ReflectionCommon.azsli
+    ShaderLib/Atom/Features/Reflections/ReflectionScreenSpaceFilterSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionScreenSpaceDenoiserSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionProbeRenderOuterSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionCompositeSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionScreenSpaceDownsampleDepthLinearSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionProbeBlendWeightSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionGlobalFullscreenSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionScreenSpaceCompositeSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionScreenSpaceTraceSrg.srgi
+    ShaderLib/Atom/Features/Reflections/ReflectionProbeRenderInnerSrg.srgi
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
     Shaders/Reflections/ReflectionGlobalFullscreen.azsl
@@ -711,6 +808,8 @@ set(FILES
     Shaders/ScreenSpace/DeferredFog.shader
     Shaders/ScreenSpace/MobileDeferredFog.shader
     Shaders/Shadow/ClearShadow.shader
+    ShaderLib/Atom/Features/Shadow/FullscreenShadowSrg.srgi
+    ShaderLib/Atom/Features/Shadow/DepthExponentiationSrg.srgi
     Shaders/Shadow/ClearShadowmap.azsl
     Shaders/Shadow/DepthExponentiation.azsl
     Shaders/Shadow/DepthExponentiation.shader
@@ -721,6 +820,7 @@ set(FILES
     Shaders/Shadow/Shadowmap.azsl
     Shaders/Shadow/Shadowmap.shader
     Shaders/Silhouette/Silhouette.azsl
+    ShaderLib/Atom/Features/Silhouette/SilhouetteSrg.srgi
     Shaders/Silhouette/Silhouette.shader
     Shaders/Silhouette/SilhouetteGather.azsl
     Shaders/Silhouette/SilhouetteGather.shader
@@ -728,9 +828,11 @@ set(FILES
     Shaders/SkinnedMesh/LinearSkinningCS.shader
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli
     Shaders/SkyBox/MultiViewSkyBox.shader
+    ShaderLib/Atom/Features/SkyBox/SkyBoxSrg.srgi
     Shaders/SkyBox/SkyBox.azsl
     Shaders/SkyBox/SkyBox.shader
     Shaders/SkyBox/SkyBox_TwoOutputs.shader
     Shaders/SplashScreen/SplashScreenPass.azsl
+    ShaderLib/Atom/Features/SplashScreen/SplashScreenPassSrg.srgi
     Shaders/SplashScreen/SplashScreenPass.shader
 ) 

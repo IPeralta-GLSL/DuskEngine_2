@@ -30,16 +30,7 @@
 #define CLAMP_NEIGHBOR_AVERAGE_LUMINANCE    1
 #define CLAMPING_STRATEGY                   CLAMP_NEIGHBOR_MAX_LUMINANCE
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2DMS<float4> inputTexture;
-
-    // Whether to use neighborhood clamping to reduce aliasing
-    uint enableNeighborClamping;
-
-    // Maximum factor by which a sub-pixel can exceed the luminance of it's neighboring sub-pixels
-    float maxNeighborContrast;
-}
+#include <Atom/Features/PostProcessing/MSAAResolveCustomSrg.srgi>
 
 float3 ApplyProvisionalTonemap(float3 color)
 {

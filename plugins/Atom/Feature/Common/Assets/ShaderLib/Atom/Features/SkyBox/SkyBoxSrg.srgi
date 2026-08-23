@@ -1,0 +1,16 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    float m_sunIntensityMultiplier;
+}

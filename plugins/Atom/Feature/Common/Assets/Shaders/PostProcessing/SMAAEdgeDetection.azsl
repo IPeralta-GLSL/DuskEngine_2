@@ -20,49 +20,7 @@ struct VSOutputSMAAEdgeDetection
     float4 m_offset[3] : TEXCOORD1;
 };
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float4> m_framebuffer;
-    Texture2D<float4> m_depthTexture;
-    
-    // Information for render target.
-    // x = 1.0 / width
-    // y = 1.0 / height
-    // z = width
-    // w = height
-    float4 m_renderTargetMetrics;
-    // This is a threshold value for edge detection sensitivity. For details please check comment related to SMAA_THRESHOLD in SMAA.azsli.
-    float m_chromaThreshold;
-    // This is a threshold value for depth edge detection sensitivity. For details please check comment related to SMAA_DEPTH_THRESHOLD in SMAA.azsli.
-    float m_depthThreshold;
-    // This is a tweak value for the local contrast adaptation feature. For details please check comment related to SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR in SMAA.azsli.
-    float m_localContrastAdaptationFactor;
-    // This is a threshold value for predication feature. For details please check comment related to SMAA_PREDICATION_THRESHOLD in SMAA.azsli.
-    float m_predicationThreshold;
-    // This is a tweak value for predication feature. For details please check comment related to SMAA_PREDICATION_SCALE in SMAA.azsli.
-    float m_predicationScale;
-    // This is a tweak value for predication feature. For details please check comment related to SMAA_PREDICATION_STRENGTH in SMAA.azsli.
-    float m_predicationStrength;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/SMAAEdgeDetectionSrg.srgi>
 
 // Option shader variable to enable predication feature. This option value will be used instead of SMAA_PREDICATION define in SMAA.azsli.
 option bool o_enablePredicationFeature = false;

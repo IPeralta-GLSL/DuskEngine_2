@@ -1,0 +1,6 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DMS<float4>  m_reflection;
+}

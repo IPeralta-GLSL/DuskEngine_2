@@ -1,0 +1,32 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_depthFullRes;
+    Texture2D<float> m_depthHalfRes;
+    Texture2D<float> m_sourceHalfRes;
+    RWTexture2D<float> m_outputFullRes;
+
+    // Must match the struct in DepthDownsamplePasses.cpp
+    struct UpsampleConstants
+    {
+        // The size of a pixel in the input image relative to screenspace UV
+        // Calculated by taking the inverse of the texture dimensions
+        float2 m_inputPixelSize;
+
+        // The size of a pixel in the output image relative to screenspace UV
+        // Calculated by taking the inverse of the texture dimensions
+        float2 m_outputPixelSize;
+    };
+    UpsampleConstants m_constants;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}

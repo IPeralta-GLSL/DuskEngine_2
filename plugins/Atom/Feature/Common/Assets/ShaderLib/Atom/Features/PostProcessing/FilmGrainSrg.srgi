@@ -1,0 +1,27 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+    Texture2D<float4> m_grain;
+
+    Sampler m_sampler
+    {
+        AddressU = Mirror;
+        AddressV = Mirror;
+        AddressW = Mirror;
+    };
+
+    // Must match the struct in FilmGrainPass.cpp
+    struct Constants
+    {
+        uint2 m_outputSize; // texture size of output
+        uint2 m_grainTextureSize; // texture size of grain noise
+        float m_intensity; // intensity of effect (0 to 1)
+        float m_luminanceDampening; // factor for dampening effect in areas of high and low luminance
+        float m_tilingScale; // scaling factor for tiling
+        [[pad_to(16)]]
+    };
+    Constants m_constants;
+}

@@ -10,24 +10,7 @@
 
 #define RESTIR_CANDIDATE_COUNT 8
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float> m_depthLinear;
-    Texture2D<uint4> m_tileLightData;
-    StructuredBuffer<uint> m_lightListRemapped;
-    RWTexture2D<uint4> m_reservoirOutput;
-    uint m_frameIndex;
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/LightCulling/RestirInitialSrg.srgi>
 
 float RestirIgn(uint2 pixel, uint frame)
 {

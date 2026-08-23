@@ -220,13 +220,7 @@ float3 ComputeTileColor(const uint2 uv, const uint print_me, const bool overflow
 }
    
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<uint> m_lightCount;
-    Texture2D<float4> m_framebuffer;
-    Texture2D<uint4> m_tileLightData;
-    float m_heatmapOpacity;
-}  
+#include <Atom/Features/LightCulling/LightCullingHeatmapSrg.srgi>  
 
 PSOutput MainPS(VSOutput IN)
 {

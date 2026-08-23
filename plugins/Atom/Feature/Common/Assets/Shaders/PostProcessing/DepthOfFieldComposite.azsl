@@ -12,36 +12,7 @@
 
 #include <viewsrg_all.srgi>
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float4> m_InputColor;
-    Texture2D<float4> m_InputDepth;
-    Texture2D<float4> m_FrontResult_division2;
-    Texture2D<float4> m_FrontResult_division4;
-    Texture2D<float4> m_FrontResult_division8;
-    Texture2D<float4> m_BackResult_division2;
-    Texture2D<float4> m_BackResult_division4;
-    Texture2D<float4> m_BackResult_division8;
-
-    // scale / offset to convert DofFactor to blend ratio for back buffer.
-    float2 m_backBlendFactorDivision2;
-    float2 m_backBlendFactorDivision4;
-    float2 m_backBlendFactorDivision8;
-    // scale / offset to convert DofFactor to blend ratio for front buffer.
-    float2 m_frontBlendFactorDivision2;
-    float2 m_frontBlendFactorDivision4;
-    float2 m_frontBlendFactorDivision8;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/DepthOfFieldCompositeSrg.srgi>
 
 option enum class DepthOfFieldDebugColoring
 {

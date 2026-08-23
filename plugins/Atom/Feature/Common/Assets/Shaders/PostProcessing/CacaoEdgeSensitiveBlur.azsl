@@ -34,24 +34,7 @@ struct CacaoConstants
     float4 m_patternRotScaleMatrices[4][5];
 };
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2DArray<float2>      m_aoPing;    // Input:  AO + packed edges (ArraySize=4)
-    RWTexture2DArray<float2>    m_aoPong;    // Output: blurred AO + edges (ArraySize=4)
-
-    Sampler m_linearSampler
-    {
-        MaxAnisotropy = 1;
-        MinFilter     = Linear;
-        MagFilter     = Linear;
-        MipFilter     = Point;
-        AddressU      = Clamp;
-        AddressV      = Clamp;
-        AddressW      = Clamp;
-    };
-
-    CacaoConstants m_constants;
-}
+#include <Atom/Features/PostProcessing/CacaoEdgeSensitiveBlurSrg.srgi>
 
 // Unpack 4 edge weights from CACAO's packed float representation
 float4 UnpackEdges(float packedVal)

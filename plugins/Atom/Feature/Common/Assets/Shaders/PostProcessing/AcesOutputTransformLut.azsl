@@ -13,22 +13,7 @@
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include <Atom/Features/PostProcessing/Aces.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_color;
-    Texture3D<float4> m_lut;
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-    float m_shaperBias;
-    float m_shaperScale;
-}
+#include <Atom/Features/PostProcessing/AcesOutputTransformLutSrg.srgi>
 
 PSOutput MainPS(VSOutput IN)
 {

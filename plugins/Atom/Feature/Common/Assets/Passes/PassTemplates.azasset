@@ -317,6 +317,10 @@
                 "Path": "Passes/SsgiCompute.pass"
             },
             {
+                "Name": "SsgiBlurTemplate",
+                "Path": "Passes/SsgiBlur.pass"
+            },
+            {
                 "Name": "SsgiCompositeTemplate",
                 "Path": "Passes/SsgiComposite.pass"
             },

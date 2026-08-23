@@ -1,0 +1,7 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2D<float>           m_linearDepth;
+    RWTexture2DArray<float>    m_deinterleavedDepths;
+}

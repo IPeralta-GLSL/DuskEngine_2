@@ -1,0 +1,7 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float> m_depthFullRes;
+    RWTexture2D<float> m_depthHalfRes;
+}

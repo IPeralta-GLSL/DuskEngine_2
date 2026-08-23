@@ -1,0 +1,22 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_depth;
+    Texture2D<float4> m_halfResColorAndCoc;
+
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
+    float4 m_fullResDimensions;
+    float4 m_halfResDimensions;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}

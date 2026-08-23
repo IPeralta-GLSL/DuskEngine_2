@@ -1,0 +1,23 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float2> m_input;
+
+    float m_invOutputScale;
+    uint  m_mipLevel;
+    bool  m_halfResolution;
+    uint  m_previousMipLevel;
+    uint  m_previousMipWidth;
+    uint  m_previousMipHeight;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+}

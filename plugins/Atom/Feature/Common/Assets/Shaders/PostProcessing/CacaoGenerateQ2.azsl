@@ -49,24 +49,7 @@ struct CacaoConstants
 };
 
 // --------------------------------------------------------------- SRG bindings
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2DArray<float>       m_deinterleavedDepths;   // quarter-res, ArraySize=4
-    RWTexture2DArray<float2>    m_aoBuffer;              // quarter-res, ArraySize=4
-
-    Sampler m_pointSampler
-    {
-        MaxAnisotropy = 1;
-        MinFilter     = Point;
-        MagFilter     = Point;
-        MipFilter     = Point;
-        AddressU      = Clamp;
-        AddressV      = Clamp;
-        AddressW      = Clamp;
-    };
-
-    CacaoConstants m_constants;
-}
+#include <Atom/Features/PostProcessing/CacaoGenerateQ2Srg.srgi>
 
 // Sample pattern for Q2 quality — first 12 entries of CACAO's 32-tap pattern.
 // Components: xy = sample direction, z = weight modifier, w = log2(length) for mip.

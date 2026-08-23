@@ -1,0 +1,24 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorInput;
+    Texture2DMS<float> m_depth;
+    Texture2DMS<float4> m_normal;
+    Texture2D<float> m_variance;
+
+    uint m_stepSize;
+    float m_phiColor;
+    float m_phiNormal;
+    float m_phiDepth;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU  = Clamp;
+        AddressV  = Clamp;
+        AddressW  = Clamp;
+    };
+}

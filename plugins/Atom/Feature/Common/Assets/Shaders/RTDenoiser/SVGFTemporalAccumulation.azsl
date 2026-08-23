@@ -12,23 +12,7 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/RPI/Math.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_currentColor;
-    Texture2D<float4> m_historyColor;
-    Texture2DMS<float> m_depth;
-    Texture2DMS<float4> m_normal;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU  = Clamp;
-        AddressV  = Clamp;
-        AddressW  = Clamp;
-    };
-}
+#include <Atom/Features/RTDenoiser/SVGFTemporalAccumulationSrg.srgi>
 
 static const float MAX_TEMPORAL_WEIGHT = 0.95;
 

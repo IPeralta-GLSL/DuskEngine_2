@@ -55,6 +55,27 @@
                     ]
                 },
                 {
+                    "Name": "SsgiBlur",
+                    "TemplateName": "SsgiBlurTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Ssgi",
+                            "AttachmentRef": {
+                                "Pass": "SsgiCompute",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "SsgiComposite",
                     "TemplateName": "SsgiCompositeTemplate",
                     "Enabled": true,
@@ -62,7 +83,7 @@
                         {
                             "LocalSlot": "Ssgi",
                             "AttachmentRef": {
-                                "Pass": "SsgiCompute",
+                                "Pass": "SsgiBlur",
                                 "Attachment": "Output"
                             }
                         },
@@ -79,3 +100,4 @@
         }
     }
 }
+

@@ -15,40 +15,7 @@
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2DMS<float>  m_depth;
-    Texture2D<float>    m_depthLinear;
-    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
-    Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
-    Texture2DMS<float4> m_reflection;
-    Texture2D<float4>   m_previousFrame;
-    Texture2D<float4>   m_rayTracingCoords;
-    Texture2D<float4>   m_fallbackColor;
-   
-    // output image scale and dimensions
-    float m_invOutputScale;
-    uint  m_outputWidth;
-    uint  m_outputHeight;
-
-    // SSR settings
-    bool  m_rayTracingEnabled;
-    bool  m_rayTraceFallbackData;
-    float m_maxDepthThreshold;
-    float m_maxRayDistance;
-    float m_maxRoughness;
-    float m_roughnessBias;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU  = Clamp;
-        AddressV  = Clamp;
-        AddressW  = Clamp;
-    };
-}
+#include <Atom/Features/Reflections/ReflectionScreenSpaceTraceSrg.srgi>
 
 #include "ReflectionCommon.azsli"
 #include "ReflectionScreenSpaceTrace.azsli"

@@ -12,11 +12,7 @@
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_inputTexture;
-    RWTexture2D<float4> m_outputTexture;
-}
+#include <Atom/Features/PostProcessing/DownsampleLuminanceMinAvgMaxCSSrg.srgi>
 
 [numthreads(16,4,1)]
 void MainCS(uint3 dispatch_id: SV_DispatchThreadID)

@@ -1,0 +1,20 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorAndDofFactor;
+    float2 m_blendFactor;
+    float2 m_inputResolutionInverse;
+    float m_radiusMin;
+    float m_radiusMax;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}

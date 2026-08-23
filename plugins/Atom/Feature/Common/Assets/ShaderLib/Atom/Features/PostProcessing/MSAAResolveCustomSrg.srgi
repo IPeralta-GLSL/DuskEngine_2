@@ -1,0 +1,12 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float4> inputTexture;
+
+    // Whether to use neighborhood clamping to reduce aliasing
+    uint enableNeighborClamping;
+
+    // Maximum factor by which a sub-pixel can exceed the luminance of it's neighboring sub-pixels
+    float maxNeighborContrast;
+}

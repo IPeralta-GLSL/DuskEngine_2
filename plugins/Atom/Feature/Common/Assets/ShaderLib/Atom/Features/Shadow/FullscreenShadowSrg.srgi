@@ -1,0 +1,45 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    struct Constants
+    {
+        float2 m_screenSize;
+        int m_lightIndex;
+        int m_filterMode;
+        int m_filteringSampleCountMode;
+        int m_blendBetweenCascadesEnable;
+        int m_receiverShadowPlaneBiasEnable;
+        
+        [[pad_to(16)]]
+    };
+    
+    Constants m_constantData;
+    Texture2DArray<float> m_directionalShadowmaps;
+    Texture2DArray<float> m_directionalShadowmapsESM;
+    Texture2DMS<float> m_depth;
+    Texture2D<float> m_depthLinear;
+#if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
+    RWTexture2D<float> m_fullscreenShadowOutput;
+#endif
+}

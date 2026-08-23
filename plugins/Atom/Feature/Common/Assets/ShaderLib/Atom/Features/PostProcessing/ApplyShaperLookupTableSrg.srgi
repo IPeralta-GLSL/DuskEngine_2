@@ -1,0 +1,20 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorTexture;
+    Texture3D<float4> m_lut;
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    int m_shaperType;
+    float m_shaperBias;
+    float m_shaperScale;
+}

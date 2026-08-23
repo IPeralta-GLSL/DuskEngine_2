@@ -10,29 +10,7 @@
 #include <Atom/RPI/Math.azsli>
 #include "NewDepthOfFieldCommon.azsli"
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    // For this shader we're only interested in the CoC values, which are in the alpha channel
-    Texture2D<float4> m_colorAndCoC;
-
-    // Tiled min/max CoC values
-    RWTexture2D<float2> m_minMaxCoC;
-
-    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
-    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
-    float4 m_inputDimensions;
-    float4 m_outputDimensions;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/NewDepthOfFieldTileReduceSrg.srgi>
 
 groupshared uint LDS_MIN_COC[8];
 groupshared uint LDS_MAX_COC[8];

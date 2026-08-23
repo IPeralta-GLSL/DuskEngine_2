@@ -14,23 +14,7 @@ static const float RESTIR_DEPTH_SIMILARITY_THRESHOLD = 0.1;
 static const float RESTIR_MAX_M = 20.0;
 static const float RESTIR_TWO_PI = 6.2831853;
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float> m_depthLinear;
-    Texture2D<uint4> m_reservoirInput;
-    RWTexture2D<uint4> m_reservoirOutput;
-    uint m_frameIndex;
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/LightCulling/RestirSpatialSrg.srgi>
 
 float RestirIgn(uint2 pixel, uint frame)
 {

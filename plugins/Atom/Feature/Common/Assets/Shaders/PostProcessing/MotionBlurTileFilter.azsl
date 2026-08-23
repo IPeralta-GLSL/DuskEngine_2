@@ -10,11 +10,7 @@
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include "MotionBlur.azsli"
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float2> m_inputVelocity;
-    RWTexture2D<float2> m_outputVelocity;
-}
+#include <Atom/Features/PostProcessing/MotionBlurTileFilterSrg.srgi>
 
 // This shader applies a 3x3 max filter to tile max velocities, 
 // which is the second pass, originally called `Tile Neighborhood`. 

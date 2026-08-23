@@ -21,24 +21,7 @@
 
 #include "ReflectionProbeRenderObjectSrg.azsli"
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2DMS<float>  m_depth;
-    Texture2DMS<float4> m_normal;
-    Texture2DMS<float4> m_specularF0;
-    Texture2DMS<float>  m_blendWeight;
-    Texture2D<float2>   m_brdfMap;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/Reflections/ReflectionProbeRenderOuterSrg.srgi>
 
 #include "ReflectionCommon.azsli"
 #include "ReflectionProbeRenderCommon.azsli"

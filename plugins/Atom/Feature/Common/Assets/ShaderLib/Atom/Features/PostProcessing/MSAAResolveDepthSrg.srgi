@@ -1,0 +1,6 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2DMS<float> m_depthTexture;
+}

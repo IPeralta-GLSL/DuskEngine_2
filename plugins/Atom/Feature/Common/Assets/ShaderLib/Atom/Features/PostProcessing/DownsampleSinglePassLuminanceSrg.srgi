@@ -1,0 +1,17 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputImage;
+    RWTexture2D<float4> m_imageDestination[13];
+    [[verbatim("globallycoherent")]] RWTexture2D<float4> m_mip6;
+    [[verbatim("globallycoherent")]] RWStructuredBuffer<SpdGlobalAtomicBuffer> m_globalAtomic;
+
+    // Mip level count of m_imageDestination.
+    uint m_destinationMipLevelCount;
+    // The steps of this downsample computation.  It may slightly larger than m_destinationMipLevelCount.
+    uint m_spdMipLevelCount;
+    uint m_numWorkGroups;
+
+    uint2 m_imageSize;
+}

@@ -11,19 +11,7 @@
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-    Texture2DMS<float4> m_silhouettes;
-}
+#include <Atom/Features/Silhouette/SilhouetteSrg.srgi>
 
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {

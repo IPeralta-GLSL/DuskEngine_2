@@ -21,14 +21,7 @@ option enum class ShadowmapLightType
 }
 o_shadowmapLightType = ShadowmapLightType::Directional;
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2DArray<float> m_inputShadowmap;
-    RWTexture2DArray<float> m_outputShadowmap;
-    Buffer<uint2> m_shadowmapIndexTable;
-    StructuredBuffer<FilterParameter> m_filterParameters;
-    float m_esmExponent;
-}
+#include <Atom/Features/Shadow/DepthExponentiationSrg.srgi>
 
 // The calculation of ESM is given by formula exp((occluder - zReceiver) * esmComponent). Which can be spitted into 2 parts.
 // exp(occluer*esmComponent) * exp(-zReceiver * esmComponent).  Here is the calculation of occluder part.

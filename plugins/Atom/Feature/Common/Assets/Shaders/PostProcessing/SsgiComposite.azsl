@@ -1,20 +1,8 @@
 #include <Atom/Features/SrgSemantics.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_ssgi;
-    RWTexture2D<float4> m_inputOutput;
+#include <Atom/Features/PostProcessing/SsgiCompositeSrg.srgi>
 
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+static const float SSGI_COMPOSITE_STRENGTH = 0.2;
 
 [numthreads(16, 16, 1)]
 void MainCS(uint3 dispatchId : SV_DispatchThreadID)
@@ -32,7 +20,7 @@ void MainCS(uint3 dispatchId : SV_DispatchThreadID)
     float4 ssgi = PassSrg::m_ssgi.SampleLevel(PassSrg::LinearSampler, uv, 0);
 
     float3 lighting = PassSrg::m_inputOutput[dispatchId.xy].rgb;
-    float3 result = lighting + ssgi.rgb;
+    float3 result = lighting + ssgi.rgb * SSGI_COMPOSITE_STRENGTH;
 
     PassSrg::m_inputOutput[dispatchId.xy] = float4(result, 1.0);
 }

@@ -1,0 +1,18 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Sampler m_imageSampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Texture2D<float4> m_splashScreenImage;
+
+    struct SplashScreenParams
+    {
+        float m_fadingFactor;
+    } m_splashScreenParams;
+}

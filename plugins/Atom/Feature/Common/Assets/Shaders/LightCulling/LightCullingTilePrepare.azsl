@@ -64,27 +64,7 @@ void StoreTransparentMinMaxIntoSharedMemory(float2 data)
     DEPTH_InterlockedMax(shared_depthTransparentFar, asuint(data.y), orig);
 }
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2DMS<float4> m_depthBufferMSAA;
-
-    // Depth buffer where we rendered the nearest pixels of transparent objects
-    Texture2D<float4> m_depthBufferTransparentMin;   
-
-    // Depth buffer where we rendered the furthest pixels of transparent objects
-    Texture2D<float4> m_depthBufferTransparentMax;   
-
-    RWTexture2D<uint4> m_tileLightData;    
-
-    struct Constants
-    {
-        // Used to convert from raw depth buffer values to Z values
-        float2 m_unprojectZ;    
-        uint m_depthBufferWidth;
-        uint m_depthBufferHeight;
-    };    
-    Constants m_constantData;
-}
+#include <Atom/Features/LightCulling/LightCullingTilePrepareSrg.srgi>
  
 void ClearSharedMemory(uint groupIndex)
 {

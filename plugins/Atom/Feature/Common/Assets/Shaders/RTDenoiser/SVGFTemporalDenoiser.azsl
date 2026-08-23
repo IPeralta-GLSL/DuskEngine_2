@@ -12,28 +12,7 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/RPI/Math.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_colorInput;
-    Texture2DMS<float> m_depth;
-    Texture2DMS<float4> m_normal;
-    Texture2D<float> m_variance;
-
-    uint m_stepSize;
-    float m_phiColor;
-    float m_phiNormal;
-    float m_phiDepth;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU  = Clamp;
-        AddressV  = Clamp;
-        AddressW  = Clamp;
-    };
-}
+#include <Atom/Features/RTDenoiser/SVGFTemporalDenoiserSrg.srgi>
 
 static const float SIGMA_Z = 1.0;
 static const float SIGMA_N = 128.0;
@@ -69,7 +48,7 @@ PSOutput MainPS(VSOutput IN)
     float  sumWeight = 0.0;
     float  sumVar    = 0.0;
 
-    int step = max(1, (int)m_stepSize);
+    int step = max(1, (int)PassSrg::m_stepSize);
 
     [unroll]
     for (int dy = -2; dy <= 2; ++dy)
@@ -94,7 +73,7 @@ PSOutput MainPS(VSOutput IN)
             float wNormal = pow(saturate(dot(normalCenter, normalN)), SIGMA_N);
 
             float lumDiff = abs(centerLum - neighborLum);
-            float wLum = exp(-lumDiff / max(m_phiColor * sqrt(max(centerVariance, 1e-6)), 1e-6));
+            float wLum = exp(-lumDiff / max(PassSrg::m_phiColor * sqrt(max(centerVariance, 1e-6)), 1e-6));
 
             float w = wSpatial * wDepth * wNormal * wLum;
 

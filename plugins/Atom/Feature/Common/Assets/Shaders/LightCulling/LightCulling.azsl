@@ -17,45 +17,7 @@
 #include <Atom/Features/Decals/DecalStructures.azsli>
 #include <Atom/Features/LightCulling/LightTreeNode.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    struct LightCullingConstants
-    {
-        float2          m_gridPixel;
-        float2          m_gridHalfPixel;
-        uint            m_gridWidth;
-        uint            m_padding0;
-        uint            m_padding1;
-        uint            m_padding2;
-    };    
-    LightCullingConstants m_constantData;
-
-    StructuredBuffer<SimplePointLight> m_simplePointLights;
-    StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
-    StructuredBuffer<PointLight> m_pointLights;
-    StructuredBuffer<DiskLight> m_diskLights;
-    StructuredBuffer<CapsuleLight> m_capsuleLights;
-    StructuredBuffer<QuadLight> m_quadLights;
-    uint m_simplePointLightCount;
-    uint m_simpleSpotLightCount;
-    uint m_pointLightCount;
-    uint m_diskLightCount;
-    uint m_capsuleLightCount;
-    uint m_quadLightCount;
-
-    Texture2D<uint4> m_tileLightData;
-
-    RWStructuredBuffer<uint> m_lightList;
-    RWTexture2D<uint> m_lightCount;
-    
-    StructuredBuffer<Decal> m_decals;
-    uint m_decalCount;
-
-    StructuredBuffer<LightTreeNodeData> m_lightTreeNodes;
-    StructuredBuffer<uint> m_lightTreeIndices;
-    uint m_lightTreeNodeCount;
-    uint m_lightTreeRootIndex;
-}
+#include <Atom/Features/LightCulling/LightCullingSrg.srgi>
 
 groupshared uint shared_lightCount;
 groupshared uint shared_lightIndices[TILE_DIM_X * TILE_DIM_Y];

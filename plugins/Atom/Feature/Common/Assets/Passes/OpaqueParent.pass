@@ -575,6 +575,13 @@
                     "TemplateName": "RestirParentTemplate",
                     "Connections": [
                         {
+                            "LocalSlot": "Modulate",
+                            "AttachmentRef": {
+                                "Pass": "SubsurfaceScatteringPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
                             "LocalSlot": "DepthLinear",
                             "AttachmentRef": {
                                 "Pass": "Parent",
@@ -593,13 +600,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "LightListRemapped"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Modulate",
-                            "AttachmentRef": {
-                                "Pass": "SubsurfaceScatteringPass",
-                                "Attachment": "Output"
                             }
                         }
                     ]

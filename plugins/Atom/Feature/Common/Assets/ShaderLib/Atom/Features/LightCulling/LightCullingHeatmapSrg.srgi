@@ -1,0 +1,9 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<uint> m_lightCount;
+    Texture2D<float4> m_framebuffer;
+    Texture2D<uint4> m_tileLightData;
+    float m_heatmapOpacity;
+}

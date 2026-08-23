@@ -1,0 +1,23 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // This is a mip chain containing the scene luminance info
+    // x = min luminance
+    // y = average luminance
+    // z = max luminance
+    Texture2D<float4> m_sceneLuminance;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    // Contains the eye-adaptation feedback settings. This buffer will be updated in this pass. 
+    RWStructuredBuffer<EyeAdaptation> m_eyeAdaptationData;
+}

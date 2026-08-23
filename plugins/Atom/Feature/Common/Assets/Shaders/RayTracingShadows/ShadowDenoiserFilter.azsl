@@ -34,30 +34,7 @@
 // ============================================================
 // SRG
 // ============================================================
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    // Slot 0: DepthStencilTextureInput – full-res MSAA depth
-    Texture2DMS<float>  m_depth;
-
-    // Slot 1: NormalInput – full-res MSAA normals (RGB10 SignedOctahedron)
-    Texture2DMS<float4> m_normal;
-
-    // Slot 2: ShadowInput – full-res R32_FLOAT shadow (1=lit, 0=shadowed)
-    Texture2D<float>    m_shadow;
-
-    // Slot 3: History – full-res R16G16B16A16_FLOAT; .r = denoised shadow from previous frame
-    Texture2D<float4>   m_history;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU  = Clamp;
-        AddressV  = Clamp;
-        AddressW  = Clamp;
-    };
-}
+#include <Atom/Features/RayTracingShadows/ShadowDenoiserFilterSrg.srgi>
 
 // ============================================================
 // Constants

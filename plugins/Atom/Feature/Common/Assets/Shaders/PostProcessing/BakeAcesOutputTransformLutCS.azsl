@@ -11,30 +11,7 @@
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PostProcessing/Aces.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    RWTexture3D<float4> m_lutTexture;
-
-    // Bit flag for control the ODT shader behavior
-    int m_outputDisplayTransformFlags;
-    // The ODT output mode
-    int m_outputDisplayTransformMode;
-    // Reference white and black luminance values
-    float2 m_cinemaLimits;
-    // Color transformation matrix from XYZ to the display's color primaries
-    row_major float3x3 m_XYZtoDisplayPrimaries;
-    // ACES spline parameters
-    SegmentedSplineParamsC9 m_acesSplineParams;
-    // Gamma adjustment to be applied to compensate for the condition of the viewing environment.
-    // Note that ACES uses a value of 0.9811 for adjusting from dark to dim surrounding.
-    float m_surroundGamma;
-    // Optional gamma value that is applied as basic gamma curve OETF
-    float m_gamma;
-
-    // Shaper function parameters
-    float m_shaperBias;
-    float m_shaperScale;
-}
+#include <Atom/Features/PostProcessing/BakeAcesOutputTransformLutCSSrg.srgi>
 
 /*
 * 1) Get normalized lut coordinates -> normCoord

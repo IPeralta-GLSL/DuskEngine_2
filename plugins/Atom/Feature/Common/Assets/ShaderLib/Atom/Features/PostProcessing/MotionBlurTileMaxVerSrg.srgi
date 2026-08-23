@@ -1,0 +1,7 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float2> m_inputVelocity;
+    RWTexture2D<float2> m_outputVelocity;
+}

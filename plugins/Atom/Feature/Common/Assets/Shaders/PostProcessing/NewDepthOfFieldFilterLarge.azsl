@@ -13,37 +13,7 @@
 
 #include <viewsrg_all.srgi>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_colorAndCoc;
-    Texture2D<float2> m_minMaxCocTile;
-
-    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
-    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
-    float4 m_textureDimensions;
-
-    NewDepthOfFieldConstants m_dofConstants;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/NewDepthOfFieldFilterLargeSrg.srgi>
 
 float3 GetOffset(uint index, float2 offsetUVMultiplier)
 {

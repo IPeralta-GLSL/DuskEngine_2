@@ -19,31 +19,7 @@
 #define TANGENT_BIAS 0.1f
 #define EPSILON 1e-5f
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float> m_linearDepth;
-    RWTexture2D<float> m_ssaoOutput;
-
-    struct SsaoConstants
-    {
-        uint2 m_outputSize;
-        float2 m_pixelSize;
-        float2 m_halfPixelSize;
-        float m_strength;
-        float m_samplingRadius;
-    };
-    SsaoConstants m_constants;
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/HbaoComputeSrg.srgi>
 
 float2 GetPixelSize()     { return PassSrg::m_constants.m_pixelSize; }
 float2 GetHalfPixelSize() { return PassSrg::m_constants.m_halfPixelSize; }

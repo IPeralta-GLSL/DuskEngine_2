@@ -21,44 +21,7 @@ struct VSOutputBlendingWeightCalculation
     float4 m_offset[3] : TEXCOORD2;
 };
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float4> m_framebuffer;
-    Texture2D<float4> m_areaTexture;
-    Texture2D<float4> m_searchTexture;
-
-    // Information for render target.
-    // x = 1.0 / width
-    // y = 1.0 / height
-    // z = width
-    // w = height
-    float4 m_renderTargetMetrics;
-    // How many steps to be used in horizontal/vertical search process. For details please check comment related to SMAA_MAX_SEARCH_STEPS in SMAA.azsli.
-    int m_maxSearchSteps;
-    // How many steps to be used in diagonal search process. For details please check comment related to SMAA_MAX_SEARCH_STEPS_DIAG in SMAA.azsli.
-    int m_maxSearchStepsDiagonal;
-    // This is a tweak value for the sharp corner feature. For details please check comment related to SMAA_CORNER_ROUNDING in SMAA.azsli.
-    int m_cornerRounding;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/SMAABlendingWeightCalculationSrg.srgi>
 
 // Option shader variable to enable diagonal edge detection feature. This option value is used instead of SMAA_DISABLE_DIAG_DETECTION define in SMAA.azsli.
 option bool o_enableDiagonalDetectionFeature = true;

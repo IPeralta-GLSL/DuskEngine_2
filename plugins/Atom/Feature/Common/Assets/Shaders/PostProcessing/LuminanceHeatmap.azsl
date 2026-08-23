@@ -22,29 +22,7 @@
 #include "EyeAdaptationUtil.azsli"  
  
  
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_framebuffer;
-    
-    // This is a mip chain containing the scene luminance info
-    // x = min luminance
-    // y = average luminance
-    // z = max luminance
-    Texture2D<float4> m_sceneLuminance;    
-    
-    // This should be of size NUM_HISTOGRAM_BINS. 
-    StructuredBuffer<uint> m_histogram;
-    
-    Sampler LinearSampler 
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };    
-}  
+#include <Atom/Features/PostProcessing/LuminanceHeatmapSrg.srgi>  
 
 static const float HistogramHeightScale = 10;
 static const float HistogramGlyphPositionY = 0.965; 

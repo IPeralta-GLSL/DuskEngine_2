@@ -21,41 +21,7 @@ struct VSOutputNeighborhoodBlending
     float4 m_offset : TEXCOORD1;
 };
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2D<float4> m_framebuffer;
-    Texture2D<float4> m_framebufferPassThrough;
-    // This texture will not be used for blending process. Binding for debug purpose.
-    Texture2D<float4> m_blendTexture;
-    // This texture will not be used for blending process. Binding for debug purpose.
-    Texture2D<float4> m_edgeTexture;
-
-    // Information for render target.
-    // x = 1.0 / width
-    // y = 1.0 / height
-    // z = width
-    // w = height
-    float4 m_renderTargetMetrics;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/SMAANeighborhoodBlendingSrg.srgi>
 
 // Option shader variable for the output mode of this pass. The EdgeTexture and BlendWeightTexture modes are intended for debug purpose only.
 option enum class BlendingOutputMode { BlendResultWithProvisionalTonemap, BlendResult, PassThrough, EdgeTexture, BlendWeightTexture } o_blendingOutputMode = BlendingOutputMode::BlendResultWithProvisionalTonemap;

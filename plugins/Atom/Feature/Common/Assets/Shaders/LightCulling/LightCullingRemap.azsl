@@ -19,25 +19,7 @@
 #define UNROLLING_STEPS 2
 
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{    
-    // Contains the number of lights (along with End of Group Markers) for each tile. This includes all types of lights (point, spot, disk, etc)
-    Texture2D<uint> m_lightCount;
-    
-    // The light list is of type R32_UINT, and contents are either light indices or End of Group markers
-    // 32-bits because we wrote directly from groupshared uints to device memory and also because they are packed with a bitmask containing which 
-    // bins the light is present in
-    // We will compact it into 16-bit uints here
-    // Size is width * height * max_lights_per_tile
-    StructuredBuffer<uint> m_lightList;
-    
-    // The output is an R16_UINT containing light indices, separated into bins that run along the Z axis
-    // Size is width * height * max_lights_per_tile * num_bins
-    RWStructuredBuffer<uint> m_lightListRemapped;
-
-    RWTexture2D<uint4> m_tileLightData;   
-    uint m_tileWidth;
-}
+#include <Atom/Features/LightCulling/LightCullingRemapSrg.srgi>
 
 
 void ComputeSharedBinLocationFromLightIndex(uint lightIndex, out uint locationBin, out uint locationBit)

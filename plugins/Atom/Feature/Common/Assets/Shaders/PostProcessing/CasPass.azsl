@@ -15,19 +15,7 @@
 #define TILE_DIM_X 8
 #define TILE_DIM_Y 8
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4>   m_inputColor;
-    RWTexture2D<float4> m_outputColor;
-
-    struct Constants
-    {
-        uint2  m_textureSize;  // Dimensions of the input/output texture in pixels.
-        float  m_sharpness;    // Sharpness in [0, 1]. 0 = weakest, 1 = strongest.
-        float  m_padding;
-    };
-    Constants m_constantData;
-}
+#include <Atom/Features/PostProcessing/CasPassSrg.srgi>
 
 // CAS sharpen filter — no scaling, 3x3 neighborhood.
 //

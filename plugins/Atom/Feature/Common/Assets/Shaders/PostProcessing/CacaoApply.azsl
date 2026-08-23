@@ -8,22 +8,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    Texture2DArray<float2>  m_blurredAo;    // (W/2 x H/2 x 4) AO + packed edges
-    RWTexture2D<float>      m_output;       // (W x H) final AO mask
-
-    Sampler m_linearSampler
-    {
-        MaxAnisotropy = 1;
-        MinFilter     = Linear;
-        MagFilter     = Linear;
-        MipFilter     = Point;
-        AddressU      = Clamp;
-        AddressV      = Clamp;
-        AddressW      = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/CacaoApplySrg.srgi>
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)

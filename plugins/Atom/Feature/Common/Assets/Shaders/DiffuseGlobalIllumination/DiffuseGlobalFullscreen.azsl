@@ -15,12 +15,7 @@
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/RPI/Math.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2DMS<float4> m_albedo;       // RGB8 = Albedo with pre-multiplied factors, A = Unused here
-    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
-    Texture2DMS<float>  m_depth;
-}
+#include <Atom/Features/DiffuseGlobalIllumination/DiffuseGlobalFullscreenSrg.srgi>
 
 // Vertex Shader
 VSOutput MainVS(VSInput input)

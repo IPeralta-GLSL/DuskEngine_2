@@ -21,35 +21,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_framebuffer;
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    // ACES spline parameters
-    SegmentedSplineParamsC9 m_acesSplineParams;
-    // Color transformation matrix from XYZ to the display's color primaries
-    row_major float3x3 m_XYZtoDisplayPrimaries;
-    // Reference white and black luminance values
-    float2 m_cinemaLimits;
-    // Bit flag for control the ODT shader behavior
-    int m_outputDisplayTransformFlags;
-    // The ODT output mode
-    int m_outputDisplayTransformMode;
-    // Gamma adjustment to be applied to compensate for the condition of the viewing environment.
-    // Note that ACES uses a value of 0.9811 for adjusting from dark to dim surrounding.
-    float m_surroundGamma;
-    // Optional gamma value that is applied as basic gamma curve OETF
-    float m_gamma;
-}
+#include <Atom/Features/PostProcessing/DisplayMapperSrg.srgi>
 
 ////////////////////////////////////////////////////////////////////////////////
 // A entry point of pixel shader.

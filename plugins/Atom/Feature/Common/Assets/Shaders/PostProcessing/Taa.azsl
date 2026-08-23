@@ -12,50 +12,7 @@
 #define TILE_DIM_X 16
 #define TILE_DIM_Y 16
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_inputColor;
-    Texture2D<float4> m_inputDepth;
-    Texture2D<float2> m_motionVectors;
-    Texture2D<float4> m_lastFrameAccumulation;
-
-    RWTexture2D<float4> m_outputColor;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    // Current frame's default contribution to the history. 
-    float m_currentFrameContribution;
-
-     // Increase this value for weaker clamping, decrease for stronger clamping, default 1.0.
-    float m_clampGamma;
-
-    // Default 0.5, used for flicker reduction. Any sample further than this many standard deviations outside the neighborhood
-    // will have its weight decreased. The further outside the max deviation, the more its weight is reduced.
-    float m_maxDeviationBeforeDampening;
-
-    struct Constants
-    {
-        uint2 m_inputColorSize;
-        float2 m_inputColorRcpSize;
-
-        // 3x3 filter weights
-        // 8  2  6
-        // 3  0  1
-        // 7  4  5
-        float4 m_weights1; // 0 1 2 3
-        float4 m_weights2; // 4 5 6 7
-        float4 m_weights3; // 8 x x x
-    };
-    Constants m_constantData;
-}
+#include <Atom/Features/PostProcessing/TaaSrg.srgi>
 
 static const int2 offsets[9] = 
 {

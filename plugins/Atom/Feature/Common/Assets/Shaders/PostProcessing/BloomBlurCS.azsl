@@ -8,32 +8,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4>     m_inputTexture;
-    RWTexture2D<float4>   m_outputTexture;
-
-    Buffer<float>  m_offsets;
-    Buffer<float>  m_weights;
-    
-    uint   m_kernelRadius;
-    uint   m_direction;
-    uint   m_mipLevel;
-
-    float2 m_sourceImageSize;
-
-    // 1.0 / m_sourceImageSize
-    float2 m_sourceImageTexelSize;
-
-    Sampler LinearSampler
-    {
-        AddressU = Clamp;
-        AddressV = Clamp;
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-    };
-}
+#include <Atom/Features/PostProcessing/BloomBlurCSSrg.srgi>
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 dID : SV_DispatchThreadID)

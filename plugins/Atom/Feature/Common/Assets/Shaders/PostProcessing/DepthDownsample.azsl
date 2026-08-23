@@ -10,11 +10,7 @@
 
 #define THREADS 16
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float> m_depthFullRes;
-    RWTexture2D<float> m_depthHalfRes;
-}
+#include <Atom/Features/PostProcessing/DepthDownsampleSrg.srgi>
 
 [numthreads(THREADS, THREADS, 1)]
 void MainCS(uint3 dispatch_id: SV_DispatchThreadID)

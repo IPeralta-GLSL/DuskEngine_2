@@ -1,0 +1,50 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    // Source LUTs
+    Texture3D<float4> m_sourceLut1;
+    int m_sourceLut1ShaperType;
+    float m_sourceLut1ShaperBias;
+    float m_sourceLut1ShaperScale;
+
+    Texture3D<float4> m_sourceLut2;
+    int m_sourceLut2ShaperType;
+    float m_sourceLut2ShaperBias;
+    float m_sourceLut2ShaperScale;
+
+    Texture3D<float4> m_sourceLut3;
+    int m_sourceLut3ShaperType;
+    float m_sourceLut3ShaperBias;
+    float m_sourceLut3ShaperScale;
+
+    Texture3D<float4> m_sourceLut4;
+    int m_sourceLut4ShaperType;
+    float m_sourceLut4ShaperBias;
+    float m_sourceLut4ShaperScale;
+
+    // Five weights, the first is the weight of the ungraded base color, and the rest are for the up to 4 LUTs being blended.
+    float m_weight0;
+    float m_weight1;
+    float m_weight2;
+    float m_weight3;
+    float m_weight4;
+
+    // Destination LUT
+    RWTexture3D<float4> m_blendedLut;
+    uint3 m_blendedLutDimensions;
+    
+    int m_blendedLutShaperType;
+    float m_blendedLutShaperBias;
+    float m_blendedLutShaperScale;
+}

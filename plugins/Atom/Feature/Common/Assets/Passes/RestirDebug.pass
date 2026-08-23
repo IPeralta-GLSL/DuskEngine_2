@@ -32,7 +32,7 @@
                         }
                     },
                     "ImageDescriptor": {
-                        "Format": "RGBA16_FLOAT"
+                        "Format": "R16G16B16A16_FLOAT"
                     }
                 }
             ],

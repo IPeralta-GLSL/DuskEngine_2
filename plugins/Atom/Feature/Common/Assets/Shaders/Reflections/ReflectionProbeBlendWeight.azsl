@@ -21,10 +21,7 @@
 
 #include "ReflectionProbeRenderObjectSrg.azsli"
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2DMS<float> m_depth;
-}
+#include <Atom/Features/Reflections/ReflectionProbeBlendWeightSrg.srgi>
 
 #include "ReflectionCommon.azsli"
 

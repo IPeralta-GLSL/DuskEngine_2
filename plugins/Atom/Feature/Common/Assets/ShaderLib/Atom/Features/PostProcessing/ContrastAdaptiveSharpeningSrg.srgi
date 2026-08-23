@@ -1,0 +1,9 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_inputColor;
+    RWTexture2D<float4> m_outputColor;
+
+    float m_strength; // Strength of the sharpening effect. Range from 0 to 1.
+}

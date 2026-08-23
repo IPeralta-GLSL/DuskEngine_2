@@ -14,24 +14,7 @@
 
 #define SQRT2_HALF 0.707106781  // sqrt(2) / 2
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_colorAndDofFactor;
-    float2 m_blendFactor;
-    float2 m_inputResolutionInverse;
-    float m_radiusMin;
-    float m_radiusMax;
-
-    Sampler PointSampler
-    {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-}
+#include <Atom/Features/PostProcessing/DepthOfFieldMaskSrg.srgi>
 
 // Return the average of the valid colors obtained from the four input texture coordinates.
 // Valid colors are colors where the blend exceeds 0.

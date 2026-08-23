@@ -1,0 +1,50 @@
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <Atom/Features/PostProcessing/SsgiBlurSrg.srgi>
+
+static const int SSGI_BLUR_RADIUS = 2;
+static const float SSGI_BLUR_SIGMA = 1.5;
+static const float SSGI_BLUR_DEPTH_EPS = 0.001;
+
+float SsgiBlurWeight(float offsetDistance, float depthDiff, float centerDepth)
+{
+    float spatial = exp(-(offsetDistance * offsetDistance) / (2.0 * SSGI_BLUR_SIGMA * SSGI_BLUR_SIGMA));
+    float depthWeight = saturate(1.0 - abs(depthDiff) / max(centerDepth * SSGI_BLUR_DEPTH_EPS + 1e-4, 1e-4));
+    return spatial * depthWeight;
+}
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_ssgiBlurred.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    float2 uv = (dispatchId.xy + 0.5) / float2(dims);
+    float centerDepth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, uv, 0);
+
+    float4 acc = float4(0.0, 0.0, 0.0, 0.0);
+    float weightSum = 0.0;
+
+    [unroll]
+    for (int offsetY = -SSGI_BLUR_RADIUS; offsetY <= SSGI_BLUR_RADIUS; ++offsetY)
+    {
+        [unroll]
+        for (int offsetX = -SSGI_BLUR_RADIUS; offsetX <= SSGI_BLUR_RADIUS; ++offsetX)
+        {
+            float pixelOffsetDist = sqrt(float(offsetX * offsetX + offsetY * offsetY));
+            float2 sampleUv = uv + float2(offsetX, offsetY) / float2(dims);
+            float sampleDepth = PassSrg::m_depthLinear.SampleLevel(PassSrg::PointSampler, sampleUv, 0);
+            float depthWeight = SsgiBlurWeight(pixelOffsetDist, sampleDepth - centerDepth, centerDepth);
+
+            float4 sampleValue = PassSrg::m_ssgi.SampleLevel(PassSrg::PointSampler, sampleUv, 0);
+            acc += sampleValue * depthWeight;
+            weightSum += depthWeight;
+        }
+    }
+
+    PassSrg::m_ssgiBlurred[dispatchId.xy] = acc / max(weightSum, 1e-6);
+}

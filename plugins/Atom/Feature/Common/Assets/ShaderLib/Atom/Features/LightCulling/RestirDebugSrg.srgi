@@ -1,0 +1,8 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<uint4> m_reservoirInput;
+    RWTexture2D<float4> m_debugOutput;
+    uint m_debugMode;
+}

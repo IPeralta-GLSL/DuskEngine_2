@@ -1,0 +1,10 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Texture2DArray<float> m_inputShadowmap;
+    RWTexture2DArray<float> m_outputShadowmap;
+    Buffer<uint2> m_shadowmapIndexTable;
+    StructuredBuffer<FilterParameter> m_filterParameters;
+    float m_esmExponent;
+}

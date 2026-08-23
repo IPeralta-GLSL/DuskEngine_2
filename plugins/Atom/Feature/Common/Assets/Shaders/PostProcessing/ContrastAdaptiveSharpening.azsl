@@ -12,13 +12,7 @@
 #define TILE_DIM_X 16
 #define TILE_DIM_Y 16
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-    Texture2D<float4> m_inputColor;
-    RWTexture2D<float4> m_outputColor;
-
-    float m_strength; // Strength of the sharpening effect. Range from 0 to 1.
-}
+#include <Atom/Features/PostProcessing/ContrastAdaptiveSharpeningSrg.srgi>
 
 
 // Constrast Adaptive Sharpening, based on AMD FidelityFX CAS - https://gpuopen.com/fidelityfx-cas/
