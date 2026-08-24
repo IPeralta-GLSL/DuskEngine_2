@@ -515,6 +515,25 @@ namespace AZ::RHI
         return AZStd::string(defaultPathToDxc);
     }
 
+    AZStd::string GetSlangcPath(const char* defaultPathToSlangc)
+    {
+        // To quickly test changes to the Slang compiler or as a workaround to the default.
+        static constexpr char SlangcOverridePathKey[] = "/O3DE/Atom/SlangcOverridePath";
+
+        if (auto setReg = AZ::Interface<SettingsRegistryInterface>::Get())
+        {
+            AZStd::string overridePath;
+            if (setReg->Get(overridePath, SlangcOverridePathKey))
+            {
+                AZ_TraceOnce("CustomSlangc", "Slangc executable override specified, using %s.\n", overridePath.c_str());
+                return overridePath;
+            }
+        }
+
+        AZ_Assert(defaultPathToSlangc != nullptr, "Invalid default path to slangc.");
+        return AZStd::string(defaultPathToSlangc);
+    }
+
     namespace CommandLineArgumentUtils
     {
         AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString)

@@ -160,6 +160,12 @@ namespace AZ
             [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
         {
+            if (!shaderBuildArguments.m_slangcArguments.empty())
+            {
+                return CompileHLSLShaderWithSlangc(
+                    shaderSourceFile, tempFolder, entryPoint, shaderStageType, shaderBuildArguments, compiledShader, byProducts);
+            }
+
             // Shader compiler executable
             const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath(AZ_TRAIT_ATOM_SHADERBUILDER_DXC);
 
@@ -309,6 +315,174 @@ namespace AZ
             if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(objectCodeOutputFile));
+            }
+
+            return true;
+        }
+
+        bool ShaderPlatformInterface::CompileHLSLShaderWithSlangc(
+            const AZStd::string& shaderSourceFile,
+            const AZStd::string& tempFolder,
+            const AZStd::string& entryPoint,
+            const RHI::ShaderHardwareStage shaderStageType,
+            const RHI::ShaderBuildArguments& shaderBuildArguments,
+            AZStd::vector<uint8_t>& compiledShader,
+            ByProducts& byProducts) const
+        {
+            const auto slangcRelativePath = RHI::GetSlangcPath("slangc");
+
+            AZStd::string shaderOutputFile;
+            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), shaderOutputFile);
+            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), shaderOutputFile.c_str(), shaderOutputFile);
+            AzFramework::StringFunc::Path::ReplaceExtension(shaderOutputFile, "spirv.bin");
+
+            // slangc does not allow 'row_major' as a function return type modifier, which azslc emits
+            // for every function returning a matrix. Slang's default matrix layout for HLSL targets
+            // is row-major, so removing the qualifier is semantically safe.
+            auto shaderSourceLoadResult = AZ::RHI::LoadFileString(shaderSourceFile.c_str());
+            if (!shaderSourceLoadResult)
+            {
+                AZ_Error(VulkanShaderPlatformName, false, "%s", shaderSourceLoadResult.GetError().c_str());
+                return false;
+            }
+            AZStd::string shaderSourceCode = shaderSourceLoadResult.TakeValue();
+            AZ::StringFunc::Replace(shaderSourceCode, "row_major ", "");
+
+            // slangc needs explicit [vk::binding] attributes to map D3D registers to Vulkan
+            // bindings (set = space, binding = register index). Without them slangc assigns
+            // bindings in declaration order and the resulting SPIR-V layout mismatches the
+            // descriptor set layouts built by the runtime from the AZSL reflection.
+            {
+                AZStd::string registerReplacedSource;
+                registerReplacedSource.reserve(shaderSourceCode.size());
+                AZStd::size_t lineStart = 0;
+                while (lineStart <= shaderSourceCode.size())
+                {
+                    AZStd::size_t lineEnd = shaderSourceCode.find('\n', lineStart);
+                    if (lineEnd == AZStd::string::npos)
+                    {
+                        lineEnd = shaderSourceCode.size();
+                    }
+                    AZStd::string line = shaderSourceCode.substr(lineStart, lineEnd - lineStart);
+
+                    const AZStd::size_t registerToken = line.find("register(");
+                    if (registerToken != AZStd::string::npos)
+                    {
+                        char registerKind = '\0';
+                        int registerIndex = 0;
+                        int registerSpace = 0;
+                        const int parsedCount = sscanf(line.c_str() + registerToken, "register(%c%d, space%d)",
+                                                       &registerKind, &registerIndex, &registerSpace);
+                        if (parsedCount == 3)
+                        {
+                            const AZStd::string declaration = line.substr(0, registerToken);
+                            AZStd::string trimmedDeclaration = declaration;
+                            AzFramework::StringFunc::TrimWhiteSpace(trimmedDeclaration, true, true);
+                            if (!trimmedDeclaration.empty() && trimmedDeclaration.back() == ':')
+                            {
+                                trimmedDeclaration.pop_back();
+                            }
+                            registerReplacedSource += AZStd::string::format("[vk::binding(%d, %d)]\n", registerIndex, registerSpace);
+                            registerReplacedSource += trimmedDeclaration;
+                            registerReplacedSource += ";\n";
+                            lineStart = lineEnd + 1;
+                            continue;
+                        }
+                    }
+
+                    registerReplacedSource += line;
+                    registerReplacedSource += "\n";
+                    lineStart = lineEnd + 1;
+                }
+                shaderSourceCode = AZStd::move(registerReplacedSource);
+            }
+
+            AZStd::string slangInputFile;
+            AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), slangInputFile);
+            AzFramework::StringFunc::Path::Join(tempFolder.c_str(), slangInputFile.c_str(), slangInputFile);
+            AzFramework::StringFunc::Path::ReplaceExtension(slangInputFile, "slang-preprocess.hlsl");
+
+            {
+                AZ::IO::SystemFile slangInputHandle;
+                if (!slangInputHandle.Open(slangInputFile.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+                {
+                    AZ_Error(VulkanShaderPlatformName, false, "Failed to create slangc input file %s", slangInputFile.c_str());
+                    return false;
+                }
+                slangInputHandle.Write(shaderSourceCode.data(), shaderSourceCode.size());
+                slangInputHandle.Close();
+            }
+
+            const AZStd::string shaderModelVersion = "6_0";
+            const AZStd::unordered_map<RHI::ShaderHardwareStage, AZStd::string> stageToProfileName =
+            {
+                {RHI::ShaderHardwareStage::Vertex,                 "vs_" + shaderModelVersion},
+                {RHI::ShaderHardwareStage::Fragment,               "ps_" + shaderModelVersion},
+                {RHI::ShaderHardwareStage::Compute,                "cs_" + shaderModelVersion},
+                {RHI::ShaderHardwareStage::Geometry,               "gs_" + shaderModelVersion},
+                {RHI::ShaderHardwareStage::RayTracing,             "cs_" + shaderModelVersion}
+            };
+            auto profileIt = stageToProfileName.find(shaderStageType);
+            if (profileIt == stageToProfileName.end())
+            {
+                AZ_Error(VulkanShaderPlatformName, false, "Unsupported shader stage for slangc");
+                return false;
+            }
+
+            auto slangcArguments = shaderBuildArguments.m_slangcArguments;
+
+            // Match the binding scheme used by DXC (-fvk-use-dx-layout) so the SPIR-V bindings
+            // are identical to what the Vulkan runtime expects. Also keep the source entry point
+            // name: slangc renames it to "main" by default, but the runtime looks up the entry
+            // name from the AZSL reflection (e.g. "MainCS").
+            RHI::ShaderBuildArguments::AppendArguments(slangcArguments, { "-fvk-use-dx-layout", "-fvk-use-entrypoint-name" });
+
+            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
+            switch (shaderStageType)
+            {
+            case RHI::ShaderHardwareStage::Vertex:
+            case RHI::ShaderHardwareStage::Geometry:
+                RHI::ShaderBuildArguments::AppendArguments(slangcArguments, { "-fvk-invert-y" });
+                break;
+            case RHI::ShaderHardwareStage::Fragment:
+                RHI::ShaderBuildArguments::AppendArguments(slangcArguments, { "-fvk-use-dx-position-w" });
+                break;
+            case RHI::ShaderHardwareStage::Compute:
+            case RHI::ShaderHardwareStage::RayTracing:
+                break;
+            default:
+                AZ_Assert(false, "Invalid Shader stage.");
+            }
+
+            const auto params = RHI::ShaderBuildArguments::ListAsString(slangcArguments);
+            const auto slangcEntryPoint = AZStd::string::format("-entry %s", entryPoint.c_str());
+            const auto slangcCommandOptions = AZStd::string::format("%s -target spirv -profile %s -o \"%s\" \"%s\" %s",
+                                                                    slangcEntryPoint.c_str(),                 // 1
+                                                                    profileIt->second.c_str(),                 // 2
+                                                                    shaderOutputFile.c_str(),                  // 3
+                                                                    slangInputFile.c_str(),                    // 4
+                                                                    params.c_str());                           // 5
+
+            if (!RHI::ExecuteShaderCompiler(slangcRelativePath, slangcCommandOptions, shaderSourceFile, tempFolder, "SLANGC"))
+            {
+                return false;
+            }
+
+            auto shaderOutputFileLoadResult = AZ::RHI::LoadFileBytes(shaderOutputFile.c_str());
+            if (!shaderOutputFileLoadResult)
+            {
+                AZ_Error(VulkanShaderPlatformName, false, "%s", shaderOutputFileLoadResult.GetError().c_str());
+                return false;
+            }
+
+            compiledShader = shaderOutputFileLoadResult.TakeValue();
+
+            byProducts.m_dynamicBranchCount = ByProducts::UnknownDynamicBranchCount;
+
+            if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
+            {
+                byProducts.m_intermediatePaths.insert(shaderOutputFile);
+                byProducts.m_intermediatePaths.insert(slangInputFile);
             }
 
             return true;

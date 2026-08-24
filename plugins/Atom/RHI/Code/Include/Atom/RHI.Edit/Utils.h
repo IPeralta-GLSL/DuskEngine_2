@@ -80,6 +80,12 @@ namespace AZ::RHI
     //! @param defaultPathToDxc Default path for the current platform. Can not be nullptr.
     AZStd::string GetDirectXShaderCompilerPath(const char* defaultPathToDxc);
 
+    //! Returns the path to the Slang shader compiler (slangc) executable.
+    //! If the user has not provided a customized executable path
+    //! in the Settings Registry, then @defaultPathToSlangc is returned.
+    //! @param defaultPathToSlangc Default path for the current platform. Can not be nullptr.
+    AZStd::string GetSlangcPath(const char* defaultPathToSlangc);
+
     //! Runs a shader compiler executable with specific parameters.
     //! Returns true it compiled the shader without errors.
     //! Returns false otherwise and with compilation errors messages.

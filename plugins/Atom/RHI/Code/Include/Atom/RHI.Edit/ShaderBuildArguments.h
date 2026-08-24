@@ -30,6 +30,7 @@ namespace AZ::RHI
             const AZStd::vector<AZStd::string>& preprocessorArguments,
             const AZStd::vector<AZStd::string>& azslcArguments,
             const AZStd::vector<AZStd::string>& dxcArguments,
+            const AZStd::vector<AZStd::string>& slangcArguments,
             const AZStd::vector<AZStd::string>& spirvCrossArguments,
             const AZStd::vector<AZStd::string>& metalAirArguments,
             const AZStd::vector<AZStd::string>& metalLibArguments);
@@ -78,6 +79,9 @@ namespace AZ::RHI
 
         //! Command line arguments for DirectxShaderCompiler.
         AZStd::vector<AZStd::string> m_dxcArguments;
+
+        //! Command line arguments for the Slang shader compiler.
+        AZStd::vector<AZStd::string> m_slangcArguments;
 
         //! Command line arguments for spirv-cross.
         AZStd::vector<AZStd::string> m_spirvCrossArguments;

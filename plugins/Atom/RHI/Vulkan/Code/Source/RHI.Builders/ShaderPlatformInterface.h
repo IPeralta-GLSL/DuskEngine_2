@@ -67,6 +67,18 @@ namespace AZ
                 const AssetBuilderSDK::PlatformInfo& platform,
                 ByProducts& byProducts) const;
 
+            //! Compiles HLSL to SPIR-V using the Slang shader compiler (slangc)
+            //! instead of DXC. Invoked when the shader build arguments contain
+            //! slangc arguments (see ShaderSourceData::m_compiler == "slang").
+            bool CompileHLSLShaderWithSlangc(
+                const AZStd::string& shaderSourceFile,
+                const AZStd::string& tempFolder,
+                const AZStd::string& entryPoint,
+                const RHI::ShaderHardwareStage shaderAssetType,
+                const RHI::ShaderBuildArguments& shaderBuildArguments,
+                AZStd::vector<uint8_t>& compiledShader,
+                ByProducts& byProducts) const;
+
             const Name m_apiName{APINameString};
         };
     }

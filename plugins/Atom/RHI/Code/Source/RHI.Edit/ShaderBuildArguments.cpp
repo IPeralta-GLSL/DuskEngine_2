@@ -27,6 +27,7 @@ namespace AZ::RHI
                 ->Field("preprocessor", &ShaderBuildArguments::m_preprocessorArguments)
                 ->Field("azslc", &ShaderBuildArguments::m_azslcArguments)
                 ->Field("dxc", &ShaderBuildArguments::m_dxcArguments)
+                ->Field("slangc", &ShaderBuildArguments::m_slangcArguments)
                 ->Field("spirv-cross", &ShaderBuildArguments::m_spirvCrossArguments)
                 ->Field("metalair", &ShaderBuildArguments::m_metalAirArguments)
                 ->Field("metallib", &ShaderBuildArguments::m_metalLibArguments)
@@ -42,6 +43,7 @@ namespace AZ::RHI
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_preprocessorArguments, "Preprocessor Arguments", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_azslcArguments, "Azslc Arguments", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_dxcArguments, "Dxc Arguments", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_slangcArguments, "Slangc Arguments", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_spirvCrossArguments, "Spirv Cross Arguments", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalAirArguments, "Metal Air Arguments", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalLibArguments, "Metal Lib Arguments", "")
@@ -61,6 +63,7 @@ namespace AZ::RHI
                 ->Property("preprocessorArguments", BehaviorValueProperty(&ShaderBuildArguments::m_preprocessorArguments))
                 ->Property("azslcArguments", BehaviorValueProperty(&ShaderBuildArguments::m_azslcArguments))
                 ->Property("dxcArguments", BehaviorValueProperty(&ShaderBuildArguments::m_dxcArguments))
+                ->Property("slangcArguments", BehaviorValueProperty(&ShaderBuildArguments::m_slangcArguments))
                 ->Property("spirvCrossArguments", BehaviorValueProperty(&ShaderBuildArguments::m_spirvCrossArguments))
                 ->Property("metalAirArguments", BehaviorValueProperty(&ShaderBuildArguments::m_metalAirArguments))
                 ->Property("metalLibArguments", BehaviorValueProperty(&ShaderBuildArguments::m_metalLibArguments))
@@ -79,6 +82,7 @@ namespace AZ::RHI
             const AZStd::vector<AZStd::string>& preprocessorArguments,
             const AZStd::vector<AZStd::string>& azslcArguments,
             const AZStd::vector<AZStd::string>& dxcArguments,
+            const AZStd::vector<AZStd::string>& slangcArguments,
             const AZStd::vector<AZStd::string>& spirvCrossArguments,
             const AZStd::vector<AZStd::string>& metalAirArguments,
             const AZStd::vector<AZStd::string>& metalLibArguments)
@@ -86,6 +90,7 @@ namespace AZ::RHI
         , m_preprocessorArguments(preprocessorArguments)
         , m_azslcArguments(azslcArguments)
         , m_dxcArguments(dxcArguments)
+        , m_slangcArguments(slangcArguments)
         , m_spirvCrossArguments(spirvCrossArguments)
         , m_metalAirArguments(metalAirArguments)
         , m_metalLibArguments(metalLibArguments)
@@ -174,6 +179,7 @@ namespace AZ::RHI
         AppendArguments(m_azslcArguments, rhs.m_azslcArguments);
         AppendArguments(m_preprocessorArguments, rhs.m_preprocessorArguments);
         AppendArguments(m_dxcArguments, rhs.m_dxcArguments);
+        AppendArguments(m_slangcArguments, rhs.m_slangcArguments);
         AppendArguments(m_spirvCrossArguments, rhs.m_spirvCrossArguments);
         AppendArguments(m_metalAirArguments, rhs.m_metalAirArguments);
         AppendArguments(m_metalLibArguments, rhs.m_metalLibArguments);
@@ -194,6 +200,7 @@ namespace AZ::RHI
         RemoveArguments(m_azslcArguments, rhs.m_azslcArguments);
         RemoveArguments(m_preprocessorArguments, rhs.m_preprocessorArguments);
         RemoveArguments(m_dxcArguments, rhs.m_dxcArguments);
+        RemoveArguments(m_slangcArguments, rhs.m_slangcArguments);
         RemoveArguments(m_spirvCrossArguments, rhs.m_spirvCrossArguments);
         RemoveArguments(m_metalAirArguments, rhs.m_metalAirArguments);
         RemoveArguments(m_metalLibArguments, rhs.m_metalLibArguments);

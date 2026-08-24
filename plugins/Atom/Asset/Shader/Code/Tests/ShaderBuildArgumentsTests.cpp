@@ -30,6 +30,7 @@ namespace UnitTest
                 { "-cpp1", "-cpp2", "-DMACRO1=1", "-DMACRO2=2" },
                 { "--azslc1", "--azslc2", "--azslc3" },
                 { "--dxc1" },
+                { "--slangc1", "--slangc2" },
                 { "--spirv1", "--spirv2", "--spirv3", "--spirv4" },
                 { "--metalair1", "--metalair2" },
                 { "--metallib1", "--metallib2", "--metallib3" });
@@ -253,6 +254,7 @@ namespace UnitTest
             , { "--cpp1" }
             , { "--azslc1" }
             , { "--dxc1" }
+            , { "--slangc1" }
             , { "--spirv1" }
             , { "--metalair1" }
             , { "--metallib1" })
@@ -264,6 +266,7 @@ namespace UnitTest
             , { "--cpp2w" }
             , { "--azslc2w" }
             , { "--dxc2w" }
+            , { "--slangc2w" }
             , { "--spirv2w" }
             , { "--metalair2w" }
             , { "--metallib2w" })
@@ -275,6 +278,7 @@ namespace UnitTest
             , { "--cpp3w" }
             , { "--azslc3w" }
             , { "--dxc3w" }
+            , { "--slangc3w" }
             , { "--spirv3w" }
             , { "--metalair3w" }
             , { "--metallib3w" })
@@ -286,6 +290,7 @@ namespace UnitTest
             , { "--cpp4w" }
             , { "--azslc4w" }
             , { "--dxc4w" }
+            , { "--slangc4w" }
             , { "--spirv4w" }
             , { "--metalair4w" }
             , { "--metallib4w" })
@@ -297,6 +302,7 @@ namespace UnitTest
             , { "--cpp3l" }
             , { "--azslc3l" }
             , { "--dxc3l" }
+            , { "--slangc3l" }
             , { "--spirv3l" }
             , { "--metalair3l" }
             , { "--metallib3l" })
@@ -308,6 +314,7 @@ namespace UnitTest
             , { "--cpp5s" }
             , { "--azslc5s" }
             , { "--dxc5s" }
+            , { "--slangc5s" }
             , { "--spirv5s" }
             , { "--metalair5s" }
             , { "--metallib5s" });

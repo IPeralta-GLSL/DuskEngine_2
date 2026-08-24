@@ -1,5 +1,6 @@
 {
     "Source": "SsgiCompute.azsl",
+    "Compiler": "slang",
     "ProgramSettings" :
     {
         "EntryPoints":
@@ -11,3 +12,8 @@
         ]
     }
 }
+
+
+
+
+

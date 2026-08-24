@@ -21,8 +21,9 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderSourceData>()
-                    ->Version(8) // Added m_keepTempFolder flag.
+                    ->Version(9) // Added m_compiler field.
                     ->Field("Source", &ShaderSourceData::m_source)
+                    ->Field("Compiler", &ShaderSourceData::m_compiler)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
                     ->Field("RasterState", &ShaderSourceData::m_rasterState)

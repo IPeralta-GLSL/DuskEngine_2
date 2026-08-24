@@ -1038,11 +1038,16 @@ namespace AZ
 
                 // Compile HLSL to the platform specific shader.
                 RHI::ShaderPlatformInterface::StageDescriptor descriptor;
+                RHI::ShaderBuildArguments shaderBuildArguments = creationContext.m_shaderBuildArguments;
+                if (creationContext.m_shaderSourceDataDescriptor.m_compiler == "slang")
+                {
+                    RHI::ShaderBuildArguments::AppendArguments(shaderBuildArguments.m_slangcArguments, { "-target", "spirv" });
+                }
                 bool shaderWasCompiled = creationContext.m_shaderPlatformInterface.CompilePlatformInternal(
                     creationContext.m_platformInfo, variantShaderSourcePath, shaderEntryName, assetBuilderShaderType,
                     creationContext.m_tempDirPath,
                     descriptor,
-                    creationContext.m_shaderBuildArguments,
+                    shaderBuildArguments,
                     creationContext.m_useSpecializationConstants);
 
                 if (!shaderWasCompiled)
