@@ -1,5 +1,6 @@
 {
     "Source": "RestirApply.azsl",
+    "Compiler" : "slang",
     "ProgramSettings" :
     {
         "EntryPoints":
@@ -11,3 +12,4 @@
         ]
     }
 }
+
