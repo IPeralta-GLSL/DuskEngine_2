@@ -348,6 +348,61 @@ namespace AZ
             AZStd::string shaderSourceCode = shaderSourceLoadResult.TakeValue();
             AZ::StringFunc::Replace(shaderSourceCode, "row_major ", "");
 
+            // azslc leaves AZSL residual types in the HLSL output. slangc does not recognize
+            // 'sampler' as a legacy type alias (dxc does), so translate it explicitly.
+            shaderSourceCode = "#define sampler SamplerState\n" + shaderSourceCode;
+
+            // azslc emits shader options as Vulkan specialization constants plus a derived
+            // 'static const' alias (e.g. "static const ::ToneMapperType o_tonemapperType = ...").
+            // slangc requires static const globals to have compile-time constant initializers,
+            // so rewrite each alias into a macro that expands to the specialization constant.
+            {
+                AZStd::string staticConstReplacedSource;
+                staticConstReplacedSource.reserve(shaderSourceCode.size());
+                AZStd::size_t lineStart = 0;
+                while (lineStart <= shaderSourceCode.size())
+                {
+                    AZStd::size_t lineEnd = shaderSourceCode.find('\n', lineStart);
+                    if (lineEnd == AZStd::string::npos)
+                    {
+                        lineEnd = shaderSourceCode.size();
+                    }
+                    AZStd::string line = shaderSourceCode.substr(lineStart, lineEnd - lineStart);
+
+                    if (line.find("static const") != AZStd::string::npos && line.find("_SC_OPTION") != AZStd::string::npos)
+                    {
+                        // Format: static const ::<Type> o_<name> = (::<Type>)o_<name>_SC_OPTION;
+                        const AZStd::size_t scopeToken = line.find("::");
+                        if (scopeToken != AZStd::string::npos)
+                        {
+                            const AZStd::size_t typeBegin = scopeToken + 2;
+                            const AZStd::size_t typeEnd = line.find(' ', typeBegin);
+                            if (typeEnd != AZStd::string::npos)
+                            {
+                                const AZStd::size_t nameEnd = line.find(' ', typeEnd + 1);
+                                if (nameEnd != AZStd::string::npos)
+                                {
+                                    const AZStd::string typeName = line.substr(typeBegin, typeEnd - typeBegin);
+                                    const AZStd::string optionName = line.substr(typeEnd + 1, nameEnd - typeEnd - 1);
+                                    if (!optionName.empty() && !typeName.empty())
+                                    {
+                                        staticConstReplacedSource += AZStd::string::format(
+                                            "#define %s ((::%s)%s_SC_OPTION)\n", optionName.c_str(), typeName.c_str(), optionName.c_str());
+                                        lineStart = lineEnd + 1;
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    staticConstReplacedSource += line;
+                    staticConstReplacedSource += "\n";
+                    lineStart = lineEnd + 1;
+                }
+                shaderSourceCode = AZStd::move(staticConstReplacedSource);
+            }
+
             // slangc needs explicit [vk::binding] attributes to map D3D registers to Vulkan
             // bindings (set = space, binding = register index). Without them slangc assigns
             // bindings in declaration order and the resulting SPIR-V layout mismatches the

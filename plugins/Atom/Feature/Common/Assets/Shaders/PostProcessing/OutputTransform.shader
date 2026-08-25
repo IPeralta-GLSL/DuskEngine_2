@@ -1,5 +1,6 @@
 { 
     "Source" : "OutputTransform.azsl",
+    "Compiler" : "slang",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
