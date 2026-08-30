@@ -267,12 +267,27 @@ namespace AZ
                 {
                     if (submeshBlasInstance.IsClusterMesh())
                     {
+                        if (!submeshBlasInstance.m_clusterBlas)
+                        {
+                            continue;
+                        }
+
                         auto clusterBlas = submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex());
+                        if (!clusterBlas)
+                        {
+                            continue;
+                        }
+
                         context.GetCommandList()->BuildClusterAccelerationStructures(*clusterBlas);
                         changedClusterBlasList.push_back(clusterBlas.get());
                     }
                     else
                     {
+                        if (!submeshBlasInstance.m_blas)
+                        {
+                            continue;
+                        }
+
                         changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
 
                         context.GetCommandList()->BuildBottomLevelAccelerationStructure(
@@ -320,12 +335,27 @@ namespace AZ
 
                     if (submeshBlasInstance.IsClusterMesh())
                     {
+                        if (!submeshBlasInstance.m_clusterBlas)
+                        {
+                            continue;
+                        }
+
                         auto clusterBlas = submeshBlasInstance.m_clusterBlas->GetDeviceRayTracingClusterBlas(context.GetDeviceIndex());
+                        if (!clusterBlas)
+                        {
+                            continue;
+                        }
+
                         context.GetCommandList()->BuildClusterAccelerationStructures(*clusterBlas);
                         changedClusterBlasList.push_back(clusterBlas.get());
                     }
                     else
                     {
+                        if (!submeshBlasInstance.m_blas)
+                        {
+                            continue;
+                        }
+
                         // Determine if a skinned mesh BLAS needs to be updated or completely rebuilt. For now, we want to rebuild a BLAS
                         // every SKINNED_BLAS_REBUILD_FRAME_INTERVAL frames, while updating it all other frames. This is based on the
                         // assumption that by adding together the asset ID hash, submesh index, and frame count, we get a value that allows
@@ -368,11 +398,20 @@ namespace AZ
                 auto& blasInstance = it->second;
                 for (auto& submeshBlasInstance : blasInstance.m_subMeshes)
                 {
-                    auto query = submeshBlasInstance.m_compactionSizeQuery;
-                    context.GetCommandList()->CompactBottomLevelAccelerationStructure(
-                        *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()),
-                        *submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
-                    changedBlasList.push_back(submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
+                    if (!submeshBlasInstance.m_blas || !submeshBlasInstance.m_compactBlas)
+                    {
+                        continue;
+                    }
+
+                    auto sourceBlas = submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex());
+                    auto compactBlas = submeshBlasInstance.m_compactBlas->GetDeviceRayTracingBlas(context.GetDeviceIndex());
+                    if (!sourceBlas || !compactBlas)
+                    {
+                        continue;
+                    }
+
+                    context.GetCommandList()->CompactBottomLevelAccelerationStructure(*sourceBlas, *compactBlas);
+                    changedBlasList.push_back(compactBlas.get());
                 }
                 AZStd::lock_guard lock(rayTracingFeatureProcessor->GetBlasBuiltMutex());
                 rayTracingFeatureProcessor->MarkBlasInstanceAsCompactionEnqueued(context.GetDeviceIndex(), assetId);

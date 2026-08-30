@@ -440,9 +440,9 @@ void AzAssetBrowserWindow::AddCreateMenu()
                 m_createMenu->addAction(
                     creatorDetails.m_iconToUse,
                     tr("New ") + tr(creatorDetails.m_displayText.c_str()),
-                    [sourceID, fullFilePath, creatorDetails]()
+                    [sourceID, folderPath, creatorDetails]()
                     {
-                        creatorDetails.m_creator(fullFilePath.c_str(), sourceID);
+                        creatorDetails.m_creator(folderPath.c_str(), sourceID);
                     });
             }
         }

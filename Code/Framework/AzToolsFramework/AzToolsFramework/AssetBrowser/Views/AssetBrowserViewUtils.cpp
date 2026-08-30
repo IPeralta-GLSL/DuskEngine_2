@@ -18,6 +18,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFactory.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
@@ -280,153 +281,67 @@ namespace AzToolsFramework
             {
                 return;
             }
-            using namespace AzFramework::AssetSystem;
-            bool connectedToAssetProcessor = false;
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
 
-            if (connectedToAssetProcessor)
+            QMessageBox confirmBox(callingWidget);
+            confirmBox.setWindowTitle(QObject::tr(isFolder ? "Delete Folder" : "Delete Asset"));
+            if (entries.size() == 1)
             {
-                using namespace AZ::IO;
-                for (auto item : entries)
+                confirmBox.setText(QObject::tr("Delete \"%1\"?").arg(entries[0]->GetFullPath().c_str()));
+            }
+            else
+            {
+                confirmBox.setText(QObject::tr("Delete %1 items?").arg(static_cast<int>(entries.size())));
+            }
+            confirmBox.setInformativeText(
+                QObject::tr("Dusk Engine is unable to detect if this file is being used inside a level, prefab, or asset."
+                            "By deleting these asset(s), you understand this might break a connection if it's still in use.\n"
+                            "Currently, delete is a permanent action and cannot be undone.\n"
+                            "Do you wish to proceed with this deletion?"));
+            confirmBox.setIcon(QMessageBox::Warning);
+            confirmBox.setDefaultButton(confirmBox.addButton(QMessageBox::Cancel));
+            QPushButton* deleteButton = confirmBox.addButton(QObject::tr("Delete"), QMessageBox::DestructiveRole);
+            confirmBox.setFixedWidth(600);
+            confirmBox.exec();
+            if (confirmBox.clickedButton() != deleteButton)
+            {
+                return;
+            }
+
+            AZStd::vector<AZStd::string> failedPaths;
+            for (auto item : entries)
+            {
+                const bool itemIsFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+                bool removed = false;
+                if (itemIsFolder)
                 {
-                    Path fromPath;
-                    if (isFolder)
-                    {
-                        fromPath = item->GetFullPath() + "/*";
-                    }
-                    else
-                    {
-                        fromPath = item->GetFullPath();
-                    }
-                    AssetChangeReportRequest request(
-                        AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::CheckDelete, isFolder);
-                    AssetChangeReportResponse response;
-
-                    if (SendRequest(request, response))
-                    {
-                        // when dealing with file deletes, always initialize to the default value of false and only proceed
-                        // when positive confirmation is given by the user.
-                        bool canDelete = false;
-
-                        if (!response.m_lines.empty())
-                        {
-                            AZStd::string message;
-                            AZ::StringFunc::Join(message, response.m_lines.begin(), response.m_lines.end(), "\n");
-                            AzQtComponents::FixedWidthMessageBox msgBox(
-                                600,
-                                QObject::tr(isFolder ? "Before Delete Folder Information" : "Before Delete Asset Information"),
-                                response.m_success ? QObject::tr("The asset you are deleting may be referenced in other assets.") :
-                                                     QObject::tr("The asset cannot be deleted"),
-                                QObject::tr("More information can be found by pressing \"Show Details...\"."),
-                                message.c_str(),
-                                response.m_success ? QMessageBox::Warning : QMessageBox::Critical,
-                                QMessageBox::Cancel, // deletion should use cancel as the default operation.
-                                response.m_success ? QMessageBox::Yes : QMessageBox::Cancel,
-                                callingWidget);
-                            QPushButton* deleteButton = nullptr;
-                            
-                            if (response.m_success)
-                            {
-                                deleteButton = msgBox.addButton(QObject::tr("Delete"), QMessageBox::YesRole);
-                            }
-
-                            msgBox.exec();
-
-                            if (deleteButton && (msgBox.clickedButton() == static_cast<QAbstractButton*>(deleteButton)))
-                            {
-                                canDelete = true;
-                            }
-                        }
-                        else
-                        {
-                            if (!response.m_success)
-                            {
-                                AzQtComponents::FixedWidthMessageBox msgBox(
-                                600,
-                                QObject::tr(isFolder ? "Before Delete Folder Information" : "Before Delete Asset Information"),
-                                QObject::tr("The asset cannot be deleted.  Check the console log for additional information."),
-                                QString(),
-                                QString(),
-                                QMessageBox::Critical,
-                                QMessageBox::Ok,
-                                QMessageBox::Ok,
-                                callingWidget);
-                                msgBox.exec();
-                            }
-                            else
-                            {
-                                // the response succeeded, but could not determine whether there are dependencies or not.
-                                QMessageBox warningBox;
-                                warningBox.setWindowTitle(QObject::tr(isFolder ? "Folder Deletion - Warning" : "Asset Deletion - Warning"));
-                                warningBox.setText(
-                                    QObject::tr("Dusk Engine is unable to detect if this file is being used inside a level, prefab, or asset."
-                                                "By deleting these asset(s), you understand this might break a connection if it's still in use."));
-                                warningBox.setInformativeText(
-                                    QObject::tr("Currently, delete is a permanent action and cannot be undone.\n"
-                                        "Do you wish to proceed with this deletion?"));
-                                warningBox.setIcon(QMessageBox::Warning);
-                                warningBox.setDefaultButton(warningBox.addButton(QMessageBox::Cancel));
-                                QPushButton* deleteButton = warningBox.addButton(QObject::tr("Delete"), QMessageBox::DestructiveRole);
-                                warningBox.setFixedWidth(600);
-                                warningBox.exec();// allow delete only if affirmation is given.  Assume all other responses are "no".
-                                if (warningBox.clickedButton() == deleteButton)
-                                {
-                                    canDelete = true;
-                                }
-                            }
-                        }
-
-                        if (canDelete)
-                        {
-                            AssetChangeReportRequest deleteRequest(
-                                AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::Delete, isFolder);
-                            AssetChangeReportResponse deleteResponse;
-                            if (SendRequest(deleteRequest, deleteResponse))
-                            {
-                                if (!deleteResponse.m_lines.empty())
-                                {
-                                    AZStd::string deleteMessage;
-                                    AZ::StringFunc::Join(deleteMessage, deleteResponse.m_lines.begin(), deleteResponse.m_lines.end(), "\n");
-                                    AzQtComponents::FixedWidthMessageBox deleteMsgBox(
-                                        600,
-                                        QObject::tr(isFolder ? "After Delete Folder Information" : "After Delete Asset Information"),
-                                        deleteResponse.m_success ? QObject::tr("The asset has been deleted.") :
-                                                                   QObject::tr("Deletion has failed."),
-                                        QObject::tr("More information can be found by pressing \"Show Details...\"."),
-                                        deleteMessage.c_str(),
-                                        QMessageBox::Information,
-                                        QMessageBox::Ok,
-                                        QMessageBox::Ok,
-                                        callingWidget);
-                                    deleteMsgBox.exec();
-                                }
-                                else
-                                {
-                                    if (!deleteResponse.m_success)
-                                    {
-                                        AzQtComponents::FixedWidthMessageBox deleteMsgBox(
-                                            600,
-                                            QObject::tr(isFolder ? "After Delete Folder Information" : "After Delete Asset Information"),
-                                            QObject::tr("The asset could not be deleted.  Check the console log for additional information."),
-                                            QString(),
-                                            QString(),
-                                            QMessageBox::Critical,
-                                            QMessageBox::Ok,
-                                            QMessageBox::Ok,
-                                            callingWidget);
-                                        deleteMsgBox.exec();
-                                    }
-                                }
-                            }
-
-                            if (isFolder)
-                            {
-                                AZ::IO::SystemFile::DeleteDir(item->GetFullPath().c_str());
-                            }
-                        }
-                    }
+                    removed = QDir(item->GetFullPath().c_str()).removeRecursively();
                 }
+                else
+                {
+                    removed = AZ::IO::SystemFile::Delete(item->GetFullPath().c_str());
+                }
+
+                if (!removed)
+                {
+                    failedPaths.push_back(item->GetFullPath());
+                }
+            }
+
+            if (!failedPaths.empty())
+            {
+                AZStd::string message;
+                AZ::StringFunc::Join(message, failedPaths.begin(), failedPaths.end(), "\n");
+                AzQtComponents::FixedWidthMessageBox errorBox(
+                    600,
+                    QObject::tr(isFolder ? "Delete Folder" : "Delete Asset"),
+                    QObject::tr("Some items could not be deleted. They may be in use or write-protected."),
+                    QObject::tr("More information can be found by pressing \"Show Details...\"."),
+                    message.c_str(),
+                    QMessageBox::Critical,
+                    QMessageBox::Ok,
+                    QMessageBox::Ok,
+                    callingWidget);
+                errorBox.exec();
             }
         }
 

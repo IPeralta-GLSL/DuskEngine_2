@@ -17,14 +17,8 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        // The number of changes to apply per tick when the system is
-        // up and running.  (For example, when changes happen due ot the user
-        // modifying files once the Editor has already started).
-        // This is a balance between responsiveness and performance.
-        // The higher the number,the faster the Asset Browser will populate
-        // itself when new assets appear (this is a per-tick limit, at a target
-        // of 60fps).
-        static const int s_BatchSize = 2;
+        static const int s_NormalBatchSize = 32;
+        static const int s_FullSyncBatchSize = 128;
 
         AssetEntryChangeset::AssetEntryChangeset(
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> databaseConnection,
@@ -69,14 +63,22 @@ namespace AzToolsFramework
 
             AZStd::lock_guard<AZStd::mutex> locker(m_mutex);
 
-            int changesToApplyThisBatch = s_BatchSize;
+            int changesToApplyThisBatch = s_NormalBatchSize;
             if (m_updated)
             {
                 m_rootEntry->SetInitialUpdate(true);
                 m_rootEntry->Update(m_relativePath.c_str());
                 m_updated = false;
-                // during startup, do a big chunk of work for free before going into incremental mode.
-                changesToApplyThisBatch = 0;
+                changesToApplyThisBatch = s_FullSyncBatchSize;
+            }
+
+            if (m_changes.empty())
+            {
+                if (m_rootEntry->IsInitialUpdate())
+                {
+                    m_rootEntry->SetInitialUpdate(false);
+                }
+                return;
             }
 
             // iterate through new changes and try to apply them
@@ -88,10 +90,13 @@ namespace AzToolsFramework
             // Track both failed and unprocessed changes separately. Failed changes must go after
             // unprocessed changes to prevent a starvation in case there are changes that are
             // dependent on the application of other changes in the queue.
-            AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> changesFailed;
-            AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> deferredChanges;
-            changesFailed.reserve(m_changes.size());
-            deferredChanges.reserve(m_changes.size());
+            m_failedScratch.clear();
+            m_deferredScratch.clear();
+            if (m_deferredScratch.capacity() < m_changes.size())
+            {
+                m_deferredScratch.reserve(m_changes.size());
+                m_failedScratch.reserve(m_changes.size());
+            }
             int changesAppliedThisBatch = 0;
             for (auto& change : m_changes)
             {
@@ -99,25 +104,25 @@ namespace AzToolsFramework
                 // it moves 1, since we pre-increment it
                 if ( (changesToApplyThisBatch > 0) && (++changesAppliedThisBatch > changesToApplyThisBatch))
                 {
-                    deferredChanges.emplace_back(AZStd::move(change));
+                    m_deferredScratch.emplace_back(AZStd::move(change));
                 }
                 else if (!change->Apply(m_rootEntry))
                 {
-                    changesFailed.emplace_back(AZStd::move(change));
+                    m_failedScratch.emplace_back(AZStd::move(change));
                 }
             }
-            for (auto& failedChange : changesFailed)
+            for (auto& failedChange : m_failedScratch)
             {
-                deferredChanges.emplace_back(AZStd::move(failedChange));
+                m_deferredScratch.emplace_back(AZStd::move(failedChange));
             }
 #if AZ_DEBUG_BUILD
             if (!m_changes.empty())
             {
-                AZ_TracePrintf("Asset Browser DEBUG", "%d/%d data changes applied\n", m_changes.size() - changesFailed.size(), m_changes.size());
+                AZ_TracePrintf("Asset Browser DEBUG", "%d/%d data changes applied\n", m_changes.size() - m_failedScratch.size(), m_changes.size());
             }
 #endif
             // try again next time, with the unprocessed changes before the failed changes.
-            AZStd::swap(m_changes, deferredChanges);
+            AZStd::swap(m_changes, m_deferredScratch);
 
             if (m_rootEntry->IsInitialUpdate())
             {

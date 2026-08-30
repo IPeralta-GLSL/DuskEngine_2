@@ -9,6 +9,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
@@ -84,6 +85,9 @@ namespace AzToolsFramework
             QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
             SearchEntryDelegate* m_delegate = nullptr;
             bool m_updateRequested = false;
+            AZStd::chrono::steady_clock::time_point m_lastLayoutUpdate;
+
+            void PerformThrottledUpdate();
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);

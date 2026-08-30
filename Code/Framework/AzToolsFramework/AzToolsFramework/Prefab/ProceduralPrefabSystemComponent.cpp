@@ -133,7 +133,15 @@ namespace AzToolsFramework
             AZ::Data::AssetId assetId;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                 assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, prefabFilePath.c_str(),
-                azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(), false);
+                azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(), true);
+
+            if (!assetId.IsValid())
+            {
+                AZ::IO::Path absolutePath = AZ::IO::Path(AZ::Utils::GetProjectPath()) / prefabFilePath;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, absolutePath.Native().c_str(),
+                    azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(), true);
+            }
 
             if (assetId.IsValid())
             {

@@ -9,6 +9,8 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/ranges/split_view.h>
@@ -770,19 +772,30 @@ namespace AzToolsFramework
             if (!m_updateRequested)
             {
                 m_updateRequested = true;
-                QTimer::singleShot(
-                    0,
-                    this,
-                    [this]()
-                    {
-                        m_updateRequested = false;
-                        if (model())
-                        {
-                            model()->layoutChanged();
-                        }
-                        update();
-                    });
+                QTimer::singleShot(0, this, [this]() { PerformThrottledUpdate(); });
             }
+        }
+
+        void AssetBrowserTreeView::PerformThrottledUpdate()
+        {
+            static const AZStd::chrono::milliseconds minUpdateInterval(66);
+
+            const auto now = AZStd::chrono::steady_clock::now();
+            const auto elapsed = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(now - m_lastLayoutUpdate);
+            if (elapsed < minUpdateInterval)
+            {
+                const int waitMs = static_cast<int>((minUpdateInterval - elapsed).count()) + 1;
+                QTimer::singleShot(waitMs, this, [this]() { PerformThrottledUpdate(); });
+                return;
+            }
+
+            m_updateRequested = false;
+            m_lastLayoutUpdate = AZStd::chrono::steady_clock::now();
+            if (model())
+            {
+                model()->layoutChanged();
+            }
+            update();
         }
 
         void AssetBrowserTreeView::DeleteEntries()
@@ -836,8 +849,25 @@ namespace AzToolsFramework
                       QIcon(),
                       [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                       {
+                          AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+                          if (!fileIO || fullSourceFolderNameInCallback.empty() ||
+                              !fileIO->IsDirectory(fullSourceFolderNameInCallback.c_str()))
+                          {
+                              AZ_Error(
+                                  "Asset Browser", false,
+                                  "Cannot create a new folder inside '%s' because it is not a valid folder.",
+                                  fullSourceFolderNameInCallback.c_str());
+                              return;
+                          }
+
                           AZ::IO::FixedMaxPath path = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
                               AZ::IO::PathView(fullSourceFolderNameInCallback + "/New Folder"), "-");
+
+                          if (!AZ::IO::SystemFile::CreateDir(path.c_str()))
+                          {
+                              AZ_Error("Asset Browser", false, "Failed to create folder '%s'.", path.c_str());
+                              return;
+                          }
 
                           AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
                               AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
@@ -845,8 +875,6 @@ namespace AzToolsFramework
                               path.c_str(),
                               AZ::Crc32(),
                               true);
-
-                          AZ::IO::SystemFile::CreateDir(path.c_str());
                       } });
             }
         }

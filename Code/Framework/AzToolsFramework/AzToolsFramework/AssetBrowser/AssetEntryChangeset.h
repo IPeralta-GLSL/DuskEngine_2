@@ -60,6 +60,8 @@ namespace AzToolsFramework
             bool m_updated;
 
             AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> m_changes;
+            AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> m_deferredScratch;
+            AZStd::vector<AZStd::shared_ptr<AssetEntryChange>> m_failedScratch;
             AZStd::unordered_set<AZ::s64> m_fileIdsToAdd;
             AZStd::unordered_set<AZ::Uuid> m_sourceUuidsToAdd;
             AZStd::unordered_set<AZ::Data::AssetId> m_productAssetIdsToAdd;

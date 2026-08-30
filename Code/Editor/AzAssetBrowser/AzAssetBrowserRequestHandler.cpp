@@ -25,6 +25,8 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/SystemFile.h>
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
@@ -450,9 +452,14 @@ void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string full
 {
     using namespace AzToolsFramework::AssetBrowser;
 
-    AZStd::string folderPath;
-
-    AzFramework::StringFunc::Path::GetFolderPath(fullFilePath.c_str(), folderPath);
+    AZStd::string folderPath = fullFilePath;
+    AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+    if (!fileIO || !fileIO->IsDirectory(folderPath.c_str()))
+    {
+        AZStd::string parentFolder;
+        AzFramework::StringFunc::Path::GetFolderPath(fullFilePath.c_str(), parentFolder);
+        folderPath = parentFolder;
+    }
 
     AZ::Uuid sourceID = AZ::Uuid::CreateNull();
     SourceFileCreatorList creators;
@@ -465,9 +472,9 @@ void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string full
         {
             if (creatorDetails.m_creator)
             {
-                createMenu->addAction(creatorDetails.m_iconToUse, QObject::tr(creatorDetails.m_displayText.c_str()), [sourceID, fullFilePath, creatorDetails]()
+                createMenu->addAction(creatorDetails.m_iconToUse, QObject::tr(creatorDetails.m_displayText.c_str()), [sourceID, folderPath, creatorDetails]()
                 {
-                    creatorDetails.m_creator(fullFilePath.c_str(), sourceID);
+                    creatorDetails.m_creator(folderPath.c_str(), sourceID);
                 });
             }
         }

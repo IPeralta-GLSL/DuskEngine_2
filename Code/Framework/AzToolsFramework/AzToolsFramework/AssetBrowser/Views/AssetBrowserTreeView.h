@@ -12,6 +12,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -153,6 +154,7 @@ namespace AzToolsFramework
 
             bool m_applySnapshot = true;
             bool m_updateRequested = false;
+            AZStd::chrono::steady_clock::time_point m_lastLayoutUpdate;
 
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;
@@ -167,6 +169,8 @@ namespace AzToolsFramework
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
             bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t lastFolderIndex = 0, const uint32_t entryPathIndex = 0, bool useDisplayName = false);
+
+            void PerformThrottledUpdate();
 
             //! Grab one entry from the source thumbnail list and update it
             void UpdateSCThumbnails();

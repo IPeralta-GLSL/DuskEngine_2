@@ -888,6 +888,10 @@ namespace AZ
                             for (int subMeshIdx = 0; subMeshIdx < it->second.m_subMeshes.size(); subMeshIdx++)
                             {
                                 auto& subMeshInstance = it->second.m_subMeshes[subMeshIdx];
+                                if (!subMeshInstance.m_blas || !subMeshInstance.m_compactionSizeQuery)
+                                {
+                                    continue;
+                                }
                                 AZ_Assert(
                                     !subMeshInstance.m_compactBlas ||
                                         !RHI::CheckBit(subMeshInstance.m_compactBlas->GetDeviceMask(), deviceIndex),

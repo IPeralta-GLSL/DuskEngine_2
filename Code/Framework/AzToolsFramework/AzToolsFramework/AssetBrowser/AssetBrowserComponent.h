@@ -127,6 +127,7 @@ namespace AzToolsFramework
             AZStd::atomic_bool m_disposed;
             AZStd::atomic_bool m_isResetting;
             AZStd::atomic_bool m_changesApplied;
+            AZStd::atomic_bool m_populateScheduled;
 
             AZStd::unique_ptr<AssetBrowserModel> m_assetBrowserModel;
             AZStd::shared_ptr<AssetEntryChangeset> m_changeset;

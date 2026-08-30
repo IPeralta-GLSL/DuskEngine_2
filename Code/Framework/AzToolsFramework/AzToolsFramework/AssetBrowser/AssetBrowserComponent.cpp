@@ -51,6 +51,7 @@ namespace AzToolsFramework
             , m_disposed(false)
             , m_isResetting(false)
             , m_changesApplied(false)
+            , m_populateScheduled(false)
             , m_assetBrowserModel(aznew AssetBrowserModel)
             , m_changeset(new AssetEntryChangeset(m_databaseConnection, m_rootEntry))
         {
@@ -465,7 +466,17 @@ namespace AzToolsFramework
             switch (message.m_type)
             {
             case AssetSystem::FileInfosNotificationMessage::Synced:
-                QTimer::singleShot(0, qApp, [this]() { PopulateAssets(); });
+                if (!m_populateScheduled.exchange(true))
+                {
+                    QTimer::singleShot(0, qApp, [this]()
+                    {
+                        m_populateScheduled = false;
+                        if (!m_disposed)
+                        {
+                            PopulateAssets();
+                        }
+                    });
+                }
                 break;
             case AssetSystem::FileInfosNotificationMessage::FileAdded:
                 AddFile(message.m_fileID);

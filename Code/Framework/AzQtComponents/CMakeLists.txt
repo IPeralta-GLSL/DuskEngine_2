@@ -12,6 +12,10 @@ endif()
 
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
+file(GLOB AZ_QT6_CORE_PRIVATE_DIRS "/usr/include/qt6/QtCore/[0-9]*" "/usr/include/qt6/QtCore/[0-9]*/QtCore")
+file(GLOB AZ_QT6_GUI_PRIVATE_DIRS "/usr/include/qt6/QtGui/[0-9]*" "/usr/include/qt6/QtGui/[0-9]*/QtGui")
+file(GLOB AZ_QT6_WIDGETS_PRIVATE_DIRS "/usr/include/qt6/QtWidgets/[0-9]*" "/usr/include/qt6/QtWidgets/[0-9]*/QtWidgets")
+
 ly_add_target(
     NAME AzQtComponents SHARED
     NAMESPACE AZ
@@ -29,12 +33,9 @@ ly_add_target(
         PUBLIC
             .
             ${pal_dir}
-            /usr/include/qt6/QtCore/6.11.1
-            /usr/include/qt6/QtCore/6.11.1/QtCore
-            /usr/include/qt6/QtGui/6.11.1
-            /usr/include/qt6/QtGui/6.11.1/QtGui
-            /usr/include/qt6/QtWidgets/6.11.1
-            /usr/include/qt6/QtWidgets/6.11.1/QtWidgets
+            ${AZ_QT6_CORE_PRIVATE_DIRS}
+            ${AZ_QT6_GUI_PRIVATE_DIRS}
+            ${AZ_QT6_WIDGETS_PRIVATE_DIRS}
     COMPILE_DEFINITIONS
         PRIVATE
             AZ_QT_COMPONENTS_EXPORT_SYMBOLS

@@ -276,19 +276,30 @@ namespace AzToolsFramework
             if (!m_updateRequested)
             {
                 m_updateRequested = true;
-                QTimer::singleShot(
-                    0,
-                    this,
-                    [this]()
-                    {
-                        m_updateRequested = false;
-                        if (model())
-                        {
-                            model()->layoutChanged();
-                        }
-                        update();
-                    });
+                QTimer::singleShot(0, this, [this]() { PerformThrottledUpdate(); });
             }
+        }
+
+        void AssetBrowserListView::PerformThrottledUpdate()
+        {
+            static const AZStd::chrono::milliseconds minUpdateInterval(66);
+
+            const auto now = AZStd::chrono::steady_clock::now();
+            const auto elapsed = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(now - m_lastLayoutUpdate);
+            if (elapsed < minUpdateInterval)
+            {
+                const int waitMs = static_cast<int>((minUpdateInterval - elapsed).count()) + 1;
+                QTimer::singleShot(waitMs, this, [this]() { PerformThrottledUpdate(); });
+                return;
+            }
+
+            m_updateRequested = false;
+            m_lastLayoutUpdate = AZStd::chrono::steady_clock::now();
+            if (model())
+            {
+                model()->layoutChanged();
+            }
+            update();
         }
 
         void AssetBrowserListView::OnAssetBrowserComponentReady()
