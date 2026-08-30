@@ -34,6 +34,8 @@ namespace AZ
             void SetSSROptions(const SSROptions& ssrOptions) override;
             const SSROptions& GetSSROptions() const override { return m_ssrOptions; }
 
+            void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
+
         private:
             AZ_DISABLE_COPY_MOVE(SpecularReflectionsFeatureProcessor);
 
@@ -41,8 +43,13 @@ namespace AZ
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             void UpdatePasses();
+            bool ComputeSSREnable() const;
 
             SSROptions m_ssrOptions;
+            bool m_hasProbes = false;
+            bool m_anySSRHybrid = false;
+            bool m_savedHalfRes = false;
+            bool m_forcedHalfRes = false;
 
             RHI::ShaderInputNameIndex m_invOutputScaleNameIndex = "m_invOutputScale";
             RHI::ShaderInputNameIndex m_maxRoughnessNameIndex = "m_maxRoughness";

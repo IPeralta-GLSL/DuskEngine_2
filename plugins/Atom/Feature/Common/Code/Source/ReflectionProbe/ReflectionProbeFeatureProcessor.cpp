@@ -167,6 +167,7 @@ namespace AZ
 
                 reflectionProbe->Simulate(probeIndex);
             }
+
         }
 
         void ReflectionProbeFeatureProcessor::OnRenderEnd()
@@ -621,6 +622,23 @@ namespace AZ
 
             ReflectionProbeMap::const_iterator it = m_reflectionProbeMap.find(handle);
             return it->second->GetMode();
+        }
+
+        bool ReflectionProbeFeatureProcessor::HasAnyProbe() const
+        {
+            return !m_reflectionProbeMap.empty();
+        }
+
+        bool ReflectionProbeFeatureProcessor::HasSSRHybridProbe() const
+        {
+            for (const auto& [handle, probe] : m_reflectionProbeMap)
+            {
+                if (probe->GetMode() == ReflectionProbeMode::SSRHybrid)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         void ReflectionProbeFeatureProcessor::CreateBoxMesh()

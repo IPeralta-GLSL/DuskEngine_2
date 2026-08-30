@@ -113,6 +113,12 @@ namespace AZ
             //! Set or retrieve the probe mode (Baked, AutoSelect, or SSRHybrid)
             virtual void SetMode(const ReflectionProbeHandle& handle, ReflectionProbeMode mode) = 0;
             virtual ReflectionProbeMode GetMode(const ReflectionProbeHandle& handle) const = 0;
+
+            //! True if at least one probe exists in the scene
+            virtual bool HasAnyProbe() const = 0;
+
+            //! True if at least one probe is in SSRHybrid mode
+            virtual bool HasSSRHybridProbe() const = 0;
         };
     } // namespace Render
 } // namespace AZ

@@ -60,6 +60,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_innerObbHalfLengthsRenderConstantIndex = "m_innerObbHalfLengths";
             RHI::ShaderInputNameIndex m_useParallaxCorrectionRenderConstantIndex = "m_useParallaxCorrection";
             RHI::ShaderInputNameIndex m_exposureConstantIndex = "m_exposure";
+            RHI::ShaderInputNameIndex m_specularContributionConstantIndex = "m_specularContribution";
             RHI::ShaderInputNameIndex m_reflectionCubeMapRenderImageIndex = "m_reflectionCubeMap";
         };
 

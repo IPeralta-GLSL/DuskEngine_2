@@ -53,8 +53,14 @@ struct PSOutput
 
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
+    // SSRHybrid probes no pintan su cubemap: el specular viene de SSR/IBL en vivo
+    if (ObjectSrg::m_specularContribution <= 0.0)
+    {
+        discard;
+    }
+
     // reconstruct world space position from the depth at this location in screenspace
-    // Note: this is the world position of the rendered object covered by the probe volume, not the volume itself
+    // Note: this is the world position of the rendered object covered by the volume, not the volume itself
     uint2 dimensions;
     uint samples;
     PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);

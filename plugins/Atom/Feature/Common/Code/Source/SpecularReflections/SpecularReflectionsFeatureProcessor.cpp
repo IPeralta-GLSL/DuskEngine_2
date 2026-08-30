@@ -8,9 +8,11 @@
 
 #include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
 #include <Atom/Feature/RayTracing/RayTracingPass.h>
+#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>
 
 namespace AZ
@@ -44,6 +46,44 @@ namespace AZ
             UpdatePasses();
         }
 
+        void SpecularReflectionsFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
+        {
+            ReflectionProbeFeatureProcessorInterface* probeFP =
+                GetParentScene() ? GetParentScene()->GetFeatureProcessor<ReflectionProbeFeatureProcessorInterface>() : nullptr;
+
+            const bool hasProbes = probeFP && probeFP->HasAnyProbe();
+            const bool anySSRHybrid = probeFP && probeFP->HasSSRHybridProbe();
+
+            if (hasProbes != m_hasProbes || anySSRHybrid != m_anySSRHybrid)
+            {
+                m_hasProbes = hasProbes;
+                m_anySSRHybrid = anySSRHybrid;
+
+                // SSR a media resolucion para mantener SSRHybrid pagable; se restaura al salir.
+                if (anySSRHybrid && !m_forcedHalfRes)
+                {
+                    m_savedHalfRes = m_ssrOptions.m_halfResolution;
+                    m_ssrOptions.m_halfResolution = true;
+                    m_forcedHalfRes = true;
+                }
+                else if (!anySSRHybrid && m_forcedHalfRes)
+                {
+                    m_ssrOptions.m_halfResolution = m_savedHalfRes;
+                    m_forcedHalfRes = false;
+                }
+
+                UpdatePasses();
+            }
+        }
+
+        bool SpecularReflectionsFeatureProcessor::ComputeSSREnable() const
+        {
+            // When reflection probes are present, the probe mode is the authority for the
+            // specular method: SSRHybrid enables screen-space reflections, Baked uses the
+            // baked cubemap only. Without probes, fall back to the SSR config.
+            return m_hasProbes ? m_anySSRHybrid : m_ssrOptions.m_enable;
+        }
+
         void SpecularReflectionsFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline,
             RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
@@ -65,16 +105,18 @@ namespace AZ
             // determine size multiplier to pass to the shaders
             float sizeMultiplier = m_ssrOptions.m_halfResolution ? 0.5f : 1.0f;
 
+            const bool ssrEnable = ComputeSSREnable();
+
             // parent SSR pass
             {
                 AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpacePass"), (AZ::RPI::Scene*) nullptr);
-                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, sizeMultiplier](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [sizeMultiplier, ssrEnable](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                     {
                         // enable/disable
-                        pass->SetEnabled(m_ssrOptions.m_enable);
+                        pass->SetEnabled(ssrEnable);
 
                         // reset frame delay if screenspace reflections are disabled
-                        if (!m_ssrOptions.m_enable)
+                        if (!ssrEnable)
                         {
                             ReflectionScreenSpacePass* reflectionScreenSpacePass = azrtti_cast<ReflectionScreenSpacePass*>(pass);
                             reflectionScreenSpacePass->ResetFrameDelay();
@@ -106,10 +148,10 @@ namespace AZ
             // copy framebuffer pass
             {
                 AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionCopyFrameBufferPass"), (AZ::RPI::Scene*) nullptr);
-                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [ssrEnable](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                     {
                         // enable/disable
-                        pass->SetEnabled(m_ssrOptions.m_enable);
+                        pass->SetEnabled(ssrEnable);
                         return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                     });
             }

@@ -71,6 +71,9 @@ namespace AZ
             void SetMode(const ReflectionProbeHandle& handle, ReflectionProbeMode mode) override;
             ReflectionProbeMode GetMode(const ReflectionProbeHandle& handle) const override;
 
+            bool HasAnyProbe() const override;
+            bool HasSSRHybridProbe() const override;
+
             ReflectionProbeVector& GetReflectionProbes() { return m_reflectionProbes; }
             ReflectionProbeVector& GetRealTimeReflectionProbes() { return m_realTimeReflectionProbes; }
             ReflectionProbeVector& GetVisibleReflectionProbes() { return m_visibleReflectionProbes; }

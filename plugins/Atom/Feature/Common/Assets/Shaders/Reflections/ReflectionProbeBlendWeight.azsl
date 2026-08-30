@@ -53,6 +53,12 @@ struct PSOutput
 
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
+    // SSRHybrid probes no aportan peso de blend: el specular viene de SSR/IBL en vivo
+    if (ObjectSrg::m_specularContribution <= 0.0)
+    {
+        discard;
+    }
+
     // reconstruct world position from depth
     // Note: this is the world position of the rendered object covered by the volume, not the volume itself
     uint2 dimensions;

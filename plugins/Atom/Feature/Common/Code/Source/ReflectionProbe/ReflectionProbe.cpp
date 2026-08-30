@@ -126,6 +126,9 @@ namespace AZ
 
                 Matrix3x4 modelToWorldInverse = Matrix3x4::CreateFromTransform(m_transform).GetInverseFull();
 
+                // SSRHybrid: el probe no aporta su cubemap; el specular viene de SSR/IBL en vivo.
+                const float specularContribution = (m_mode == ReflectionProbeMode::SSRHybrid) ? 0.0f : 1.0f;
+
                 // blend weight Srg
                 Matrix3x4 modelToWorldOuter = Matrix3x4::CreateFromQuaternionAndTranslation(m_transform.GetRotation(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_outerExtents);
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_modelToWorldRenderConstantIndex, modelToWorldOuter);
@@ -133,6 +136,7 @@ namespace AZ
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_specularContributionConstantIndex, specularContribution);
                 m_blendWeightSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_blendWeightSrg->Compile();
 
@@ -143,6 +147,7 @@ namespace AZ
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_specularContributionConstantIndex, specularContribution);
                 m_renderOuterSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderOuterSrg->Compile();
 
@@ -154,6 +159,7 @@ namespace AZ
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_specularContributionConstantIndex, specularContribution);
                 m_renderInnerSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderInnerSrg->Compile();
 
@@ -291,6 +297,7 @@ namespace AZ
                 m_mode = mode;
             }
             m_updateMode = true;
+            m_updateSrg = true;
         }
 
         bool ReflectionProbe::GetIsVisible() const
