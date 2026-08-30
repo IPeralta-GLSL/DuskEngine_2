@@ -16,6 +16,40 @@
 #define PointLightUtil PointLightUtil_PBR
 #endif
 
+float3 GetSphericalAreaLightSpecularDirection(float3 N, float3 V, float3 Lc, float s)
+{
+    s = saturate(s);
+    float cosAlpha = sqrt(max(0.0, 1.0 - s * s));
+
+    float3 R = reflect(-V, N);
+    float3 T = R - Lc * dot(R, Lc);
+    float tLen = length(T);
+    T = T / max(tLen, 1e-5);
+    float3 B = cross(Lc, T);
+
+    float valid = step(1e-5, tLen);
+
+    float phi = 0.0;
+
+    for (int i = 0; i < 2; i += 1)
+    {
+        float3 L  = Lc * cosAlpha + s * (T * cos(phi) + B * sin(phi));
+        float  f  = dot(N, normalize(V + L));
+        float  e  = 0.01;
+        float3 Lp = Lc * cosAlpha + s * (T * cos(phi + e) + B * sin(phi + e));
+        float  fp = dot(N, normalize(V + Lp));
+        float3 Lm = Lc * cosAlpha + s * (T * cos(phi - e) + B * sin(phi - e));
+        float  fm = dot(N, normalize(V + Lm));
+        float  d1 = (fp - fm) / (2.0 * e);
+        float  d2 = (fp - 2.0 * f + fm) / (e * e);
+        float  stepPhi = d1 / max(abs(d2), 1e-6);
+        phi = phi - stepPhi;
+    }
+
+    float3 Lopt = Lc * cosAlpha + s * (T * cos(phi) + B * sin(phi));
+    return lerp(Lc, normalize(Lopt), valid);
+}
+
 class PointLightUtil_PBR
 {
     real3 m_surfaceToLight;
@@ -94,7 +128,18 @@ class PointLightUtil_PBR
 
             // Adjust the direction to light based on the bulb size
             real3 m_surfaceToLightAdjusted = m_surfaceToLight - (reflectionPosToLight * saturate(real(light.m_bulbRadius) / length(reflectionPosToLight)));
-            
+
+            real lightDist = sqrt(m_lightDistanceSquared);
+            real sphereS = saturate(real(light.m_bulbRadius) / max(lightDist, (real)1e-4));
+            if (sphereS > (real)1e-4)
+            {
+                m_surfaceToLightAdjusted = real3(GetSphericalAreaLightSpecularDirection(
+                    float3(surface.GetSpecularNormal()),
+                    float3(lightingData.dirToCamera[viewIndex]),
+                    float3(m_surfaceToLightDirection),
+                    float(sphereS)));
+            }
+
             // Adjust the intensity of the light based on the bulb size to conserve energy
             real sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, real(light.m_bulbRadius), m_lightDistanceSquared);
 
