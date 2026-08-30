@@ -10,6 +10,7 @@
 #include <AzCore/AzQtCompat.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
@@ -299,6 +300,20 @@ namespace AtomToolsFramework
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged,
             renderSize.m_width, renderSize.m_height);
+
+        // Decouple the internal render resolution from the swapchain/widget size: size the
+        // pipeline's attachments at the (possibly supersampled) render resolution and let the
+        // final swapchain pass scale down, like UE/Unity/Cry do for small editor viewports.
+        if (auto renderPipeline = m_viewportContext->GetCurrentPipeline())
+        {
+            auto& renderSettings = renderPipeline->GetRenderSettings();
+            if (renderSettings.m_size.m_width != renderSize.m_width ||
+                renderSettings.m_size.m_height != renderSize.m_height)
+            {
+                renderSettings.m_size.m_width = renderSize.m_width;
+                renderSettings.m_size.m_height = renderSize.m_height;
+            }
+        }
     }
 
     void RenderViewportWidget::SendWindowCloseEvent()
@@ -462,9 +477,20 @@ namespace AtomToolsFramework
     AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
     {
         auto clientSize = GetClientAreaSize();
+        if (clientSize.m_width == 0 || clientSize.m_height == 0)
+        {
+            return AzFramework::WindowSize{1u, 1u};
+        }
+
+        // Escala uniforme que respeta el aspect ratio del widget pero garantiza que la
+        // resolucion interna no baje del minimo (supersampling para viewports chicos).
+        float scale = m_renderScale;
+        scale = AZStd::max(scale, static_cast<float>(m_minRenderWidth) / static_cast<float>(clientSize.m_width));
+        scale = AZStd::max(scale, static_cast<float>(m_minRenderHeight) / static_cast<float>(clientSize.m_height));
+
         return AzFramework::WindowSize{
-            AZStd::max(1u, static_cast<uint32_t>(clientSize.m_width * m_renderScale)),
-            AZStd::max(1u, static_cast<uint32_t>(clientSize.m_height * m_renderScale))
+            AZStd::max(1u, static_cast<uint32_t>(clientSize.m_width * scale)),
+            AZStd::max(1u, static_cast<uint32_t>(clientSize.m_height * scale))
         };
     }
 
@@ -475,7 +501,7 @@ namespace AtomToolsFramework
         {
             m_renderScale = AZStd::clamp(
                 static_cast<float>(resolution.m_width) / static_cast<float>(clientSize.m_width),
-                0.1f, 1.0f);
+                0.1f, 4.0f);
         }
         else
         {

@@ -166,5 +166,11 @@ namespace AtomToolsFramework
         // Allow to delay the resize event to prevent freezing the editor on continuous mouse drag
         QTimer m_resizeEventCooldown;
         float m_renderScale = 1.0f;
+        // Minimum internal render resolution so a small viewport still renders at a usable
+        // resolution (supersampled down to the widget), like UE/Unity/Cry do.
+        // En 0 = apagado (la res interna sigue al widget). Opt-in porque la UI del editor
+        // (ImGui/aux geom) vive en el mismo pipeline y se desalinea con supersampling.
+        uint32_t m_minRenderWidth = 0;
+        uint32_t m_minRenderHeight = 0;
     };
 } //namespace AtomToolsFramework
