@@ -14,6 +14,17 @@
             }
         },
         {
+            "name": "alphaToCoverage",
+            "displayName": "Alpha to Coverage",
+            "description": "Use per-pixel alpha as MSAA coverage mask for clean cutout edges on foliage and alpha-tested geometry.",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "InternalProperty",
+                "name": "alphaToCoverage"
+            }
+        },
+        {
             "name": "applySpecularAA",
             "displayName": "Apply Specular AA",
             "description": "Whether to apply specular anti-aliasing in the shader.",
@@ -101,6 +112,14 @@
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_materialUseForwardPassIBLSpecular"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/AlphaToCoverage.lua"
             }
         }
     ]

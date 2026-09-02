@@ -74,6 +74,7 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardMultilayerPBR_Displacement.lua
     Materials/Types/StandardMultilayerPBR_LayerEnable.lua
+    Materials/Types/AlphaToCoverage.lua
     Materials/Types/StandardPBR.azsli
     Materials/Types/StandardPBR_Defines.azsli
     Materials/Types/StandardPBR.materialtype

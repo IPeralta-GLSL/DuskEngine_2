@@ -196,6 +196,14 @@ namespace AZ
                 SetDiagonalDetectionEnable(true);
                 SetCornerDetectionEnable(true);
                 break;
+            case SMAAQualityPreset::Custom8:
+                SetChromaThreshold(0.08f);
+                SetMaxSearchSteps(8);
+                SetMaxSearchStepsDiagonal(8);
+                SetCornerRounding(50);
+                SetDiagonalDetectionEnable(true);
+                SetCornerDetectionEnable(true);
+                break;
             }
         }
 

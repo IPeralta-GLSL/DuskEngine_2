@@ -22,6 +22,7 @@ namespace AZ
             Middle,
             High,
             Ultra,
+            Custom8,
 
             Count
         };
