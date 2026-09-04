@@ -80,7 +80,19 @@
                 "MaxPayloadSize": 4,
                 "MaxRecursionDepth": 1,
                 "FullscreenDispatch": true,
-                "BindViewSrg": true
+                "BindViewSrg": true,
+                "ShaderDataMappings": {
+                    "FloatMappings": [
+                        {
+                            "Name": "m_shadowBias",
+                            "Value": 0.01
+                        },
+                        {
+                            "Name": "m_shadowMaxRayLength",
+                            "Value": 100.0
+                        }
+                    ]
+                }
             }
         }
     }

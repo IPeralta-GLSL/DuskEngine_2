@@ -10,7 +10,7 @@
         "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {
-                "samples": 2
+                "samples": 8
             }
         },
         "DefaultAAMethod": "MSAA"

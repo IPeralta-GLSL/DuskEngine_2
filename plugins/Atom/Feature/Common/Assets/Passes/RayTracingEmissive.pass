@@ -80,7 +80,25 @@
                 "MaxPayloadSize": 16,
                 "MaxRecursionDepth": 1,
                 "FullscreenDispatch": true,
-                "BindViewSrg": true
+                "BindViewSrg": true,
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            "Name": "m_emissiveSampleCount",
+                            "Value": 4
+                        }
+                    ],
+                    "FloatMappings": [
+                        {
+                            "Name": "m_emissiveIntensityScale",
+                            "Value": 1.0
+                        },
+                        {
+                            "Name": "m_emissiveMaxRayLength",
+                            "Value": 50.0
+                        }
+                    ]
+                }
             }
         }
     }
