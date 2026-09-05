@@ -1,0 +1,9 @@
+set(FILES
+    Source/Module.cpp
+    Source/RenderDocToolsSystemComponent.h
+    Source/RenderDocToolsSystemComponent.cpp
+    Source/RenderDocToolbarWidget.h
+    Source/RenderDocToolbarWidget.cpp
+    Source/renderdoctools.qrc
+    Source/Icons/renderdoc_logo.png
+)

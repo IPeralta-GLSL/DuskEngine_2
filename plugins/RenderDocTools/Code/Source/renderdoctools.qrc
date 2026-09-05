@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/RenderDocTools">
+        <file alias="renderdoc_logo.png">Icons/renderdoc_logo.png</file>
+    </qresource>
+</RCC>

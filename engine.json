@@ -71,6 +71,7 @@
         "plugins/QtForPython",
         "plugins/RecastNavigation",
         "plugins/RemoteTools",
+        "plugins/RenderDocTools",
         "plugins/SaveData",
         "plugins/SceneLoggingExample",
         "plugins/SceneProcessing",

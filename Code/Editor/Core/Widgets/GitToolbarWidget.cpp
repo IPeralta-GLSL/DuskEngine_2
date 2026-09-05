@@ -23,11 +23,14 @@ namespace SandboxEditor
         : QToolButton(parent)
     {
         setPopupMode(QToolButton::InstantPopup);
-        setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        setToolButtonStyle(Qt::ToolButtonIconOnly);
         setIcon(QIcon(":/stylesheet/img/UI20/toolbar/git.svg"));
         setToolTip("Git version control");
 
         m_menu = new QMenu(this);
+        m_statusAction = m_menu->addAction("(loading...)");
+        m_statusAction->setEnabled(false);
+        m_menu->addSeparator();
         m_menu->addAction("Refresh Status", this, &GitToolbarWidget::RefreshStatus);
         m_menu->addSeparator();
         m_menu->addAction("Commit...", this, &GitToolbarWidget::OnCommit);
@@ -91,12 +94,13 @@ namespace SandboxEditor
     {
         if (m_modifiedCount > 0)
         {
-            setText(QString("Git: %1 (%2)").arg(m_branch).arg(m_modifiedCount));
+            m_statusAction->setText(QString("Git: %1 (%2)").arg(m_branch).arg(m_modifiedCount));
         }
         else
         {
-            setText(QString("Git: %1").arg(m_branch));
+            m_statusAction->setText(QString("Git: %1").arg(m_branch));
         }
+        setToolTip(QString("%1 - %2 modified file(s)").arg(m_branch).arg(m_modifiedCount));
     }
 
     void GitToolbarWidget::RefreshStatus()

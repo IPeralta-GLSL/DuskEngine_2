@@ -1,0 +1,24 @@
+{
+    "gem_name": "RenderDocTools",
+    "version": "0.0.0",
+    "display_name": "RenderDoc Tools",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Dusk Engine",
+    "origin_url": "",
+    "type": "Code",
+    "summary": "Editor toolbar button to capture frames with RenderDoc (in-app API) and open captures in qrenderdoc.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Tools",
+        "Rendering"
+    ],
+    "requirements": "RenderDoc installed on the host (librenderdoc.so + qrenderdoc).",
+    "documentation_url": "",
+    "dependencies": [],
+    "platforms": [
+        "Linux"
+    ]
+}

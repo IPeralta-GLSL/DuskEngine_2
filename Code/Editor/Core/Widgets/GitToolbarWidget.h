@@ -3,6 +3,7 @@
 #include <QToolButton>
 
 class QMenu;
+class QAction;
 class QTimer;
 
 namespace SandboxEditor
@@ -29,6 +30,7 @@ namespace SandboxEditor
         void OnOpenTerminal();
 
         QMenu* m_menu = nullptr;
+        QAction* m_statusAction = nullptr;
         QTimer* m_refreshTimer = nullptr;
         QString m_branch;
         int m_modifiedCount = 0;
