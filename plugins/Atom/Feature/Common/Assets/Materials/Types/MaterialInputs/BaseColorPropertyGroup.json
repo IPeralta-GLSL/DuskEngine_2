@@ -32,7 +32,6 @@
             "displayName": "Texture",
             "description": "Base color texture map",
             "type": "Image",
-            "defaultValue": "Textures/Default/default_basecolor_grid.png",
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_baseColorMap"
