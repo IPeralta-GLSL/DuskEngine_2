@@ -2,7 +2,7 @@
     "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
     "propertyValues": {
-        "baseColor.textureMap": "../../Textures/_Primitives/Middle_Gray_Checker.tif",
+        "baseColor.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/default_basecolor_grid.png",
         "emissive.color": [
             0.0,
             0.0,

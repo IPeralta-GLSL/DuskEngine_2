@@ -119,6 +119,11 @@
                 "defaultValue": true
             },
             {
+                "name": "alphaToCoverage",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
                 "name": "doubleSided",
                 "type": "Bool",
                 "defaultValue": false

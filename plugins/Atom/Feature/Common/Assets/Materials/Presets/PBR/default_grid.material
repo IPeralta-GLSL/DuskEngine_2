@@ -2,7 +2,7 @@
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
     "propertyValues": {
-        "baseColor.textureMap": "../../../Textures/Default/default_basecolor.tif",
+        "baseColor.textureMap": "../../../Textures/Default/default_basecolor_grid.png",
         "normal.textureMap": "../../../Textures/Default/default_normal.tif",
         "roughness.textureMap": "../../../Textures/Default/default_roughness.tif"
     }
