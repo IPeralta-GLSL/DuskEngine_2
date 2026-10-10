@@ -745,7 +745,7 @@ namespace
     {
         eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
     };
-    ESplashScreenState g_splashScreenState = eSplashScreenState_Init;
+    [[maybe_unused]] ESplashScreenState g_splashScreenState = eSplashScreenState_Init;
     IInitializeUIInfo* g_pInitializeUIInfo = nullptr;
 }
 

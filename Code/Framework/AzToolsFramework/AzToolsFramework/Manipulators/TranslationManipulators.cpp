@@ -361,7 +361,7 @@ namespace AzToolsFramework
 
     void ConfigureTranslationManipulatorAppearance3d(TranslationManipulators* translationManipulators)
     {
-        translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+        translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisY());
         translationManipulators->ConfigureView3d(DefaultTranslationManipulatorViewCreateInfo());
     }
 

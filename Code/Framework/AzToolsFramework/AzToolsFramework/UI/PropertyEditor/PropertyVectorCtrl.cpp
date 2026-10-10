@@ -7,6 +7,7 @@
  */
 #include "PropertyVectorCtrl.hxx"
 #include "PropertyQTConstants.h"
+#include "UIAxisRemap.h"
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QHBoxLayout>
@@ -186,14 +187,14 @@ namespace AzToolsFramework
         AZ::Quaternion newValue;
         newValue.SetFromEulerDegrees(eulerRotation);
 
-        instance = static_cast<AZ::Quaternion>(newValue);
+        instance = AzToolsFramework::UIAxis::FromDisplay(static_cast<AZ::Quaternion>(newValue));
     }
 
     bool QuaternionPropertyHandler::ReadValuesIntoGUI(size_t, AzQtComponents::VectorInput* GUI, const AZ::Quaternion& instance, InstanceDataNode*)
     {
         GUI->blockSignals(true);
         
-        AZ::Vector3 eulerRotation = instance.GetEulerDegrees();
+        AZ::Vector3 eulerRotation = AzToolsFramework::UIAxis::ToDisplay(instance).GetEulerDegrees();
 
         for (int idx = 0; idx < m_common.GetElementCount(); ++idx)
         {

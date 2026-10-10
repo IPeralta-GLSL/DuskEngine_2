@@ -574,6 +574,7 @@ set(FILES
     UI/PropertyEditor/PropertyStringLineEditCtrl.hxx
     UI/PropertyEditor/PropertyStringLineEditCtrl.cpp
     UI/PropertyEditor/PropertyVectorCtrl.hxx
+    UI/PropertyEditor/UIAxisRemap.h
     UI/PropertyEditor/PropertyVectorCtrl.cpp
     UI/PropertyEditor/ReflectedPropertyEditor.hxx
     UI/PropertyEditor/ReflectedPropertyEditor.cpp

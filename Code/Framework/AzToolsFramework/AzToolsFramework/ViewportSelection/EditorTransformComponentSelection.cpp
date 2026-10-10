@@ -1333,6 +1333,7 @@ namespace AzToolsFramework
         AZStd::unique_ptr<TranslationManipulators> translationManipulators = AZStd::make_unique<TranslationManipulators>(
             TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
         translationManipulators->SetLineBoundWidth(ManipulatorLineBoundWidth());
+        translationManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisY());
 
         InitializeManipulators(*translationManipulators);
 
@@ -1502,7 +1503,7 @@ namespace AzToolsFramework
             RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
 
         // view
-        rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+        rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisY());
         rotationManipulators->ConfigureView(
             RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
@@ -1665,7 +1666,7 @@ namespace AzToolsFramework
         scaleManipulators->SetLocalTransform(
             RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
 
-        scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+        scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisY());
         scaleManipulators->ConfigureView(
             LinearManipulatorAxisLength(), AZ::Color::CreateOne(), AZ::Color::CreateOne(), AZ::Color::CreateOne());
 
@@ -1804,7 +1805,7 @@ namespace AzToolsFramework
 
             rotationManipulators->SetLocalTransform(
                 RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
-            rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+            rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisY());
             // Radius slightly larger than arrow tip reach so rings visually contain the arrows
             const float universalRotationRadius = (LinearManipulatorAxisLength() + LinearManipulatorConeLength()) * 1.15f;
             rotationManipulators->ConfigureView(
@@ -1961,7 +1962,7 @@ namespace AzToolsFramework
 
             scaleManipulators->SetLocalTransform(
                 RecalculateAverageManipulatorTransform(m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
-            scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
+            scaleManipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisY());
             // Use axis colors for scale cubes: same hue as arrows/rings but cube shape makes them visually distinct
             scaleManipulators->ConfigureView(
                 universalScaleAxisLength,
@@ -3920,7 +3921,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
+        const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisY() };
 
         ScopedUndoBatch undoBatch(SnapToWorldGridUndoRedoDesc);
         for (const AZ::EntityId& entityId : m_selectedEntityIds)
@@ -4559,11 +4560,11 @@ namespace AzToolsFramework
         display.SetColor(FadedYAxisColor);
         display.DrawLine(
             transform.GetTranslation(),
-            transform.GetTranslation() + transform.GetBasisY().GetNormalizedSafe() * axisLength * axisFlip(AZ::Vector3::CreateAxisY()));
+            transform.GetTranslation() + transform.GetBasisZ().GetNormalizedSafe() * axisLength * axisFlip(AZ::Vector3::CreateAxisZ()));
         display.SetColor(FadedZAxisColor);
         display.DrawLine(
             transform.GetTranslation(),
-            transform.GetTranslation() + transform.GetBasisZ().GetNormalizedSafe() * axisLength * axisFlip(AZ::Vector3::CreateAxisZ()));
+            transform.GetTranslation() + transform.GetBasisY().GetNormalizedSafe() * axisLength * axisFlip(AZ::Vector3::CreateAxisY()));
 
         display.DepthWriteOn();
         display.DepthTestOn();
@@ -4813,8 +4814,8 @@ namespace AzToolsFramework
         const float lineLength = ed_viewportGizmoAxisLineLength;
         const auto gizmoStart = calculateGizmoAxis(AZ::Vector3::CreateZero());
         const auto gizmoEndAxisX = calculateGizmoAxis(-AZ::Vector3::CreateAxisX() * lineLength);
-        const auto gizmoEndAxisY = calculateGizmoAxis(-AZ::Vector3::CreateAxisY() * lineLength);
-        const auto gizmoEndAxisZ = calculateGizmoAxis(-AZ::Vector3::CreateAxisZ() * lineLength);
+        const auto gizmoEndAxisY = calculateGizmoAxis(-AZ::Vector3::CreateAxisZ() * lineLength);
+        const auto gizmoEndAxisZ = calculateGizmoAxis(-AZ::Vector3::CreateAxisY() * lineLength);
 
         const AZ::Vector2 gizmoAxisX = gizmoEndAxisX - gizmoStart;
         const AZ::Vector2 gizmoAxisY = gizmoEndAxisY - gizmoStart;

@@ -148,9 +148,11 @@ namespace AzToolsFramework
         {
             AzQtComponents::VectorElement** elements = GUI->getElements();
             TypeBeingHandled actualValue = instance;
-            for (int idx = 0; idx < m_common.GetElementCount(); ++idx)
+            const int count = m_common.GetElementCount();
+            for (int idx = 0; idx < count; ++idx)
             {
-                actualValue.SetElement(idx, static_cast<float>(elements[idx]->getValue()));
+                const int src = (count == 3) ? ((idx == 1) ? 2 : (idx == 2) ? 1 : idx) : idx;
+                actualValue.SetElement(idx, static_cast<float>(elements[src]->getValue()));
             }
             instance = actualValue;
         }
@@ -159,9 +161,11 @@ namespace AzToolsFramework
         {
             GUI->blockSignals(true);
 
-            for (int idx = 0; idx < m_common.GetElementCount(); ++idx)
+            const int count = m_common.GetElementCount();
+            for (int idx = 0; idx < count; ++idx)
             {
-                GUI->setValuebyIndex(instance.GetElement(idx), idx);
+                const int src = (count == 3) ? ((idx == 1) ? 2 : (idx == 2) ? 1 : idx) : idx;
+                GUI->setValuebyIndex(instance.GetElement(src), idx);
             }
 
             GUI->blockSignals(false);
