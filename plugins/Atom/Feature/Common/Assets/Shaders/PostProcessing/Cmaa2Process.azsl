@@ -1,0 +1,260 @@
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/Cmaa2ShapeSrg.srgi>
+
+static const uint c_maxLineLength = 128;
+static const float g_SimpleShapeBlurinessAmount = 0.10;
+static const float c_symmetryCorrectionOffset = 0.22;
+static const float c_dampeningEffect = 0.15;
+
+uint LoadEdge(int2 pixelPos)
+{
+    uint2 dims;
+    PassSrg::m_edgesIn.GetDimensions(dims.x, dims.y);
+    pixelPos = clamp(pixelPos, int2(0, 0), int2(dims) - 1);
+    return PassSrg::m_edgesIn[pixelPos];
+}
+
+uint4 UnpackEdges(uint value)
+{
+    return uint4((value & 0x1) != 0, (value & 0x2) != 0, (value & 0x4) != 0, (value & 0x8) != 0);
+}
+
+float3 LoadSource(int2 pixelPos)
+{
+    uint2 dims;
+    PassSrg::m_sourceColor.GetDimensions(dims.x, dims.y);
+    pixelPos = clamp(pixelPos, int2(0, 0), int2(dims) - 1);
+    return PassSrg::m_sourceColor[pixelPos].rgb;
+}
+
+float4 ComputeSimpleShapeBlendValues(float4 edges, float4 edgesLeft, float4 edgesRight, float4 edgesTop, float4 edgesBottom)
+{
+    float fromRight = edges.r;
+    float fromBelow = edges.g;
+    float fromLeft  = edges.b;
+    float fromAbove = edges.a;
+
+    float blurCoeff = g_SimpleShapeBlurinessAmount;
+
+    float numberOfEdges = dot(edges, float4(1, 1, 1, 1));
+    float numberOfEdgesAllAround = dot(edgesLeft.bga + edgesRight.rga + edgesTop.rba + edgesBottom.rgb, float3(1, 1, 1));
+
+    if (numberOfEdges == 1)
+    {
+        blurCoeff = 0;
+    }
+
+    if (numberOfEdges == 2)
+    {
+        blurCoeff *= ((1.0 - fromBelow * fromAbove) * (1.0 - fromRight * fromLeft));
+    }
+
+    if (numberOfEdges == 2)
+    {
+        blurCoeff *= 0.75;
+
+        float k = 0.9;
+        fromRight += k * (edges.g * edgesTop.r    * (1.0 - edgesLeft.g)   + edges.a * edgesBottom.r * (1.0 - edgesLeft.a));
+        fromBelow += k * (edges.b * edgesRight.g  * (1.0 - edgesTop.b)    + edges.r * edgesLeft.g   * (1.0 - edgesTop.r));
+        fromLeft  += k * (edges.a * edgesBottom.b * (1.0 - edgesRight.a)  + edges.g * edgesTop.b    * (1.0 - edgesRight.g));
+        fromAbove += k * (edges.r * edgesLeft.a   * (1.0 - edgesBottom.r) + edges.b * edgesRight.a  * (1.0 - edgesBottom.b));
+    }
+
+    blurCoeff *= saturate(1.30 - numberOfEdgesAllAround / 10.0);
+
+    return float4(fromLeft, fromAbove, fromRight, fromBelow) * blurCoeff;
+}
+
+void DetectZsHorizontal(float4 edges, float4 edgesM1P0, float4 edgesP1P0, float4 edgesP2P0, out float invertedZScore, out float normalZScore)
+{
+    invertedZScore  = edges.r * edges.g * edgesP1P0.a;
+    invertedZScore  *= 2.0 + (edgesM1P0.g + edgesP2P0.a) - (edges.a + edgesP1P0.g) - 0.7 * (edgesP2P0.g + edgesM1P0.a + edges.b + edgesP1P0.r);
+
+    normalZScore    = edges.r * edges.a * edgesP1P0.g;
+    normalZScore    *= 2.0 + (edgesM1P0.a + edgesP2P0.g) - (edges.g + edgesP1P0.a) - 0.7 * (edgesP2P0.a + edgesM1P0.g + edges.b + edgesP1P0.r);
+}
+
+void FindZLineLengths(out float lineLengthLeft, out float lineLengthRight, int2 screenPos, bool horizontal, bool invertedZShape)
+{
+    uint maskLeft, bitsContinueLeft, maskRight, bitsContinueRight;
+    {
+        uint maskTraceLeft, maskTraceRight;
+        if (horizontal)
+        {
+            maskTraceLeft = 0x08;
+            maskTraceRight = 0x02;
+        }
+        else
+        {
+            maskTraceLeft = 0x04;
+            maskTraceRight = 0x01;
+        }
+        if (invertedZShape)
+        {
+            uint temp = maskTraceLeft;
+            maskTraceLeft = maskTraceRight;
+            maskTraceRight = temp;
+        }
+        maskLeft = maskTraceLeft;
+        bitsContinueLeft = maskTraceLeft;
+        maskRight = maskTraceRight;
+        bitsContinueRight = maskTraceRight;
+    }
+
+    int2 stepRight = horizontal ? int2(1, 0) : int2(0, -1);
+
+    bool continueLeft = true;
+    bool continueRight = true;
+    float maxLR;
+    lineLengthLeft = 1;
+    lineLengthRight = 1;
+    [loop]
+    while (true)
+    {
+        uint edgeLeft  = LoadEdge(screenPos + int2(-float2(stepRight) *   lineLengthLeft));
+        uint edgeRight = LoadEdge(screenPos + int2( float2(stepRight) * ( lineLengthRight + 1 )));
+
+        continueLeft   = continueLeft  && (edgeLeft & maskLeft);
+        continueRight  = continueRight && (edgeRight & maskRight);
+
+        lineLengthLeft  += continueLeft;
+        lineLengthRight += continueRight;
+
+        maxLR = (!continueLeft && !continueRight) ? (float)c_maxLineLength : max(lineLengthRight, lineLengthLeft);
+
+        if (maxLR >= min((float)c_maxLineLength, (1.25 * min(lineLengthRight, lineLengthLeft) - 0.25)))
+        {
+            break;
+        }
+    }
+}
+
+float3 LongEdgeBlend(int2 coord, float lineLengthLeft, float lineLengthRight, float shapeQualityScore, bool horizontal, bool invertedZShape, float3 sourceCenter)
+{
+    float2 blendDir = horizontal ? float2(0, -1) : float2(-1, 0);
+    if (invertedZShape)
+    {
+        blendDir = -blendDir;
+    }
+
+    float leftOdd = c_symmetryCorrectionOffset * float(lineLengthLeft % 2);
+    float rightOdd = c_symmetryCorrectionOffset * float(lineLengthRight % 2);
+
+    float dampenEffect = saturate(float(lineLengthLeft + lineLengthRight - shapeQualityScore) * c_dampeningEffect);
+
+    float loopFrom = -floor((lineLengthLeft + 1) / 2) + 1.0;
+    float loopTo = floor((lineLengthRight + 1) / 2);
+
+    float totalLength = float(loopTo - loopFrom) + 1 - leftOdd - rightOdd;
+    float lerpStep = 1.0 / max(totalLength, 1.0);
+    float lerpFromK = (0.5 - leftOdd - loopFrom) * lerpStep;
+
+    float lerpVal = lerpFromK;
+
+    bool secondPart = (lerpVal > 0.5);
+    float srcOffset = 1.0 - (secondPart * 2.0);
+
+    float lerpK = lerpVal * srcOffset + secondPart;
+    lerpK *= dampenEffect;
+
+    float2 samplePos = float2(coord) + 0.5 + blendDir * srcOffset * lerpK;
+    return LoadSource(int2(samplePos));
+}
+
+[numthreads(16, 16, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_sourceColor.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    int2 coord = int2(dispatchId.xy);
+    uint centerRaw = LoadEdge(coord);
+    uint center = centerRaw % 16;
+
+    float3 colorSum = float3(0.0, 0.0, 0.0);
+    float weightSum = 0.0;
+
+    if (center != 0)
+    {
+        float4 edges = float4(UnpackEdges(center));
+        float4 edgesLeft = float4(UnpackEdges(LoadEdge(coord + int2(-1, 0))));
+        float4 edgesRight = float4(UnpackEdges(LoadEdge(coord + int2(1, 0))));
+        float4 edgesBottom = float4(UnpackEdges(LoadEdge(coord + int2(0, 1))));
+        float4 edgesTop = float4(UnpackEdges(LoadEdge(coord + int2(0, -1))));
+
+        float4 blendVal = ComputeSimpleShapeBlendValues(edges, edgesLeft, edgesRight, edgesTop, edgesBottom);
+        float fourWeightSum = dot(blendVal, float4(1, 1, 1, 1));
+        if (fourWeightSum > 0.0)
+        {
+            float3 outColor = LoadSource(coord) * (1.0 - fourWeightSum);
+            outColor += blendVal.x * LoadSource(coord + int2(-1, 0));
+            outColor += blendVal.y * LoadSource(coord + int2(0, -1));
+            outColor += blendVal.z * LoadSource(coord + int2(1, 0));
+            outColor += blendVal.w * LoadSource(coord + int2(0, 1));
+            colorSum += outColor;
+            weightSum += 1.0;
+        }
+    }
+
+    if (centerRaw > 16)
+    {
+        float4 edges = float4(UnpackEdges(center));
+        float4 edgesM1P0 = float4(UnpackEdges(LoadEdge(coord + int2(-1, 0))));
+        float4 edgesP1P0 = float4(UnpackEdges(LoadEdge(coord + int2(1, 0))));
+        float4 edgesP2P0 = float4(UnpackEdges(LoadEdge(coord + int2(2, 0))));
+
+        float invertedZScore = 0.0;
+        float normalZScore = 0.0;
+        float maxScore = 0.0;
+        bool horizontal = true;
+        bool invertedZ = false;
+
+        DetectZsHorizontal(edges, edgesM1P0, edgesP1P0, edgesP2P0, invertedZScore, normalZScore);
+        maxScore = max(invertedZScore, normalZScore);
+        if (maxScore > 0.0)
+        {
+            invertedZ = invertedZScore > normalZScore;
+        }
+
+        {
+            float4 vEdges = edges.argb;
+            float4 vM1P0 = float4(UnpackEdges(LoadEdge(coord + int2(0, 1)))).argb;
+            float4 vP1P0 = float4(UnpackEdges(LoadEdge(coord + int2(0, -1)))).argb;
+            float4 vP2P0 = float4(UnpackEdges(LoadEdge(coord + int2(0, -2)))).argb;
+
+            DetectZsHorizontal(vEdges, vM1P0, vP1P0, vP2P0, invertedZScore, normalZScore);
+            float vertScore = max(invertedZScore, normalZScore);
+
+            if (vertScore > maxScore)
+            {
+                maxScore = vertScore;
+                horizontal = false;
+                invertedZ = invertedZScore > normalZScore;
+            }
+        }
+
+        if (maxScore > 0.0)
+        {
+            float shapeQualityScore = floor(clamp(4.0 - maxScore, 0.0, 3.0));
+
+            float lineLengthLeft, lineLengthRight;
+            FindZLineLengths(lineLengthLeft, lineLengthRight, coord, horizontal, invertedZ);
+
+            lineLengthLeft  -= shapeQualityScore;
+            lineLengthRight -= shapeQualityScore;
+
+            if ((lineLengthLeft + lineLengthRight) >= 5.0)
+            {
+                float3 blended = LongEdgeBlend(coord, lineLengthLeft, lineLengthRight, shapeQualityScore, horizontal, invertedZ, LoadSource(coord));
+                colorSum += blended * 2.25;
+                weightSum += 2.25;
+            }
+        }
+    }
+
+    PassSrg::m_candidatesOut[coord] = float4(colorSum, weightSum);
+}

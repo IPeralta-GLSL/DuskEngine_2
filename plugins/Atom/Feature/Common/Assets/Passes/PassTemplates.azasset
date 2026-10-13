@@ -25,6 +25,18 @@
                 "Path": "Passes/VisibilityBuffer.pass"
             },
             {
+                "Name": "Cmaa2EdgeDetectPassTemplate",
+                "Path": "Passes/Cmaa2EdgeDetect.pass"
+            },
+            {
+                "Name": "Cmaa2ProcessPassTemplate",
+                "Path": "Passes/Cmaa2Process.pass"
+            },
+            {
+                "Name": "Cmaa2ApplyPassTemplate",
+                "Path": "Passes/Cmaa2Apply.pass"
+            },
+            {
                 "Name": "VisibilityShadingPassTemplate",
                 "Path": "Passes/VisibilityShading.pass"
             },

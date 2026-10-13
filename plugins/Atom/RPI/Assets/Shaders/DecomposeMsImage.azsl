@@ -10,7 +10,7 @@
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {    
-    Texture2DMS<float4> m_msImage;
+    Texture2D<float4> m_msImage;
     RWTexture2DArray<float4> m_outputImage;
 }
 
@@ -19,5 +19,5 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 void MainCS(uint3 groupID : SV_GroupID, uint3 groupThreadID : SV_GroupThreadID)
 {
     uint3 samplePos = groupID * ThreadGroupSize + groupThreadID;
-    ObjectSrg::m_outputImage[samplePos] = ObjectSrg::m_msImage.Load(samplePos.xy, groupThreadID.z);
+    ObjectSrg::m_outputImage[samplePos] = ObjectSrg::m_msImage.Load(int3(samplePos.xy, 0));
 }

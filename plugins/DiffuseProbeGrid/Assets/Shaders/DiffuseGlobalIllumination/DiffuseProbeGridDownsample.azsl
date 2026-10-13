@@ -15,8 +15,8 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
-    Texture2DMS<float>  m_depth;
+    Texture2D<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2D<float>  m_depth;
 
     Sampler LinearSampler
     {
@@ -64,8 +64,8 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     {
         for (uint x = 0; x < outputImageScale; ++x)
         {
-            float depth = PassSrg::m_depth.Load(screenCoords + int2(x, y), sampleIndex).r;
-            float4 encodedNormal = PassSrg::m_normal.Load(screenCoords + int2(x, y), sampleIndex);
+            float depth = PassSrg::m_depth.Load(int3(screenCoords + int2(x, 0), 0)).r;
+            float4 encodedNormal = PassSrg::m_normal.Load(int3(screenCoords + int2(x, 0), 0));
 
             // take the closest depth sample to ensure we're getting the normal closest to the viewer 
             // (larger depth value due to reverse depth)

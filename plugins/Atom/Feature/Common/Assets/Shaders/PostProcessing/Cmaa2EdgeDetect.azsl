@@ -1,0 +1,65 @@
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/Cmaa2EdgeSrg.srgi>
+
+static const float g_EdgeThreshold = 0.07;
+static const float g_LocalContrastAdaptationAmount = 0.10;
+
+float EdgeDiff(float3 colorA, float3 colorB)
+{
+    const float3 lumWeights = float3(0.299, 0.587, 0.114);
+    return dot(abs(colorA - colorB), lumWeights);
+}
+
+[numthreads(16, 16, 1)]
+void MainCS(uint3 dispatchId : SV_DispatchThreadID)
+{
+    uint2 dims;
+    PassSrg::m_sourceColor.GetDimensions(dims.x, dims.y);
+    if (any(dispatchId.xy >= dims))
+    {
+        return;
+    }
+
+    int2 coord = int2(dispatchId.xy);
+    float3 a = PassSrg::m_sourceColor[coord + int2(-1, -1)].rgb;
+    float3 b = PassSrg::m_sourceColor[coord + int2( 0, -1)].rgb;
+    float3 c = PassSrg::m_sourceColor[coord + int2( 1, -1)].rgb;
+    float3 d = PassSrg::m_sourceColor[coord + int2(-1,  0)].rgb;
+    float3 e = PassSrg::m_sourceColor[coord + int2( 0,  0)].rgb;
+    float3 f = PassSrg::m_sourceColor[coord + int2( 1,  0)].rgb;
+    float3 g = PassSrg::m_sourceColor[coord + int2(-1,  1)].rgb;
+    float3 h = PassSrg::m_sourceColor[coord + int2( 0,  1)].rgb;
+    float3 i = PassSrg::m_sourceColor[coord + int2( 1,  1)].rgb;
+
+    float4 edges = float4(
+        EdgeDiff(e, f),
+        EdgeDiff(e, h),
+        EdgeDiff(e, d),
+        EdgeDiff(e, b));
+
+    float ab = EdgeDiff(a, b);
+    float bc = EdgeDiff(b, c);
+    float de = EdgeDiff(d, e);
+    float gh = EdgeDiff(g, h);
+    float hi = EdgeDiff(h, i);
+
+    float4 localContrast;
+    localContrast.x = max(max(de, edges.y), max(gh, hi)) * g_LocalContrastAdaptationAmount;
+    localContrast.z = max(max(ab, bc), max(de, edges.y)) * g_LocalContrastAdaptationAmount;
+
+    float ad = EdgeDiff(a, d);
+    float be = EdgeDiff(b, e);
+    float dg = EdgeDiff(d, g);
+    float cf = EdgeDiff(c, f);
+    float fi = EdgeDiff(f, i);
+
+    localContrast.y = max(max(be, cf), max(edges.x, fi)) * g_LocalContrastAdaptationAmount;
+    localContrast.w = max(max(ad, be), max(dg, edges.x)) * g_LocalContrastAdaptationAmount;
+    edges -= localContrast;
+
+    edges = step(g_EdgeThreshold, edges);
+
+    bool isCandidate = (edges.x * edges.y + edges.y * edges.z + edges.z * edges.w + edges.w * edges.x) != 0;
+
+    PassSrg::m_edgesOut[coord] = uint(dot(edges, float4(1, 2, 4, 8)) + 16 * isCandidate);
+}

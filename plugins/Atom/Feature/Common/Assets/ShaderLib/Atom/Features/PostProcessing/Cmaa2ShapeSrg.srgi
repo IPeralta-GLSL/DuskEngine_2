@@ -1,0 +1,8 @@
+#pragma once
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<uint> m_edgesIn;
+    Texture2D<float4> m_sourceColor;
+    RWTexture2D<float4> m_candidatesOut;
+}

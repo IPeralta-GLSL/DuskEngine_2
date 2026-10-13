@@ -11,7 +11,7 @@
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {    
     Texture2D m_image;
-    Texture2DMS<float4> m_msImage;
+    Texture2D<float4> m_msImage;
 
     float2 m_colorRangeMinMax;
 
@@ -75,17 +75,17 @@ PSOutput MainPS(VSOutput psInput)
         }
         case ImageType::Image2dMs:
         {
-            Texture2DMS<float4> texture = PassSrg::m_msImage;            
+            Texture2D<float4> texture = PassSrg::m_msImage;            
             uint width = 0;
             uint height = 0;
             uint numberOfSamples = 0;
-            texture.GetDimensions(width, height, numberOfSamples);
+            texture.GetDimensions(width, height);
             int2 coord = int2(width * psInput.m_uv.x, height * psInput.m_uv.y);
 
             OUT.m_color = 0;
             for (uint i = 0; i < numberOfSamples; ++i)
             {
-                OUT.m_color += texture.Load(coord, i);
+                OUT.m_color += texture.Load(int3(coord, 0));
             }
             OUT.m_color /= numberOfSamples;
             break;

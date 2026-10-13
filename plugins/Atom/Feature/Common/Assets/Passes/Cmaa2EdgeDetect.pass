@@ -1,0 +1,59 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "Cmaa2EdgeDetectPassTemplate",
+            "PassClass": "ComputePass",
+            "Slots": [
+                {
+                    "Name": "SourceInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear",
+                        "StoreAction": "Store"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Edges",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "LightingInput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_UINT",
+                        "BindFlags": "ShaderRead|ShaderWrite",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Edges"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/Cmaa2EdgeDetect.shader"
+                },
+                "FullscreenDispatch": true
+            }
+        }
+    }
+}

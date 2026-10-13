@@ -1,0 +1,31 @@
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/Cmaa2ApplySrg.srgi>
+
+struct FullscreenVSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uv : TEXCOORD;
+};
+
+FullscreenVSOutput MainVS(uint vertexId : SV_VertexID)
+{
+    FullscreenVSOutput OUT;
+    OUT.m_uv = float2((vertexId << 1) & 2, vertexId & 2);
+    OUT.m_position = float4(OUT.m_uv * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
+    return OUT;
+}
+
+float4 MainPS(FullscreenVSOutput IN) : SV_Target0
+{
+    uint2 pixelCoord = uint2(IN.m_position.xy);
+    float4 candidates = PassSrg::m_candidates.Load(int3(pixelCoord, 0));
+    float3 source = PassSrg::m_sourceColor.Load(int3(pixelCoord, 0)).rgb;
+
+    if (candidates.a <= 0.5)
+    {
+        return float4(source, 1.0);
+    }
+
+    float3 blended = candidates.rgb / candidates.a;
+    return float4(blended, 1.0);
+}

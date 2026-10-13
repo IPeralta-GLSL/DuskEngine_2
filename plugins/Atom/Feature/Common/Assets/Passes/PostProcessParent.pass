@@ -61,29 +61,54 @@
             ],
             "PassRequests": [
                 {
-                    "Name": "TaaPass",
-                    "TemplateName": "TaaParentTemplate",
-                    "Enabled": true,
+                    "Name": "Cmaa2EdgeDetectPass",
+                    "TemplateName": "Cmaa2EdgeDetectPassTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "InputColor",
+                            "LocalSlot": "SourceInput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "LightingInput"
                             }
-                        },
+                        }
+                    ]
+                },
+                {
+                    "Name": "Cmaa2ProcessPass",
+                    "TemplateName": "Cmaa2ProcessPassTemplate",
+                    "Connections": [
                         {
-                            "LocalSlot": "InputDepth",
+                            "LocalSlot": "EdgesInput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "Depth"
+                                "Pass": "Cmaa2EdgeDetectPass",
+                                "Attachment": "Edges"
                             }
                         },
                         {
-                            "LocalSlot": "MotionVectors",
+                            "LocalSlot": "SourceInput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "MotionVectors"
+                                "Attachment": "LightingInput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Cmaa2ApplyPass",
+                    "TemplateName": "Cmaa2ApplyPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "CandidatesInput",
+                            "AttachmentRef": {
+                                "Pass": "Cmaa2ProcessPass",
+                                "Attachment": "Candidates"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SourceInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
                             }
                         }
                     ]
@@ -96,8 +121,8 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "TaaPass",
-                                "Attachment": "OutputColor"
+                                "Pass": "Cmaa2ApplyPass",
+                                "Attachment": "Output"
                             }
                         },
                         {

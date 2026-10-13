@@ -255,7 +255,7 @@ namespace AZ::Render
             AZStd::string::format(
                 "%dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
         auto msaaStr =
-            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("NoMSAA");
+            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("CMAA2");
 
         if (hasAAMethod)
         {
