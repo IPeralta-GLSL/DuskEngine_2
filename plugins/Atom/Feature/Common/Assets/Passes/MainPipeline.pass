@@ -489,6 +489,26 @@
                     ]
                 },
                 {
+                    "Name": "VisibilityBufferDebug",
+                    "TemplateName": "VisibilityBufferParentPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "PipelineGlobal",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "UIPass",
                     "TemplateName": "UIParentTemplate",
                     "Connections": [

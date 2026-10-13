@@ -2,7 +2,7 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2DMS<float4> inputTexture;
+    Texture2D<float4> inputTexture;
 
     // Whether to use neighborhood clamping to reduce aliasing
     uint enableNeighborClamping;

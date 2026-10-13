@@ -1,11 +1,3 @@
-/*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
- */
-
 #include <scenesrg_all.srgi>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
@@ -16,14 +8,11 @@
 
 static const int2 offsets[9] = 
 {
-    // Center
     int2(0, 0),
-    // Cross
     int2( 1, 0),
     int2( 0,-1),
     int2(-1, 0),
     int2( 0, 1),
-    // Diagonals
     int2( 1,-1),
     int2( 1, 1),
     int2(-1,-1),
@@ -52,6 +41,34 @@ float3 YCoCgToRgb(float3 yCoCg)
     return mul(conversionMatrix, yCoCg);
 }
 
+float3 SampleHistoryCatmullRom(float2 uv)
+{
+    float2 texSize = PassSrg::m_constantData.m_inputColorSize;
+    float2 samplePos = uv * texSize;
+    float2 texPos1 = floor(samplePos - 0.5) + 0.5;
+    float2 f = samplePos - texPos1;
+
+    float2 w0 = f * (-0.5 + f * (1.0 - 0.5 * f));
+    float2 w1 = 1.0 + f * f * (-2.5 + 1.5 * f);
+    float2 w2 = f * (0.5 + f * (2.0 - 1.5 * f));
+    float2 w3 = f * f * (-0.5 + 0.5 * f);
+    float2 w12 = w1 + w2;
+
+    float2 offset12 = w2 / max(w12, float2(1e-5, 1e-5));
+    float2 texPos0 = (texPos1 - 1.0) / texSize;
+    float2 texPos3 = (texPos1 + 2.0) / texSize;
+    float2 texPos12 = (texPos1 + offset12) / texSize;
+
+    float3 result = float3(0.0, 0.0, 0.0);
+    result += PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, float2(texPos12.x, texPos0.y), 0.0).rgb * (w12.x * w0.y);
+    result += PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, float2(texPos0.x, texPos12.y), 0.0).rgb * (w0.x * w12.y);
+    result += PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, float2(texPos12.x, texPos12.y), 0.0).rgb * (w12.x * w12.y);
+    result += PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, float2(texPos3.x, texPos12.y), 0.0).rgb * (w3.x * w12.y);
+    result += PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, float2(texPos12.x, texPos3.y), 0.0).rgb * (w12.x * w3.y);
+
+    float weightSum = (w12.x * w0.y) + (w0.x * w12.y) + (w12.x * w12.y) + (w3.x * w12.y) + (w12.x * w3.y);
+    return result / max(weightSum, 1e-5);
+}
 
 [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
 void MainCS(
@@ -81,21 +98,17 @@ void MainCS(
 
     float3 thisFrameColor = float3(0.0, 0.0, 0.0);
 
-    // Sample the neighborhood to filter the current pixel, gather statistics about
-    // its neighbors, and find the closest neighbor to choose a motion vector.
     [unroll] for (int i = 0; i < 9; ++i)
     {
         uint2 neighborhoodPixelCoord = pixelCoord + offsets[i];
         float3 neighborhoodColor = PassSrg::m_inputColor[neighborhoodPixelCoord].rgb;
 
-        // Convert to YCoCg space for better clipping.
         neighborhoodColor = RgbToYCoCg(neighborhoodColor);
 
         sum += neighborhoodColor;
         sumOfSquares += neighborhoodColor * neighborhoodColor;
         thisFrameColor += neighborhoodColor * filterWeights[i];
 
-        // Find the coordinate of the nearest depth
         float neighborhoodDepth = PassSrg::m_inputDepth[neighborhoodPixelCoord].r;
         if (neighborhoodDepth < nearestDepth)
         {
@@ -104,69 +117,54 @@ void MainCS(
         }
     }
 
-    // Variance clipping, see http://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
     float3 mean = sum / 9.0;
     float3 standardDeviation = max(0.0, sqrt(sumOfSquares / 9.0 - mean * mean));
     standardDeviation *= PassSrg::m_clampGamma;
 
-    // Grab the motion vector from the closest pixel in the 3x3 neighborhood. This is done so that motion vectors correctly
-    // track edges. For instance, if a pixel lies on the edge of a moving object, where the color is a blend of the
-    // forground and background, it's possible for the pixel center to hit the (not moving) background. However, the correct
-    // history for this pixel will be the location this edge was the previous frame. By choosing the motion of the nearest
-    // pixel in the neighborhood that edge will be correctly tracked.
-
-    // Motion vectors store the direction of movement, so to look up where things were in the previous frame, it's negated.
     float2 previousPositionOffset = -PassSrg::m_motionVectors[nearestDepthPixelCoord];
     
-    // Get the uv coordinate for the previous frame.
     float2 rcpSize = PassSrg::m_constantData.m_inputColorRcpSize;
     float2 uvCoord = (pixelCoord + 0.5f) * rcpSize;
     float2 uvOld = uvCoord + previousPositionOffset;
     float2 previousPositionOffsetInPixels = float2(PassSrg::m_constantData.m_inputColorSize) * previousPositionOffset;
     
-    float3 lastFrameColor = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0).rgb;
+    float3 lastFrameColor = SampleHistoryCatmullRom(uvOld);
     lastFrameColor = RgbToYCoCg(lastFrameColor);
 
-    // Last frame color relative to mean
     float3 centerColorOffset = lastFrameColor - mean;
     float3 colorOffsetStandardDeviationRatio = abs(standardDeviation / centerColorOffset);
 
-    // Clamp the color by the aabb of the standardDeviation. Can never be greater than 1, so will always be inside or on the bounds of the aabb.
     float clampedColorLength = min(min(min(1, colorOffsetStandardDeviationRatio.x), colorOffsetStandardDeviationRatio.y), colorOffsetStandardDeviationRatio.z);
 
-    // Calculate the true clamped color by offsetting it back from the mean.
     float3 lastFrameClampedColor = mean + centerColorOffset * clampedColorLength;
 
-    // Anti-flickering - Reduce current frame weight the more it deviates from the history based on the standard deviation of the neighborhood.
-    // Start reducing weight at differences greater than m_maxDeviationBeforeDampening standard deviations in luminance.
     float standardDeviationWeight = standardDeviation.r * PassSrg::m_maxDeviationBeforeDampening; 
     float sdFromLastFrame = standardDeviationWeight / abs(lastFrameClampedColor.r - thisFrameColor.r);
 
     float currentFrameWeight = PassSrg::m_currentFrameContribution;
+
+    float velocityLength = length(previousPositionOffsetInPixels);
+    float velocityBlend = saturate(velocityLength * 0.35);
+    currentFrameWeight = lerp(currentFrameWeight, 1.0, velocityBlend);
+
     currentFrameWeight *= saturate(sdFromLastFrame * sdFromLastFrame);
 
-    // Back to Rgb space
     thisFrameColor = YCoCgToRgb(thisFrameColor);
     lastFrameClampedColor = YCoCgToRgb(lastFrameClampedColor);
 
-    // Out of bounds protection.
     if (any(uvOld > 1.0) || any(uvOld < 0.0))
     {
         currentFrameWeight = 1.0f;
     }
 
-    // Blend should be in perceptual space, so tonemap first
     float luminance = GetLuminance(thisFrameColor);
     thisFrameColor = thisFrameColor / (1.0 + luminance);
     lastFrameClampedColor = lastFrameClampedColor / (1.0 + luminance);
 
-    // Blend color with history
     float3 color = lerp(lastFrameClampedColor, thisFrameColor, currentFrameWeight);
 
-    // Un-tonemap color
     color = color * (1.0 + luminance);
 
-    // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
     color = max(0.0, color);
 
     PassSrg::m_outputColor[pixelCoord].rgb = color;

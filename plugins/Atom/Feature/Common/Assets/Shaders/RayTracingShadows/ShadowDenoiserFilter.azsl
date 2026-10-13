@@ -68,8 +68,8 @@ PSOutput MainPS(VSOutput IN)
     float shadowCenter = PassSrg::m_shadow.Load(int3(icoords, 0));
 
     // Load center depth and normal (MSAA sample 0)
-    float  hwDepthCenter     = PassSrg::m_depth.Load(icoords, 0).r;
-    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(icoords, 0).rgb);
+    float  hwDepthCenter     = PassSrg::m_depth.Load(int3(icoords, 0)).r;
+    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(int3(icoords, 0)).rgb);
     float  linearDepthCenter = LinearDepth(hwDepthCenter);
 
     // ---- Spatial 3x3 bilateral filter ----
@@ -85,8 +85,8 @@ PSOutput MainPS(VSOutput IN)
             int2  nc        = icoords + int2(dx, dy);
             float neighborS = PassSrg::m_shadow.Load(int3(nc, 0));
 
-            float hwDepthN  = PassSrg::m_depth.Load(nc, 0).r;
-            float3 normalN  = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(nc, 0).rgb);
+            float hwDepthN  = PassSrg::m_depth.Load(int3(nc, 0)).r;
+            float3 normalN  = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(int3(nc, 0)).rgb);
             float linDepthN = LinearDepth(hwDepthN);
 
             float depthDiff   = abs(linearDepthCenter - linDepthN) * linearDepthCenter;

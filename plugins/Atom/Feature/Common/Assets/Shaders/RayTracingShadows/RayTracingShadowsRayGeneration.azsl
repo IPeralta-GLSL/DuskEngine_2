@@ -8,7 +8,7 @@ void RayGeneration()
     uint2 dimensions = DispatchRaysDimensions().xy;
     float2 UV = (float2)pixelCoords / dimensions;
 
-    float depth = RayTracingGlobalSrg::m_depth.Load(pixelCoords, 0);
+    float depth = RayTracingGlobalSrg::m_depth.Load(int3(pixelCoords, 0));
     if (depth >= 1.0f)
     {
         RayTracingGlobalSrg::m_shadowOutput[pixelCoords] = 1.0f;
@@ -21,7 +21,7 @@ void RayGeneration()
     positionVS /= positionVS.w;
     float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
 
-    float4 encodedNormal = RayTracingGlobalSrg::m_normal.Load(pixelCoords, 0);
+    float4 encodedNormal = RayTracingGlobalSrg::m_normal.Load(int3(pixelCoords, 0));
     float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
 
     float3 origin = positionWS.xyz + normalWS * RayTracingGlobalSrg::m_shadowBias;

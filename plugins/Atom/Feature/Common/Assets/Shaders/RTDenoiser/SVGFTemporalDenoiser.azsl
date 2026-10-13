@@ -36,8 +36,8 @@ PSOutput MainPS(VSOutput IN)
     float4 centerColor = PassSrg::m_colorInput.Load(int3(icoords, 0));
     float  centerLum   = Luminance(centerColor.rgb);
 
-    float  hwDepthCenter     = PassSrg::m_depth.Load(icoords, 0).r;
-    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(icoords, 0).rgb);
+    float  hwDepthCenter     = PassSrg::m_depth.Load(int3(icoords, 0)).r;
+    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(int3(icoords, 0)).rgb);
     float  linearDepthCenter = LinearDepth(hwDepthCenter);
 
     float centerVariance = PassSrg::m_variance.Load(int3(icoords, 0)).r;
@@ -61,8 +61,8 @@ PSOutput MainPS(VSOutput IN)
             float4 neighborColor = PassSrg::m_colorInput.Load(int3(nc, 0));
             float  neighborLum   = Luminance(neighborColor.rgb);
 
-            float  hwDepthN  = PassSrg::m_depth.Load(nc, 0).r;
-            float3 normalN   = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(nc, 0).rgb);
+            float  hwDepthN  = PassSrg::m_depth.Load(int3(nc, 0)).r;
+            float3 normalN   = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(int3(nc, 0)).rgb);
             float  linDepthN = LinearDepth(hwDepthN);
 
             float wSpatial = kernel[dx + 2] * kernel[dy + 2];

@@ -56,14 +56,14 @@ PSOutput MainPS(VSOutput IN)
     float2 fullScreenCoords = coords * PassSrg::m_invOutputScale;
     uint2  fullScreenDimensions = uint2(PassSrg::m_outputWidth, PassSrg::m_outputHeight) * PassSrg::m_invOutputScale;
 
-    float depth = PassSrg::m_depth.Load(fullScreenCoords, 0).r;
+    float depth = PassSrg::m_depth.Load(int3(fullScreenCoords, 0)).r;
     if (depth == 0.0f)
     {
         // skip tracing rays at max scene depth
         discard;
     }
        
-    float4 specularF0 = PassSrg::m_specularF0.Load(fullScreenCoords, 0);
+    float4 specularF0 = PassSrg::m_specularF0.Load(int3(fullScreenCoords, 0));
     float roughness = specularF0.a;
     if (roughness > PassSrg::m_maxRoughness)
     {
@@ -83,7 +83,7 @@ PSOutput MainPS(VSOutput IN)
     float3 cameraToPositionVS = normalize(positionVS.xyz);
 
     // retrieve surface normal
-    float4 encodedNormal = PassSrg::m_normal.Load(fullScreenCoords, 0);
+    float4 encodedNormal = PassSrg::m_normal.Load(int3(fullScreenCoords, 0));
     float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     float3 normalVS = normalize(mul(ViewSrg::m_viewMatrix, float4(normalWS, 0.0f)).xyz);
 
@@ -119,7 +119,7 @@ PSOutput MainPS(VSOutput IN)
         {
             // reconstruct the world space position of the trace coordinates
             float2 traceUV = saturate(hitCoords / fullScreenDimensions);
-            float traceDepth = PassSrg::m_depth.Load(hitCoords, 0).r;
+            float traceDepth = PassSrg::m_depth.Load(int3(hitCoords, 0)).r;
             float2 traceNDC = float2(traceUV.x, 1.0f - traceUV.y) * 2.0f - 1.0f;
             float4 traceProjectedPos = float4(traceNDC, traceDepth, 1.0f);
             float4 tracePositionVS = mul(ViewSrg::m_projectionMatrixInverse, traceProjectedPos);

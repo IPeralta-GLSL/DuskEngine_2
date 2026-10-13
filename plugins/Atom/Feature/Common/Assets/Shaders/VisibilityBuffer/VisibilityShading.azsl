@@ -1,0 +1,37 @@
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/VisibilityBuffer/VisibilityShadingSrg.srgi>
+#include <viewsrg_all.srgi>
+
+struct FullscreenVSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uv : TEXCOORD;
+};
+
+FullscreenVSOutput MainVS(uint vertexId : SV_VertexID)
+{
+    FullscreenVSOutput OUT;
+    OUT.m_uv = float2((vertexId << 1) & 2, vertexId & 2);
+    OUT.m_position = float4(OUT.m_uv * float2(2.0, -2.0) + float2(-1.0, 1.0), 0.0, 1.0);
+    return OUT;
+}
+
+float3 ObjectIdToColor(uint objectId)
+{
+    if (objectId == 0xFFFFFFFF)
+    {
+        return float3(0.02, 0.02, 0.03);
+    }
+    float hash = frac(sin(objectId * 12.9898) * 43758.5453);
+    float hash2 = frac(sin(objectId * 78.233) * 12543.853);
+    float hash3 = frac(sin(objectId * 39.425) * 33421.127);
+    return float3(hash, hash2, hash3) * 0.8 + 0.1;
+}
+
+float4 MainPS(FullscreenVSOutput IN) : SV_Target0
+{
+    uint2 pixelCoord = uint2(IN.m_position.xy);
+    uint objectId = PassSrg::m_objectId.Load(int3(pixelCoord, 0));
+    uint primitiveId = PassSrg::m_primitiveId.Load(int3(pixelCoord, 0));
+    return float4(ObjectIdToColor(objectId), 1.0);
+}

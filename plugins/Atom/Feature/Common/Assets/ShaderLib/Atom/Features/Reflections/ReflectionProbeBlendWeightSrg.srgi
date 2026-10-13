@@ -2,5 +2,5 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2DMS<float> m_depth;
+    Texture2D<float> m_depth;
 }

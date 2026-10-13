@@ -37,7 +37,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     Constants m_constantData;
     Texture2DArray<float> m_directionalShadowmaps;
     Texture2DArray<float> m_directionalShadowmapsESM;
-    Texture2DMS<float> m_depth;
+    Texture2D<float> m_depth;
     Texture2D<float> m_depthLinear;
 #if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
     RWTexture2D<float> m_fullscreenShadowOutput;

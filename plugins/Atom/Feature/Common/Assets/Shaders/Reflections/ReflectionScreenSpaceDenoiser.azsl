@@ -112,15 +112,15 @@ PSOutput MainPS(VSOutput IN)
     }
 
     // ---- Early-out: high roughness ----
-    float roughness = PassSrg::m_specularF0.Load(fsCoords, 0).a;
+    float roughness = PassSrg::m_specularF0.Load(int3(fsCoords, 0)).a;
     if (roughness > PassSrg::m_maxRoughness)
     {
         discard;
     }
 
     // ---- Center G-buffer data (full-res sample 0) ----
-    float  hwDepthCenter     = PassSrg::m_depth.Load(fsCoords, 0).r;
-    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(fsCoords, 0).rgb);
+    float  hwDepthCenter     = PassSrg::m_depth.Load(int3(fsCoords, 0)).r;
+    float3 normalCenter      = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(int3(fsCoords, 0)).rgb);
     float  linearDepthCenter = LinearDepth(hwDepthCenter);
 
     // ---- Spatial 3x3 bilateral prefilter ----
@@ -159,8 +159,8 @@ PSOutput MainPS(VSOutput IN)
 
             // Full-res coords for this half-res neighbor
             int2  ncFs      = int2(float2(nc) * PassSrg::m_invOutputScale);
-            float  hwDepthN  = PassSrg::m_depth.Load(ncFs, 0).r;
-            float3 normalN   = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(ncFs, 0).rgb);
+            float  hwDepthN  = PassSrg::m_depth.Load(int3(ncFs, 0)).r;
+            float3 normalN   = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(int3(ncFs, 0)).rgb);
             float  linDepthN = LinearDepth(hwDepthN);
 
             // Depth weight: Gaussian in linear depth space

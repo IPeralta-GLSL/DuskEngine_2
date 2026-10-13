@@ -21,6 +21,18 @@
                 "Path": "Passes/Depth.pass"
             },
             {
+                "Name": "VisibilityBufferPassTemplate",
+                "Path": "Passes/VisibilityBuffer.pass"
+            },
+            {
+                "Name": "VisibilityShadingPassTemplate",
+                "Path": "Passes/VisibilityShading.pass"
+            },
+            {
+                "Name": "VisibilityBufferParentPassTemplate",
+                "Path": "Passes/VisibilityBufferParent.pass"
+            },
+            {
                 "Name": "DepthMSAAPassTemplate",
                 "Path": "Passes/DepthMSAA.pass"
             },

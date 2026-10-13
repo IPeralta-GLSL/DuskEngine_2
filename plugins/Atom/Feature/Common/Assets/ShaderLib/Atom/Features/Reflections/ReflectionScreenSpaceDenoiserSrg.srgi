@@ -3,13 +3,13 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // Slot 0: DepthStencilTextureInput – full-res MSAA depth
-    Texture2DMS<float>  m_depth;
+    Texture2D<float>  m_depth;
 
     // Slot 1: NormalInput – full-res MSAA normals (RGB10 SignedOctahedron)
-    Texture2DMS<float4> m_normal;
+    Texture2D<float4> m_normal;
 
     // Slot 2: SpecularF0Input – full-res MSAA specularF0 (roughness in .a)
-    Texture2DMS<float4> m_specularF0;
+    Texture2D<float4> m_specularF0;
 
     // Slot 3: ScreenSpaceReflectionInputOutput – half-res RT trace
     //         .rgb = radiance, .a = ray confidence (0 = no reflection)

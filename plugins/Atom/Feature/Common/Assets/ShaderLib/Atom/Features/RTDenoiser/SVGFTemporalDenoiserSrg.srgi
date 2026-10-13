@@ -3,8 +3,8 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4> m_colorInput;
-    Texture2DMS<float> m_depth;
-    Texture2DMS<float4> m_normal;
+    Texture2D<float> m_depth;
+    Texture2D<float4> m_normal;
     Texture2D<float> m_variance;
 
     uint m_stepSize;

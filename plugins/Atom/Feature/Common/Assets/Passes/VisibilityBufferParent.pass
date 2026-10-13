@@ -1,0 +1,70 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "VisibilityBufferParentPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "InputAssembly"
+                },
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "VisibilityBufferPass",
+                    "TemplateName": "VisibilityBufferPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "vbuffer",
+                        "BindViewSrg": true
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "VisibilityShadingPass",
+                    "TemplateName": "VisibilityShadingPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ObjectIdInput",
+                            "AttachmentRef": {
+                                "Pass": "VisibilityBufferPass",
+                                "Attachment": "ObjectId"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PrimitiveIdInput",
+                            "AttachmentRef": {
+                                "Pass": "VisibilityBufferPass",
+                                "Attachment": "PrimitiveId"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -51,10 +51,11 @@ PSOutput MainPS(VSOutput IN)
     float3 reflection = float3(0.0f, 0.0f, 0.0f);
 
     uint width, height, samples;
-    PassSrg::m_reflection.GetDimensions(width, height, samples);
+    PassSrg::m_reflection.GetDimensions(width, height);
+    samples = 1;
     for (uint sampleIndex = 0; sampleIndex < samples; ++sampleIndex)
     {
-        reflection += PassSrg::m_reflection.Load(IN.m_position.xy, sampleIndex).rgb;
+        reflection += PassSrg::m_reflection.Load(int3(IN.m_position.xy, 0)).rgb;
     }
 
     reflection /= samples;

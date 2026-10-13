@@ -2,7 +2,7 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2DMS<float4> m_depthBufferMSAA;
+    Texture2D<float4> m_depthBufferMSAA;
 
     // Depth buffer where we rendered the nearest pixels of transparent objects
     Texture2D<float4> m_depthBufferTransparentMin;   

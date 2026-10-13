@@ -77,24 +77,24 @@ float4 ReadColorFromQuadrant(uint inputIndex, int2 pixel, int quadrant)
     if (PassSrg::m_constants.m_frameOffset == 0)
     {
         if (0 == quadrant)
-            return PassSrg::m_color[2*inputIndex].Load(pixel, 1);
+            return PassSrg::m_color[2*inputIndex].Load(int3(pixel, 0));
         else if (1 == quadrant)
             return PassSrg::m_color[2*inputIndex+1].Load(pixel + int2(1, 0), 1);
         else if (2 == quadrant)
-            return PassSrg::m_color[2*inputIndex+1].Load(pixel, 0);
+            return PassSrg::m_color[2*inputIndex+1].Load(int3(pixel, 0));
         else //( 3 == quadrant )
-            return PassSrg::m_color[2*inputIndex].Load(pixel, 0);
+            return PassSrg::m_color[2*inputIndex].Load(int3(pixel, 0));
     }
     else
     {    
         if (0 == quadrant)
-            return PassSrg::m_color[2*inputIndex+1].Load(pixel, 1);
+            return PassSrg::m_color[2*inputIndex+1].Load(int3(pixel, 0));
         else if (1 == quadrant)
             return PassSrg::m_color[2*inputIndex].Load(pixel + int2(1, 0), 1);
         else if (2 == quadrant)
-            return PassSrg::m_color[2*inputIndex].Load(pixel, 0);
+            return PassSrg::m_color[2*inputIndex].Load(int3(pixel, 0));
         else //( 3 == quadrant )
-            return PassSrg::m_color[2*inputIndex+1].Load(pixel, 0);
+            return PassSrg::m_color[2*inputIndex+1].Load(int3(pixel, 0));
     }
 }
 
@@ -103,24 +103,24 @@ float ReadDepthFromQuadrant(int2 pixel, int quadrant)
     if (PassSrg::m_constants.m_frameOffset == 0)
     {
         if (0 == quadrant)
-            return PassSrg::m_depth1.Load(pixel, 1);
+            return PassSrg::m_depth1.Load(int3(pixel, 0));
         else if (1 == quadrant)
             return PassSrg::m_depth0.Load(pixel + int2(1, 0), 1);
         else if (2 == quadrant)
-            return PassSrg::m_depth0.Load(pixel, 0);
+            return PassSrg::m_depth0.Load(int3(pixel, 0));
         else //( 3 == quadrant )
-            return PassSrg::m_depth1.Load(pixel, 0);  
+            return PassSrg::m_depth1.Load(int3(pixel, 0));  
     }
     else
     {
         if (0 == quadrant)
-            return PassSrg::m_depth0.Load(pixel, 1);
+            return PassSrg::m_depth0.Load(int3(pixel, 0));
         else if (1 == quadrant)
             return PassSrg::m_depth1.Load(pixel + int2(1, 0), 1);
         else if (2 == quadrant)
-            return PassSrg::m_depth1.Load(pixel, 0);
+            return PassSrg::m_depth1.Load(int3(pixel, 0));
         else //( 3 == quadrant )
-            return PassSrg::m_depth0.Load(pixel, 0);  
+            return PassSrg::m_depth0.Load(int3(pixel, 0));  
     }  
 }
 

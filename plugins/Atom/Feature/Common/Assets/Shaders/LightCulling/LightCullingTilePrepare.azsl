@@ -81,18 +81,18 @@ void ClearSharedMemory(uint groupIndex)
 float2 ReadOpaqueDepthSamples2xMSAA(uint2 uv)
 {
     float2 depthSamples;  
-    depthSamples.x = PassSrg::m_depthBufferMSAA.Load(uv, 0).x;
-    depthSamples.y = PassSrg::m_depthBufferMSAA.Load(uv, 1).x;  
+    depthSamples.x = PassSrg::m_depthBufferMSAA.Load(int3(uv, 0)).x;
+    depthSamples.y = PassSrg::m_depthBufferMSAA.Load(int3(uv, 0)).x;  
     return depthSamples;
 }
 
 float4 ReadOpaqueDepthSamples4xMSAA(uint2 uv)
 {
     float4 depthSamples;  
-    depthSamples.x = PassSrg::m_depthBufferMSAA.Load(uv, 0).x;
-    depthSamples.y = PassSrg::m_depthBufferMSAA.Load(uv, 1).x;  
-    depthSamples.z = PassSrg::m_depthBufferMSAA.Load(uv, 2).x;
-    depthSamples.w = PassSrg::m_depthBufferMSAA.Load(uv, 3).x;
+    depthSamples.x = PassSrg::m_depthBufferMSAA.Load(int3(uv, 0)).x;
+    depthSamples.y = PassSrg::m_depthBufferMSAA.Load(int3(uv, 0)).x;  
+    depthSamples.z = PassSrg::m_depthBufferMSAA.Load(int3(uv, 0)).x;
+    depthSamples.w = PassSrg::m_depthBufferMSAA.Load(int3(uv, 0)).x;
     return depthSamples;
 }
 
@@ -265,7 +265,7 @@ void MainCS(
         float2 opaqueDepthSamples;
         if (o_msaaMode == MsaaMode::None)
         {
-            float depth = PassSrg::m_depthBufferMSAA.Load(dispatchThreadID.xy, 0).x;
+            float depth = PassSrg::m_depthBufferMSAA.Load(int3(dispatchThreadID.xy, 0)).x;
             opaqueDepthSamples = float2(depth, depth);
         }
         else if (o_msaaMode == MsaaMode::Msaa2x)

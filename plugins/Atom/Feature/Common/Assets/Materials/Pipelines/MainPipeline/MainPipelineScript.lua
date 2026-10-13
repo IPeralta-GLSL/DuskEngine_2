@@ -22,6 +22,7 @@ function MaterialTypeSetup(context)
     context:IncludeShader("DepthPass")
     context:IncludeShader("ShadowmapPass")
     context:IncludeShader("MeshMotionVector")
+    context:IncludeShader("VisibilityBuffer")
 
     if(lightingModel == "Base") then
         context:IncludeShader("ForwardPass_BaseLighting")

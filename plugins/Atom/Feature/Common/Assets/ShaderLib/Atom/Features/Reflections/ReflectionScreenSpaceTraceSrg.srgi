@@ -2,11 +2,11 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2DMS<float>  m_depth;
+    Texture2D<float>  m_depth;
     Texture2D<float>    m_depthLinear;
-    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
-    Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
-    Texture2DMS<float4> m_reflection;
+    Texture2D<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2D<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
+    Texture2D<float4> m_reflection;
     Texture2D<float4>   m_previousFrame;
     Texture2D<float4>   m_rayTracingCoords;
     Texture2D<float4>   m_fallbackColor;

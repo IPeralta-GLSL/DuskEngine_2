@@ -90,7 +90,8 @@ PSOutput MainPS(VSOutput IN)
     uint height = 0;
     uint numberOfSamples = 0;
 
-    PassSrg::inputTexture.GetDimensions(width, height, numberOfSamples);
+    PassSrg::inputTexture.GetDimensions(width, height);
+    numberOfSamples = 1;
 
     // The brightest luminance value of all neighbor sub-pixels
     float brightestNeighborLuminance = 0.0f;
@@ -105,22 +106,22 @@ PSOutput MainPS(VSOutput IN)
         // Get average + brightest neighborhood sub-pixel luminance value 
         for (uint i = 0; i < numberOfSamples; ++i)
         {
-            float3 sampleColor00 = PassSrg::inputTexture.Load(int2(coord.x + 1, coord.y + 1), i).rgb;
+            float3 sampleColor00 = PassSrg::inputTexture.Load(int3(int2(coord.x + 1, coord.y + 1), 0)).rgb;
             float luminance00 = CalcLuminance(sampleColor00);
             brightestNeighborLuminance = max(brightestNeighborLuminance, luminance00);
             averageNeighborLuminance += luminance00;
 
-            float3 sampleColor01 = PassSrg::inputTexture.Load(int2(coord.x + 1, coord.y - 1), i).rgb;
+            float3 sampleColor01 = PassSrg::inputTexture.Load(int3(int2(coord.x + 1, coord.y - 1), 0)).rgb;
             float luminance01 = CalcLuminance(sampleColor01);
             brightestNeighborLuminance = max(brightestNeighborLuminance, luminance01);
             averageNeighborLuminance += luminance01;
 
-            float3 sampleColor10 = PassSrg::inputTexture.Load(int2(coord.x - 1, coord.y + 1), i).rgb;
+            float3 sampleColor10 = PassSrg::inputTexture.Load(int3(int2(coord.x - 1, coord.y + 1), 0)).rgb;
             float luminance10 = CalcLuminance(sampleColor10);
             brightestNeighborLuminance = max(brightestNeighborLuminance, luminance10);
             averageNeighborLuminance += luminance10;
                 
-            float3 sampleColor11 = PassSrg::inputTexture.Load(int2(coord.x - 1, coord.y - 1), i).rgb;
+            float3 sampleColor11 = PassSrg::inputTexture.Load(int3(int2(coord.x - 1, coord.y - 1), 0)).rgb;
             float luminance11 = CalcLuminance(sampleColor11);
             brightestNeighborLuminance = max(brightestNeighborLuminance, luminance11);
             averageNeighborLuminance += luminance11;
@@ -136,7 +137,7 @@ PSOutput MainPS(VSOutput IN)
     for (uint i = 0; i < numberOfSamples; ++i)
     {
         // Get sub-pixel i
-        float3 sampleColor = PassSrg::inputTexture.Load(coord, i).rgb;
+        float3 sampleColor = PassSrg::inputTexture.Load(int3(coord, 0)).rgb;
 
         if(PassSrg::enableNeighborClamping)
         {

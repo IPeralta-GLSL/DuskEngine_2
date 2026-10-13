@@ -36,7 +36,7 @@ PSOutput MainPS(VSOutput IN)
         discard;
     }
 
-    float roughness = PassSrg::m_specularF0.Load(fullScreenCoords, 0).a;
+    float roughness = PassSrg::m_specularF0.Load(int3(fullScreenCoords, 0)).a;
     if (roughness > PassSrg::m_maxRoughness)
     {
         // fallback to the cubemap reflections currently in the reflection buffer
@@ -54,7 +54,7 @@ PSOutput MainPS(VSOutput IN)
     if (PassSrg::m_temporalFiltering)
     {
         // reproject
-        float depth = PassSrg::m_depth.Load(fullScreenCoords, 0).r;
+        float depth = PassSrg::m_depth.Load(int3(fullScreenCoords, 0)).r;
         float2 ndc = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
         float4 projectedPos = float4(ndc, depth, 1.0f);
         float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);

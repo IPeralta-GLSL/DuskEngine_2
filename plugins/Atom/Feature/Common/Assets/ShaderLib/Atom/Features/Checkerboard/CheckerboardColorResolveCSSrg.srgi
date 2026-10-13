@@ -3,13 +3,13 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // input depth
-    Texture2DMS<float> m_depth0;    // current frame
-    Texture2DMS<float> m_depth1;    // previous frame
+    Texture2D<float> m_depth0;    // current frame
+    Texture2D<float> m_depth1;    // previous frame
 
     // An array of color textures to be resolved
     // Each two of continuous textures are for one render target 
     // which 2*n is the render target of current frame, 2*n + 1 is the render target of last frame
-    Texture2DMS<float4> m_color[MaxNumberResolveTexturesDouble]; 
+    Texture2D<float4> m_color[MaxNumberResolveTexturesDouble]; 
 
     struct Constants
     {

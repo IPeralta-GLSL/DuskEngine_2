@@ -2,5 +2,5 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
-    Texture2DMS<float4>  m_reflection;
+    Texture2D<float4>  m_reflection;
 }

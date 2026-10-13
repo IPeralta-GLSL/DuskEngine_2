@@ -35,8 +35,8 @@ PSOutput MainPS(VSOutput IN)
     float4 currentColor = PassSrg::m_currentColor.Load(int3(icoords, 0));
     float  currentLum = Luminance(currentColor.rgb);
 
-    float  hwDepthCenter = PassSrg::m_depth.Load(icoords, 0).r;
-    float3 normalCenter = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(icoords, 0).rgb);
+    float  hwDepthCenter = PassSrg::m_depth.Load(int3(icoords, 0)).r;
+    float3 normalCenter = DecodeNormalSignedOctahedron(PassSrg::m_normal.Load(int3(icoords, 0)).rgb);
     float  linearDepthCenter = LinearDepth(hwDepthCenter);
 
     float2 ndc = float2(uv.x, 1.0 - uv.y) * 2.0 - 1.0;

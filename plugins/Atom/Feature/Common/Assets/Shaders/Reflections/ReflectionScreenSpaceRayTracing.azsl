@@ -22,7 +22,7 @@ void RayGeneration()
     uint2 fullScreenDimensions = dimensions * RayTracingGlobalSrg::m_invOutputScale;
 
     // determine if this pixel is in the roughness range for reflection
-    float4 specularF0 = RayTracingGlobalSrg::m_specularF0.Load(fullScreenCoords, 0);
+    float4 specularF0 = RayTracingGlobalSrg::m_specularF0.Load(int3(fullScreenCoords, 0));
     float roughness = specularF0.a;
     if (roughness > RayTracingGlobalSrg::m_maxRoughness || !any(specularF0.rgb))
     {
@@ -31,7 +31,7 @@ void RayGeneration()
     }
 
     // compute world space position
-    float depth = RayTracingGlobalSrg::m_depth.Load(fullScreenCoords, 0);
+    float depth = RayTracingGlobalSrg::m_depth.Load(int3(fullScreenCoords, 0));
     float2 ndcPos = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
     float4 projectedPos = float4(ndcPos, depth, 1.0f);
     float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
@@ -42,7 +42,7 @@ void RayGeneration()
     float3 cameraToPositionWS = normalize(positionWS.xyz - ViewSrg::m_worldPosition);
 
     // load normal
-    float4 encodedNormal = RayTracingGlobalSrg::m_normal.Load(fullScreenCoords, 0);
+    float4 encodedNormal = RayTracingGlobalSrg::m_normal.Load(int3(fullScreenCoords, 0));
     float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
 
     // reflect view ray around surface normal

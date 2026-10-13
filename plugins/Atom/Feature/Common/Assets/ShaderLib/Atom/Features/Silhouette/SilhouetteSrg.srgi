@@ -11,5 +11,5 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
-    Texture2DMS<float4> m_silhouettes;
+    Texture2D<float4> m_silhouettes;
 }

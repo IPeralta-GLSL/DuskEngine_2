@@ -30,7 +30,7 @@ float4 MainPS(VSOutput IN) : SV_Target0
 
     if (abs(rtShadow - csmShadow) > 0.01f && SceneSrg::m_directionalLightCount > 0)
     {
-        float3 encodedNormal = PassSrg::m_normal.Load(coord, 0).rgb;
+        float3 encodedNormal = PassSrg::m_normal.Load(int3(coord, 0)).rgb;
         float3 normal = DecodeNormalSignedOctahedron(encodedNormal);
         float3 dirToLight = -normalize(SceneSrg::m_directionalLights[0].m_direction);
         float NdotL = saturate(dot(normal, dirToLight));

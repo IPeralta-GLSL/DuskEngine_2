@@ -34,7 +34,7 @@ float3 SampleGlobalIBL(uint sampleIndex, uint2 screenCoords, float depth, float3
 {
     uint2 dimensions;
     uint samples;
-    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y);
 
     // reconstruct world space position
     float2 UV = saturate((float2)screenCoords / dimensions.xy);
@@ -61,10 +61,10 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
     uint2 screenCoords = IN.m_position.xy;
     
-    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
-    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
+    float depth = PassSrg::m_depth.Load(int3(screenCoords, 0)).r;
+    float4 encodedNormal = PassSrg::m_normal.Load(int3(screenCoords, 0));
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
-    float4 albedo = PassSrg::m_albedo.Load(screenCoords, sampleIndex);
+    float4 albedo = PassSrg::m_albedo.Load(int3(screenCoords, 0));
 
     float3 irradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
     float3 diffuse = albedo.rgb * irradiance;

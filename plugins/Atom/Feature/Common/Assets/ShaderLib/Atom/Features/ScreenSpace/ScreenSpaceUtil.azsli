@@ -38,7 +38,7 @@ float4 WorldPositionFromDepthBuffer(const Texture2D<float2> depthStencilTexture,
     return WorldPositionFromDepthBuffer(dimensions, zDepth, screenCoords);
 }
 
-float4 WorldPositionFromDepthBufferMS(const Texture2DMS<float2> depthStencilTexture, const float zDepth, const float2 screenCoords )
+float4 WorldPositionFromDepthBufferMS(const Texture2D<float2> depthStencilTexture, const float zDepth, const float2 screenCoords )
 { 
     uint2 dimensions;
     uint sampleCount;
