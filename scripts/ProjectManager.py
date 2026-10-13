@@ -539,17 +539,31 @@ class BuildWorker(QThread):
         engine_build = str(BUILD_PATH)
         engine_src = str(ENGINE_PATH)
 
-        configure_cmd = [
-            "cmake", "-B", engine_build, "-S", engine_src,
-            f"-DLY_PROJECTS={self._project_path}"
-        ]
-        try:
+        cache_file = BUILD_PATH / "CMakeCache.txt"
+        configured = False
+        if cache_file.exists():
+            try:
+                for line in cache_file.read_text(errors="ignore").splitlines():
+                    if line.startswith("LY_PROJECTS:") and self._project_path in line:
+                        configured = True
+                        break
+            except OSError:
+                configured = False
+
+        if configured:
+            self.output_line.emit("=== Configure up to date (skipped) ===")
+        else:
+            configure_cmd = [
+                "cmake", "-B", engine_build, "-S", engine_src,
+                f"-DLY_PROJECTS={self._project_path}"
+            ]
             self.output_line.emit("=== Configuring project ===")
             rc = self._run_cmd(configure_cmd)
             if rc != 0 or self._cancelled:
                 self.finished.emit(False)
                 return
 
+        try:
             launcher_target = f"{self._project_name}.GameLauncher"
             build_cmd = [
                 "cmake", "--build", engine_build,

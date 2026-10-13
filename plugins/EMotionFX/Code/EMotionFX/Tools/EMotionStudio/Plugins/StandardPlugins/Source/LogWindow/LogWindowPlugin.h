@@ -12,11 +12,11 @@
 #include <MCore/Source/LogManager.h>
 #include "../StandardPluginsConfig.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
+#include <AzQtComponents/Components/FilteredSearchWidget.h>
 #endif
 
 namespace AzQtComponents
 {
-    struct SearchTypeFilter;
     class FilteredSearchWidget;
 }
 
