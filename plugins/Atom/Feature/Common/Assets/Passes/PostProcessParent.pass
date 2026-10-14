@@ -136,8 +136,8 @@
                 },
                 {
                     "Name": "ContrastAdaptiveSharpeningPass",
-                    "TemplateName": "ContrastAdaptiveSharpeningTemplate",
                     "Enabled": true,
+                    "TemplateName": "ContrastAdaptiveSharpeningTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",

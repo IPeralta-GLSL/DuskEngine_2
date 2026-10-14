@@ -1,8 +1,5 @@
 #pragma once
 
-// The visibility buffer pass only writes object/primitive IDs; it performs no
-// lighting. Strip material lighting features so every material type compiles
-// (Skin/Eye/BasePBR lack the optional SurfaceData members these would add).
 #define ENABLE_CLEAR_COAT 0
 #define ENABLE_TRANSMISSION 0
 #define ENABLE_PARALLAX 0
