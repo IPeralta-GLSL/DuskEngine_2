@@ -4,3 +4,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     float4 m_color;
 }
+

@@ -10,3 +10,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // Maximum factor by which a sub-pixel can exceed the luminance of it's neighboring sub-pixels
     float maxNeighborContrast;
 }
+

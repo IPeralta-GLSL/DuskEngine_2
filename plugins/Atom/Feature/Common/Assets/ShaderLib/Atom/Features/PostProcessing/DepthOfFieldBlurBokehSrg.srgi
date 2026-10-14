@@ -17,3 +17,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressW = Clamp;
     };
 }
+

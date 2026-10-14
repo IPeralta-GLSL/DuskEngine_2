@@ -14,3 +14,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // RT denoised shadow (R16G16B16A16_FLOAT, .r = visibility, 1=lit 0=shadow)
     Texture2D<float4>   m_rtShadow;
 }
+

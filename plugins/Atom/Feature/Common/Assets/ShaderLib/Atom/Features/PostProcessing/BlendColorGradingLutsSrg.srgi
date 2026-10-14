@@ -48,3 +48,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float m_blendedLutShaperBias;
     float m_blendedLutShaperScale;
 }
+

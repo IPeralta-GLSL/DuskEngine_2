@@ -54,7 +54,7 @@ VSOutput MainVS(VSInput input)
 // Pixel Shader
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
-    float4 encodedNormal = PassSrg::m_normal.Load(IN.m_position.xy, sampleIndex);
+    float4 encodedNormal = PassSrg::m_normal.Load(int3(IN.m_position.xy, 0));
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     bool enableIBL = DecodeUnorm2BitFlag1(encodedNormal.a);
     if (!enableIBL)
@@ -65,25 +65,26 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     }
 
     bool multiScatterCompensationEnabled = DecodeUnorm2BitFlag2(encodedNormal.a);
-    float4 albedo = PassSrg::m_albedo.Load(IN.m_position.xy, sampleIndex);
+    float4 albedo = PassSrg::m_albedo.Load(int3(IN.m_position.xy, 0));
     float specularOcclusion = albedo.a;
 
     // reconstruct world space position from the depth at this location in screenspace
     uint2 dimensions;
     uint samples;
-    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
-    float depth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex).r;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y);
+    samples = 1;
+    float depth = PassSrg::m_depth.Load(int3(IN.m_position.xy, 0)).r;
     float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, depth, dimensions, sampleIndex).xyz;
 
     // sample blend weight at this location
-    float blendWeight = PassSrg::m_blendWeight.Load(IN.m_position.xy, sampleIndex).r;
+    float blendWeight = PassSrg::m_blendWeight.Load(int3(IN.m_position.xy, 0)).r;
 
     // blend weight for this pixel is the remainder of total blends for local probes
     // E.g., 0.2f probes = 0.8f global, 0.0f probes = 1.0f global, >1.0f probes = 0.0f global
     blendWeight = 1.0f - min(blendWeight, 1.0f);
 
-    float3 specularF0 = PassSrg::m_specularF0.Load(IN.m_position.xy, sampleIndex).rgb;
-    float roughness = PassSrg::m_specularF0.Load(IN.m_position.xy, sampleIndex).a;
+    float3 specularF0 = PassSrg::m_specularF0.Load(int3(IN.m_position.xy, 0)).rgb;
+    float roughness = PassSrg::m_specularF0.Load(int3(IN.m_position.xy, 0)).a;
 
     float3 dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
     float3 reflectDir = reflect(-dirToCamera, normal);

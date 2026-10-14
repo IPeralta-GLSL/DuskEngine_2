@@ -76,3 +76,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         return lerp(lerp(sample3, sample2, weightX), lerp(sample1, sample0, weightX), weightY);
     }
 }
+

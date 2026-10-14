@@ -63,8 +63,9 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     // Note: this is the world position of the rendered object covered by the volume, not the volume itself
     uint2 dimensions;
     uint samples;
-    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
-    float depth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex).r;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y);
+    samples = 1;
+    float depth = PassSrg::m_depth.Load(int3(IN.m_position.xy, 0)).r;
     float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, depth, dimensions, sampleIndex).xyz;
 
     // make sure the pixel belongs to this probe volume

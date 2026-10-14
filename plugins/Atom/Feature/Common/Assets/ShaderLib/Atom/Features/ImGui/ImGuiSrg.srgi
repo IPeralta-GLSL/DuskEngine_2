@@ -16,3 +16,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     
     column_major float4x4 m_projectionMatrix;
 }
+

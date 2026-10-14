@@ -23,7 +23,7 @@ bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float4x4 obbTr
     }
 
     // retrieve normal from the encoded buffer written by the forward pass
-    float4 encodedNormal = PassSrg::m_normal.Load(screenCoords, sampleIndex);
+    float4 encodedNormal = PassSrg::m_normal.Load(int3(screenCoords, 0));
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     bool enableIBL = DecodeUnorm2BitFlag1(encodedNormal.a);
     if (!enableIBL)
@@ -37,7 +37,7 @@ bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float4x4 obbTr
     NdotV = max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
 
     // retrieve specularF0 and roughness
-    float4 specularF0Sample = PassSrg::m_specularF0.Load(screenCoords, sampleIndex);
+    float4 specularF0Sample = PassSrg::m_specularF0.Load(int3(screenCoords, 0));
     float3 specularF0 = specularF0Sample.rgb;
     float roughness = specularF0Sample.a;
 

@@ -29,3 +29,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // Optional gamma value that is applied as basic gamma curve OETF
     float m_gamma;
 }
+

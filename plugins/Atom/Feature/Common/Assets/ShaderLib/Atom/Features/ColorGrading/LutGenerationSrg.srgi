@@ -53,3 +53,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float m_colorGradingPostSaturation;
     float m_colorGradingHueShift;
 }
+

@@ -36,3 +36,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         return sDepth[index];
     }
 }
+

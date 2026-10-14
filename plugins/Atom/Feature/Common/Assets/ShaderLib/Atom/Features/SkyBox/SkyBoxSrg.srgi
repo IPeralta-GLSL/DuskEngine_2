@@ -14,3 +14,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
     float m_sunIntensityMultiplier;
 }
+

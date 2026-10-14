@@ -7,3 +7,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<uint4> m_tileLightData;
     float m_heatmapOpacity;
 }
+

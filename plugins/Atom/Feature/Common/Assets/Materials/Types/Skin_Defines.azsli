@@ -41,3 +41,4 @@
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
 #endif
+

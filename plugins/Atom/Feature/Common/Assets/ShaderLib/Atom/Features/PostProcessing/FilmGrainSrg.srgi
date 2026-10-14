@@ -25,3 +25,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
     Constants m_constants;
 }
+

@@ -19,3 +19,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     RWTexture2D<uint4> m_tileLightData;   
     uint m_tileWidth;
 }
+

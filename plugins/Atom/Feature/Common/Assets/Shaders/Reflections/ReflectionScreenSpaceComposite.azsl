@@ -78,7 +78,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     }
 
     // load roughness
-    float4 specularF0 = PassSrg::m_specularF0.Load(fullScreenCoords, sampleIndex);
+    float4 specularF0 = PassSrg::m_specularF0.Load(int3(fullScreenCoords, 0));
     float roughness = specularF0.a;
     if (roughness > PassSrg::m_maxRoughness)
     {
@@ -87,7 +87,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     }
 
     // retrieve surface normal
-    float4 encodedNormal = PassSrg::m_normal.Load(fullScreenCoords, sampleIndex);
+    float4 encodedNormal = PassSrg::m_normal.Load(int3(fullScreenCoords, 0));
     float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     
     // upsample reflection color

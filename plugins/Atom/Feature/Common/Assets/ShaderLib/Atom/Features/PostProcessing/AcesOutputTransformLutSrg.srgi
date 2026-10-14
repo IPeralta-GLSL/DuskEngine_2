@@ -16,3 +16,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     float m_shaperBias;
     float m_shaperScale;
 }
+

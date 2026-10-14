@@ -21,3 +21,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // Contains the eye-adaptation feedback settings. This buffer will be updated in this pass. 
     RWStructuredBuffer<EyeAdaptation> m_eyeAdaptationData;
 }
+

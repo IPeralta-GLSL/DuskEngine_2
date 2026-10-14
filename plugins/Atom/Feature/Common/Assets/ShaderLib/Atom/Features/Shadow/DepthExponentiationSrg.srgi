@@ -8,3 +8,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     StructuredBuffer<FilterParameter> m_filterParameters;
     float m_esmExponent;
 }
+

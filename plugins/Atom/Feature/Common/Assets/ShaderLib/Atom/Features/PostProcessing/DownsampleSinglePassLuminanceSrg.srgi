@@ -15,3 +15,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     uint2 m_imageSize;
 }
+

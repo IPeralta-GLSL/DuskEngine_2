@@ -26,3 +26,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         MipFilter = Linear;
     };
 }
+

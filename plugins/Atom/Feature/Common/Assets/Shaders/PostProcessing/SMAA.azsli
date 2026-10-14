@@ -1340,3 +1340,4 @@ void SMAASeparatePS(float4 position,
 #endif
 
 #endif // ATOM_SMAA_S2X_IMPLEMENTATION_ENABLE
+

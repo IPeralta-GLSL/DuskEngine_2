@@ -28,3 +28,4 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     uint m_lightingChannelMask;
     MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
 }
+

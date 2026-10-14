@@ -7,3 +7,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     float m_strength; // Strength of the sharpening effect. Range from 0 to 1.
 }
+

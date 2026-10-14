@@ -81,7 +81,7 @@
                             "LocalSlot": "EdgesInput",
                             "AttachmentRef": {
                                 "Pass": "Cmaa2EdgeDetectPass",
-                                "Attachment": "Edges"
+                                "Attachment": "Output"
                             }
                         },
                         {
@@ -101,7 +101,7 @@
                             "LocalSlot": "CandidatesInput",
                             "AttachmentRef": {
                                 "Pass": "Cmaa2ProcessPass",
-                                "Attachment": "Candidates"
+                                "Attachment": "Output"
                             }
                         },
                         {
@@ -115,7 +115,7 @@
                 },
                 {
                     "Name": "SMAA1xApplyLinearHDRColorPass",
-                    "Enabled": true,
+                    "Enabled": false,
                     "TemplateName": "SMAA1xApplyLinearHDRColorTemplate",
                     "Connections": [
                         {
@@ -142,8 +142,8 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "SMAA1xApplyLinearHDRColorPass",
-                                "Attachment": "OutputColor"
+                                "Pass": "Cmaa2ApplyPass",
+                                "Attachment": "Output"
                             }
                         }
                     ]

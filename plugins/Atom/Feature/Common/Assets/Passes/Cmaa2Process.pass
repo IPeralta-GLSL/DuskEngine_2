@@ -38,7 +38,7 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "BindFlags": "ShaderRead|ShaderWrite",
+                        "BindFlags": "ShaderReadWrite",
                         "SharedQueueMask": "Graphics"
                     }
                 }

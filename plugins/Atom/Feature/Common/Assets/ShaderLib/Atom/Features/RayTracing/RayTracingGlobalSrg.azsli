@@ -58,3 +58,4 @@ ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
         AddressW = Clamp;
     };
 };
+

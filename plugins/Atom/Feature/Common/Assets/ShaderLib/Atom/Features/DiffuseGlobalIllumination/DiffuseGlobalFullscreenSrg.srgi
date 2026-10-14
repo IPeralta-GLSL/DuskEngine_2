@@ -6,3 +6,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
     Texture2D<float>  m_depth;
 }
+

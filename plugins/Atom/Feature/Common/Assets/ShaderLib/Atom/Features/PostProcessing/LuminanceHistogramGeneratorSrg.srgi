@@ -9,3 +9,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     //In future we can handle this under the hood via our metal shader pipeline
     RWStructuredBuffer<uint> m_outputTexture;
 }
+

@@ -79,7 +79,7 @@ float4 ReadColorFromQuadrant(uint inputIndex, int2 pixel, int quadrant)
         if (0 == quadrant)
             return PassSrg::m_color[2*inputIndex].Load(int3(pixel, 0));
         else if (1 == quadrant)
-            return PassSrg::m_color[2*inputIndex+1].Load(pixel + int2(1, 0), 1);
+            return PassSrg::m_color[2*inputIndex+1].Load(int3(pixel + int2(1, 0), 0));
         else if (2 == quadrant)
             return PassSrg::m_color[2*inputIndex+1].Load(int3(pixel, 0));
         else //( 3 == quadrant )
@@ -90,7 +90,7 @@ float4 ReadColorFromQuadrant(uint inputIndex, int2 pixel, int quadrant)
         if (0 == quadrant)
             return PassSrg::m_color[2*inputIndex+1].Load(int3(pixel, 0));
         else if (1 == quadrant)
-            return PassSrg::m_color[2*inputIndex].Load(pixel + int2(1, 0), 1);
+            return PassSrg::m_color[2*inputIndex].Load(int3(pixel + int2(1, 0), 0));
         else if (2 == quadrant)
             return PassSrg::m_color[2*inputIndex].Load(int3(pixel, 0));
         else //( 3 == quadrant )
@@ -105,7 +105,7 @@ float ReadDepthFromQuadrant(int2 pixel, int quadrant)
         if (0 == quadrant)
             return PassSrg::m_depth1.Load(int3(pixel, 0));
         else if (1 == quadrant)
-            return PassSrg::m_depth0.Load(pixel + int2(1, 0), 1);
+            return PassSrg::m_depth0.Load(int3(pixel + int2(1, 0), 0));
         else if (2 == quadrant)
             return PassSrg::m_depth0.Load(int3(pixel, 0));
         else //( 3 == quadrant )
@@ -116,7 +116,7 @@ float ReadDepthFromQuadrant(int2 pixel, int quadrant)
         if (0 == quadrant)
             return PassSrg::m_depth0.Load(int3(pixel, 0));
         else if (1 == quadrant)
-            return PassSrg::m_depth1.Load(pixel + int2(1, 0), 1);
+            return PassSrg::m_depth1.Load(int3(pixel + int2(1, 0), 0));
         else if (2 == quadrant)
             return PassSrg::m_depth1.Load(int3(pixel, 0));
         else //( 3 == quadrant )

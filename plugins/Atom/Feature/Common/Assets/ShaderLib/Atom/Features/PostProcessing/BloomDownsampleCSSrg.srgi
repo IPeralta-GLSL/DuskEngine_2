@@ -46,3 +46,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     }
 
 }
+

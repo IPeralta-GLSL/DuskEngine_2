@@ -26,3 +26,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // result of resolving
     RWTexture2D<float4> m_outputColor[MaxNumberResolveTextures];
 }
+

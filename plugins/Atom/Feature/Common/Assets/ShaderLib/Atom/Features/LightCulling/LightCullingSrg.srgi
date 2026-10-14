@@ -39,3 +39,4 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     uint m_lightTreeNodeCount;
     uint m_lightTreeRootIndex;
 }
+
