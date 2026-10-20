@@ -2,6 +2,7 @@
 #include "ImGuiEntityOutliner.h"
 
 #include <imgui/imgui.h>
+#include "ImGuiTheme.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
@@ -52,12 +53,12 @@ namespace ImGuiEntityOutliner
     static AZ::EntityId s_renamingEntity;
 
     // O3DE accent green color #4a7a4d
-    static const ImVec4 O3DE_ACCENT_GREEN = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);
-    static const ImVec4 O3DE_TEXT_NORMAL = ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
-    static const ImVec4 O3DE_TEXT_MUTED = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-    static const ImVec4 O3DE_TEXT_HIDDEN = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
-    static const ImVec4 O3DE_TEXT_LOCKED = ImVec4(0.3f, 0.3f, 0.45f, 1.0f);
-    static const ImVec4 O3DE_BG_HOVER = ImVec4(0.22f, 0.22f, 0.22f, 1.0f);
+    static const ImVec4 O3DE_ACCENT_GREEN = AzToolsFramework::ImGuiTheme::Accent;
+    static const ImVec4 O3DE_TEXT_NORMAL = AzToolsFramework::ImGuiTheme::TextNormal;
+    static const ImVec4 O3DE_TEXT_MUTED = AzToolsFramework::ImGuiTheme::TextMuted;
+    static const ImVec4 O3DE_TEXT_HIDDEN = AzToolsFramework::ImGuiTheme::TextDisabled;
+    static const ImVec4 O3DE_TEXT_LOCKED = AzToolsFramework::ImGuiTheme::AccentMuted;
+    static const ImVec4 O3DE_BG_HOVER = AzToolsFramework::ImGuiTheme::HoverBg;
 
     void Initialize()
     {

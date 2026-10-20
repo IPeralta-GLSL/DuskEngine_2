@@ -1,5 +1,6 @@
 #include "EditorDefs.h"
 #include "ImGuiMaterialNodeEditor.h"
+#include "ImGuiTheme.h"
 
 #include <imgui/imgui.h>
 #include <imgui_node_editor.h>
@@ -16,7 +17,7 @@ namespace ed = ax::NodeEditor;
 
 namespace ImGuiMaterialNodeEditor
 {
-    static const ImVec4 O3DE_ACCENT_GREEN = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);
+    static const ImVec4 O3DE_ACCENT_GREEN = AzToolsFramework::ImGuiTheme::Accent;
 
     enum class PinType
     {

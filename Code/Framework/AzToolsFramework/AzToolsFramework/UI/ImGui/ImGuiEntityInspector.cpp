@@ -2,6 +2,7 @@
 #include "ImGuiEntityInspector.h"
 
 #include <imgui/imgui.h>
+#include "ImGuiTheme.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/Component.h>
@@ -29,12 +30,12 @@ namespace ImGuiEntityInspector
     static char s_editNameBuffer[256] = "";
 
     // O3DE accent green color #4a7a4d
-    static const ImVec4 O3DE_ACCENT_GREEN = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);
-    static const ImVec4 O3DE_TEXT_NORMAL = ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
-    static const ImVec4 O3DE_TEXT_MUTED = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-    static const ImVec4 O3DE_HEADER_BG = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
-    static const ImVec4 O3DE_BTN_RED = ImVec4(0.5f, 0.15f, 0.15f, 1.0f);
-    static const ImVec4 O3DE_BTN_RED_HOVER = ImVec4(0.6f, 0.2f, 0.2f, 1.0f);
+    static const ImVec4 O3DE_ACCENT_GREEN = AzToolsFramework::ImGuiTheme::Accent;
+    static const ImVec4 O3DE_TEXT_NORMAL = AzToolsFramework::ImGuiTheme::TextNormal;
+    static const ImVec4 O3DE_TEXT_MUTED = AzToolsFramework::ImGuiTheme::TextMuted;
+    static const ImVec4 O3DE_HEADER_BG = AzToolsFramework::ImGuiTheme::HeaderBg;
+    static const ImVec4 O3DE_BTN_RED = AzToolsFramework::ImGuiTheme::Error;
+    static const ImVec4 O3DE_BTN_RED_HOVER = AzToolsFramework::ImGuiTheme::ErrorHover;
 
     void Initialize()
     {

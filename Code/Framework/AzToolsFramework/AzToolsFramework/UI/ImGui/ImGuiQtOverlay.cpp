@@ -8,6 +8,8 @@
 #include <imgui/imgui.h>
 #include "imgui_impl_opengl3.h"
 
+#include "ImGuiTheme.h"
+
 #include "ImGuiEntityOutliner.h"
 #include "ImGuiEntityInspector.h"
 #include "ImGuiAssetBrowser.h"
@@ -51,59 +53,72 @@ void ImGuiQtOverlay::SetupImGui()
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.IniFilename = nullptr;
 
-    // Apply O3DE dark theme colors
-    // O3DE accent green: #4a7a4d
-    ImVec4* colors = ImGui::GetStyle().Colors;
-    
+    // Apply the shared dark theme (ImGuiTheme.h mirrors the Qt stylesheet palette)
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 0.0f;
+    style.ChildRounding = 0.0f;
+    style.FrameRounding = 0.0f;
+    style.PopupRounding = 0.0f;
+    style.ScrollbarRounding = 0.0f;
+    style.GrabRounding = 0.0f;
+    style.TabRounding = 0.0f;
+    style.WindowBorderSize = 1.0f;
+    style.ChildBorderSize = 1.0f;
+    style.PopupBorderSize = 1.0f;
+    style.FrameBorderSize = 1.0f;
+
+    using namespace ImGuiTheme;
+    ImVec4* colors = style.Colors;
+
     // Background colors
-    colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.95f);
-    colors[ImGuiCol_ChildBg] = ImVec4(0.12f, 0.12f, 0.12f, 1.0f);
-    colors[ImGuiCol_PopupBg] = ImVec4(0.15f, 0.15f, 0.15f, 0.95f);
-    colors[ImGuiCol_FrameBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.0f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-    colors[ImGuiCol_FrameBgActive] = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
-    
+    colors[ImGuiCol_WindowBg] = WindowBg;
+    colors[ImGuiCol_ChildBg] = PanelBg;
+    colors[ImGuiCol_PopupBg] = PanelBg;
+    colors[ImGuiCol_FrameBg] = InputBg;
+    colors[ImGuiCol_FrameBgHovered] = HoverBg;
+    colors[ImGuiCol_FrameBgActive] = HoverBg;
+
     // Text colors
-    colors[ImGuiCol_Text] = ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
-    colors[ImGuiCol_TextDisabled] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-    
-    // Headers and titles (O3DE accent green)
-    colors[ImGuiCol_Header] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
-    colors[ImGuiCol_HeaderHovered] = ImVec4(0.22f, 0.22f, 0.22f, 1.0f);
-    colors[ImGuiCol_HeaderActive] = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);  // O3DE Green #4a7a4d
-    
+    colors[ImGuiCol_Text] = TextNormal;
+    colors[ImGuiCol_TextDisabled] = TextDisabled;
+
+    // Headers and titles
+    colors[ImGuiCol_Header] = HeaderBg;
+    colors[ImGuiCol_HeaderHovered] = HoverBg;
+    colors[ImGuiCol_HeaderActive] = Accent;
+
     // Buttons
-    colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-    colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
-    colors[ImGuiCol_ButtonActive] = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);  // O3DE Green
-    
+    colors[ImGuiCol_Button] = InputBg;
+    colors[ImGuiCol_ButtonHovered] = HoverBg;
+    colors[ImGuiCol_ButtonActive] = Accent;
+
     // Title bar
-    colors[ImGuiCol_TitleBg] = ImVec4(0.12f, 0.12f, 0.12f, 1.0f);
-    colors[ImGuiCol_TitleBgActive] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f);
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
-    
+    colors[ImGuiCol_TitleBg] = PanelBg;
+    colors[ImGuiCol_TitleBgActive] = HeaderBg;
+    colors[ImGuiCol_TitleBgCollapsed] = WindowBg;
+
     // Scrollbar
-    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.12f, 0.12f, 0.12f, 1.0f);
-    colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.3f, 0.3f, 0.3f, 1.0f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.35f, 0.35f, 0.35f, 1.0f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);  // O3DE Green
-    
+    colors[ImGuiCol_ScrollbarBg] = WindowBg;
+    colors[ImGuiCol_ScrollbarGrab] = Handle;
+    colors[ImGuiCol_ScrollbarGrabHovered] = Border;
+    colors[ImGuiCol_ScrollbarGrabActive] = Accent;
+
     // Separator and borders
-    colors[ImGuiCol_Separator] = ImVec4(0.25f, 0.25f, 0.25f, 1.0f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.29f, 0.48f, 0.30f, 0.5f);  // O3DE Green
-    colors[ImGuiCol_SeparatorActive] = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);  // O3DE Green
-    
+    colors[ImGuiCol_Separator] = Border;
+    colors[ImGuiCol_SeparatorHovered] = AccentMuted;
+    colors[ImGuiCol_SeparatorActive] = Accent;
+
     // Selection and highlights
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.5f);
-    colors[ImGuiCol_NavHighlight] = ImVec4(0.29f, 0.48f, 0.30f, 0.5f);  // O3DE Green
-    
+    colors[ImGuiCol_NavHighlight] = AccentMuted;
+
     // Check mark
-    colors[ImGuiCol_CheckMark] = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);  // O3DE Green
-    
+    colors[ImGuiCol_CheckMark] = Accent;
+
     // Slider
-    colors[ImGuiCol_SliderGrab] = ImVec4(0.29f, 0.48f, 0.30f, 0.8f);  // O3DE Green
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);  // O3DE Green
-    
+    colors[ImGuiCol_SliderGrab] = AccentMuted;
+    colors[ImGuiCol_SliderGrabActive] = Accent;
+
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 

@@ -14,7 +14,7 @@
 *
 {
     background-color: transparent;
-    color: #C9C9CE;
+    color: @TextColor;
     font-family: "Manrope";
     font-weight: 400;
 }
@@ -25,7 +25,7 @@ QTreeView
 {
     /* give a background color to views without parent (completer popups)
        it is reset to transparent in the next setting for views with a parent */
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
 }
 
 QWidget > QTableView,
@@ -43,29 +43,29 @@ QWidget > QTreeView
 .QFrame[frameShape="5"],
 .QFrame[frameShape="6"]
 {
-    background-color: #3A3A41;
+    background-color: @HandleColor;
 }
 
 QMainWindow:separator
 {
-    background-color: #3A3A41;
+    background-color: @HandleColor;
 }
 
 QMainWindow::separator:hover
 {
-    background-color: #5A5A60;
+    background-color: @DisabledTextColor;
 }
 
 QMenu
 {
-    background-color: #1f1f22;
-    border: 1px solid #34343A;
+    background-color: @PanelBackgroundColor;
+    border: 1px solid @BorderColor;
 }
 
 QMenu::separator
 {
     height: 1px;
-    background: #34343A;
+    background: @BorderColor;
     margin: 4px 6px 4px 6px;
 }
 
@@ -73,8 +73,8 @@ QMainWindow,
 QDialog,
 QDockWidget
 {
-    color: #C9C9CE;
-    background-color: #1f1f22;
+    color: @TextColor;
+    background-color: @PanelBackgroundColor;
 }
 
 QTextEdit,
@@ -85,12 +85,12 @@ QSpinBox,
 QDoubleSpinBox,
 QComboBox
 {
-    background-color: #3A3A41;
-    color: #C9C9CE;
+    background-color: @HandleColor;
+    color: @TextColor;
     font-family: "Manrope";
     border-radius: 0;
     border-width: 0px;
-    border-color: #5A5A60;
+    border-color: @DisabledTextColor;
     font-size: 12px;
     line-height: 16px;
 }
@@ -99,8 +99,8 @@ QTextEdit,
 QPlainText,
 QPlainTextEdit
 {
-    background-color: #3A3A41;
-    color: #C9C9CE;
+    background-color: @HandleColor;
+    color: @TextColor;
     margin: 2px;
     border-width: 0px;
     border-style: solid;
@@ -113,7 +113,7 @@ QPlainTextEdit:hover
     margin: 1px;
     border-width: 1px;
     border-style: solid;
-    border-color: #5A5A60;
+    border-color: @DisabledTextColor;
 }
 
 QTextEdit:focus,
@@ -122,8 +122,8 @@ QPlainTextEdit:focus
 {
     margin: 1px;
     border-width: 1px;
-    border-color: #5A5A60;
-    background-color: #3A3A41;
+    border-color: @DisabledTextColor;
+    background-color: @HandleColor;
 }
 
 @import "AssetFolderListView.qss";

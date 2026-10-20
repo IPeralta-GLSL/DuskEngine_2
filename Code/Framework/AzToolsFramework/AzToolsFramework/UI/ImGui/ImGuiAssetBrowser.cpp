@@ -1,6 +1,7 @@
 #include "EditorDefs.h"
 #include "ImGuiAssetBrowser.h"
 #include <imgui/imgui.h>
+#include "ImGuiTheme.h"
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/string.h>
@@ -10,13 +11,13 @@
 #include <cstdio>
 namespace ImGuiAssetBrowser
 {
-    static const ImVec4 O3DE_ACCENT_GREEN = ImVec4(0.29f, 0.48f, 0.30f, 1.0f);
-    static const ImVec4 O3DE_TEXT_NORMAL = ImVec4(0.9f, 0.9f, 0.9f, 1.0f);
-    static const ImVec4 O3DE_TEXT_MUTED = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-    static const ImVec4 O3DE_BG_HOVER = ImVec4(0.22f, 0.22f, 0.22f, 1.0f);
-    static const ImVec4 O3DE_FOLDER_COLOR = ImVec4(0.8f, 0.7f, 0.3f, 1.0f);
-    static const ImVec4 O3DE_FILE_COLOR = ImVec4(0.7f, 0.7f, 0.9f, 1.0f);
-    static const ImVec4 O3DE_SELECTED_BG = ImVec4(0.22f, 0.35f, 0.22f, 1.0f);
+    static const ImVec4 O3DE_ACCENT_GREEN = AzToolsFramework::ImGuiTheme::Accent;
+    static const ImVec4 O3DE_TEXT_NORMAL = AzToolsFramework::ImGuiTheme::TextNormal;
+    static const ImVec4 O3DE_TEXT_MUTED = AzToolsFramework::ImGuiTheme::TextMuted;
+    static const ImVec4 O3DE_BG_HOVER = AzToolsFramework::ImGuiTheme::HoverBg;
+    static const ImVec4 O3DE_FOLDER_COLOR = AzToolsFramework::ImGuiTheme::Warning;
+    static const ImVec4 O3DE_FILE_COLOR = AzToolsFramework::ImGuiTheme::TextMuted;
+    static const ImVec4 O3DE_SELECTED_BG = AzToolsFramework::ImGuiTheme::AccentMuted;
     static char s_searchBuffer[256] = "";
     static AZStd::string s_currentPath;
     static AZStd::string s_selectedAssetPath;

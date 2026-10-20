@@ -106,6 +106,7 @@ namespace AzQtComponents
     private:
         void initializeFonts();
         void initializeSearchPaths(QApplication* application, const AZ::IO::PathView& engineRootPath);
+        void loadStylesheetVariables(const AZ::IO::PathView& engineRootPath);
 
         void resetWidgetSheets();
 

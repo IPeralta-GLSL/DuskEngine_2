@@ -23,6 +23,7 @@ set(FILES
     UI/ComponentPalette/ComponentPaletteSettings.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiQtOverlay.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiQtOverlay.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiTheme.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiEntityOutliner.h
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiEntityOutliner.cpp
     ${LY_ROOT_FOLDER}/Code/Framework/AzToolsFramework/AzToolsFramework/UI/ImGui/ImGuiEntityInspector.h

@@ -267,7 +267,17 @@ void MiniLessParser::parseLine(const QString& line)
                 if (currentChar == '@')
                 {
                     // parse for import
-                    i += parseForImportStatement(line.mid(i));
+                    const int consumed = parseForImportStatement(line.mid(i));
+                    if (consumed > 0)
+                    {
+                        i += consumed;
+                    }
+                    else
+                    {
+                        // Not an @import statement; keep the '@' so that @Variable
+                        // substitutions survive until StylesheetPreprocessor runs.
+                        m_result += currentChar;
+                    }
                     currentChar = QChar();
                 }
                 else

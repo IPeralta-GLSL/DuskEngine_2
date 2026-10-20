@@ -17,7 +17,7 @@ QToolBar
     /* QToolBar required a background colour to ensure it has a background when
      * displaying an overflow menu, or when floating
      */
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
     qproperty-iconSize: 16px 16px;
     border: 0 none;
 
@@ -38,20 +38,20 @@ QToolBar QToolButton
 
 QToolBar QToolButton:hover
 {
-    background-color: #1f1f22;
-    border: 1px solid #45454C;
+    background-color: @PanelBackgroundColor;
+    border: 1px solid @BorderHoverColor;
 }
 
 QToolBar QToolButton:checked,
 QToolBar QToolButton:on
 {
-    background-color: rgba(76, 175, 80, 24);
-    border: 1px solid #4CAF50;
+    background-color: @ToolButtonCheckedBackgroundColor;
+    border: 1px solid @AccentColor;
 }
 
 MainWindow QToolBar
 {
-    border-bottom: 1px solid #34343A;
+    border-bottom: 1px solid @BorderColor;
 }
 
 AzQtComponents--DockMainWindow QToolBar
@@ -91,7 +91,7 @@ QToolBar.MainToolBar.IconLarge QToolButton
 
 QToolBar::separator
 {
-    background-color: #34343A;
+    background-color: @BorderColor;
     width: 1px;
     height: 20px;
 

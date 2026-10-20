@@ -40,6 +40,8 @@ namespace AzQtComponents
     constexpr QStringView g_styleSheetResourcePath {u":AzQtComponents/Widgets"};
     constexpr QStringView g_globalStyleSheetName {u"BaseStyleSheet.qss"};
     constexpr QStringView g_searchPathPrefix {u"AzQtComponentWidgets"};
+    constexpr QStringView g_styleSheetVariablesRelativePath {u"Code/Editor/Style/EditorStylesheetVariables_Dark.json"};
+    constexpr QStringView g_styleSheetVariablesResourcePath {u":/Assets/Editor/Style/EditorStylesheetVariables_Dark.json"};
 
     StyleManager* StyleManager::s_instance = nullptr;
 
@@ -90,7 +92,7 @@ namespace AzQtComponents
 
         connect(widget, &QObject::destroyed, s_instance, &StyleManager::stopTrackingWidget, Qt::UniqueConnection);
 
-        widget->setStyleSheet(styleSheet);
+        widget->setStyleSheet(s_instance->m_stylesheetPreprocessor->ProcessStyleSheet(styleSheet));
 
         return true;
     }
@@ -122,24 +124,24 @@ namespace AzQtComponents
         if (QApplication* app = qobject_cast<QApplication*>(QCoreApplication::instance()))
         {
             QPalette palette;
-            palette.setColor(QPalette::Window, QColor("#1f1f22"));
-            palette.setColor(QPalette::WindowText, QColor("#C9C9CE"));
-            palette.setColor(QPalette::Base, QColor("#1f1f22"));
-            palette.setColor(QPalette::AlternateBase, QColor("#232327"));
-            palette.setColor(QPalette::Text, QColor("#C9C9CE"));
-            palette.setColor(QPalette::Button, QColor("#1f1f22"));
-            palette.setColor(QPalette::ButtonText, QColor("#C9C9CE"));
+            palette.setColor(QPalette::Window, QColor("#1B1B1E"));
+            palette.setColor(QPalette::WindowText, QColor("#D4D4D8"));
+            palette.setColor(QPalette::Base, QColor("#1B1B1E"));
+            palette.setColor(QPalette::AlternateBase, QColor("#26262B"));
+            palette.setColor(QPalette::Text, QColor("#D4D4D8"));
+            palette.setColor(QPalette::Button, QColor("#212124"));
+            palette.setColor(QPalette::ButtonText, QColor("#D4D4D8"));
             palette.setColor(QPalette::PlaceholderText, QColor("#8E8E94"));
             palette.setColor(QPalette::Highlight, QColor("#4CAF50"));
-            palette.setColor(QPalette::HighlightedText, QColor("#1f1f22"));
-            palette.setColor(QPalette::ToolTipBase, QColor("#1f1f22"));
-            palette.setColor(QPalette::ToolTipText, QColor("#C9C9CE"));
+            palette.setColor(QPalette::HighlightedText, QColor("#1B1B1E"));
+            palette.setColor(QPalette::ToolTipBase, QColor("#2A2A2E"));
+            palette.setColor(QPalette::ToolTipText, QColor("#D4D4D8"));
             palette.setColor(QPalette::Link, QColor("#4CAF50"));
-            palette.setColor(QPalette::Dark, QColor("#1c1c1f"));
-            palette.setColor(QPalette::Mid, QColor("#1f1f22"));
-            palette.setColor(QPalette::Midlight, QColor("#232327"));
-            palette.setColor(QPalette::Light, QColor("#2C2C31"));
-            palette.setColor(QPalette::Shadow, QColor("#34343A"));
+            palette.setColor(QPalette::Dark, QColor("#17171A"));
+            palette.setColor(QPalette::Mid, QColor("#212124"));
+            palette.setColor(QPalette::Midlight, QColor("#26262B"));
+            palette.setColor(QPalette::Light, QColor("#2A2A2E"));
+            palette.setColor(QPalette::Shadow, QColor("#35353B"));
             palette.setColor(QPalette::BrightText, QColor("#F2F2F4"));
             palette.setColor(QPalette::Disabled, QPalette::Text, QColor("#5A5A60"));
             palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor("#5A5A60"));
@@ -183,6 +185,8 @@ namespace AzQtComponents
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
 
+        loadStylesheetVariables(engineRootPath);
+
         m_style = new Style(createBaseStyle());
 
         QApplication::setStyle(m_style);
@@ -211,6 +215,36 @@ namespace AzQtComponents
         m_widgetToStyleSheetMap.remove(widget);
 
         widget->setStyleSheet(QString());
+    }
+
+    void StyleManager::loadStylesheetVariables(const AZ::IO::PathView& engineRootPath)
+    {
+        QString variablesJson;
+
+        QString rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
+        if (!rootDir.isEmpty())
+        {
+            QFile variablesFile(QDir(rootDir).absoluteFilePath(g_styleSheetVariablesRelativePath.toString()));
+            if (variablesFile.open(QFile::ReadOnly))
+            {
+                variablesJson = QString::fromUtf8(variablesFile.readAll());
+            }
+        }
+
+        if (variablesJson.isEmpty())
+        {
+            QFile variablesFile(g_styleSheetVariablesResourcePath.toString());
+            if (variablesFile.open(QFile::ReadOnly))
+            {
+                variablesJson = QString::fromUtf8(variablesFile.readAll());
+            }
+        }
+
+        if (!variablesJson.isEmpty())
+        {
+            m_stylesheetPreprocessor->ClearVariables();
+            m_stylesheetPreprocessor->ReadVariables(variablesJson);
+        }
     }
 
     void StyleManager::initializeFonts()
@@ -248,13 +282,13 @@ namespace AzQtComponents
     void StyleManager::refresh()
     {
         const auto globalStyleSheet = m_stylesheetCache->loadStyleSheet(g_globalStyleSheetName.toString());
-        qApp->setStyleSheet(globalStyleSheet);
+        qApp->setStyleSheet(m_stylesheetPreprocessor->ProcessStyleSheet(globalStyleSheet));
 
         auto i = m_widgetToStyleSheetMap.constBegin();
         while (i != m_widgetToStyleSheetMap.constEnd())
         {
             const auto styleSheet = m_stylesheetCache->loadStyleSheet(i.value());
-            i.key()->setStyleSheet(styleSheet);
+            i.key()->setStyleSheet(m_stylesheetPreprocessor->ProcessStyleSheet(styleSheet));
             ++i;
         }
 

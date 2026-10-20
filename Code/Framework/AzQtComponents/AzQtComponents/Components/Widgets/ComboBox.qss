@@ -16,7 +16,7 @@ QComboBox
     padding-left: 4px;
     margin: 1px;
     font-size: 12px;
-    background-color: #C9C9CE;
+    background-color: @InputBackgroundColor;
 }
 
 QComboBox:hover
@@ -25,7 +25,7 @@ QComboBox:hover
     border-width: 1px;
     border-style: solid;
     border-radius: 0px;
-    border-color: #34343A;
+    border-color: @BorderColor;
 }
 
 QComboBox:focus,
@@ -36,9 +36,9 @@ QComboBox[HasPopupOpen=true][HasPopupOpen=true]
     border-width: 1px;
     border-style: solid;
     border-radius: 0px;
-    border-color: #4CAF50;
+    border-color: @AccentColor;
 
-    background-color: #FFFFFF;
+    background-color: @InputBackgroundColor;
 }
 
 QComboBox[HasError=true]
@@ -47,13 +47,13 @@ QComboBox[HasError=true]
     border-width: 2px;
     border-style: solid;
     border-radius: 0px;
-    border-color: #E25243;
+    border-color: @ErrorColor;
 }
 
 QComboBox:disabled
 {
-    background-color: #5A5A60;
-    color: #8E8E94;
+    background-color: @DisabledTextColor;
+    color: @SecondaryTextColor;
 }
 
 QComboBox::drop-down
@@ -78,7 +78,7 @@ QComboBox::down-arrow:disabled
 
 QComboBox QAbstractItemView
 {
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
     padding: 0px;
     outline: none; /* Disable focus rect */
     show-decoration-selected: 1;
@@ -86,7 +86,7 @@ QComboBox QAbstractItemView
 
 QComboBox QAbstractItemView::item
 {
-    color: #FFFFFF;
+    color: @TextColor;
     padding-right: 24px;
     padding-left: 2px; /* There is already 22px from the check mark */
 
@@ -100,19 +100,19 @@ QComboBox QAbstractItemView::item
 */
 QComboBox QAbstractItemView::item:selected
 {
-    background-color: #1f1f22;
-    color: #FFFFFF;
+    background-color: @PanelBackgroundColor;
+    color: @TextColor;
 }
 
 QComboBox QAbstractItemView::item:disabled
 {
-    color: #5A5A60;
+    color: @DisabledTextColor;
 }
 
 QComboBox QAbstractItemView::separator
 {
     height: 1px;
-    background: #1f1f22;
+    background: @PanelBackgroundColor;
 }
 
 QComboBox QAbstractItemView::indicator

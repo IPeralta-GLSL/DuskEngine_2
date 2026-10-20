@@ -15,7 +15,7 @@ QLineEdit
     padding-left: 0px;
     border-width: 1px;
     border-style: solid;
-    border-color: #3A3A41;
+    border-color: @HandleColor;
     padding-bottom: 1px;
     padding-top: -1px;
 }
@@ -31,8 +31,8 @@ QPlainText:disabled,
 QPlainTextEdit:disabled,
 QLineEdit:disabled
 {
-    background-color: #1f1f22;
-    color: #5A5A60;
+    background-color: @PanelBackgroundColor;
+    color: @DisabledTextColor;
 }
 
 QAbstractItemView QLineEdit

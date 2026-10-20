@@ -10,22 +10,22 @@
 
 .primaryText
 {
-    color: #FFFFFF;
+    color: @TextColor;
 }
 
 .secondaryText
 {
-    color: #888888;
+    color: @SecondaryTextColor;
 }
 
 .highlightedText
 {
-    color: #44B2F8;
+    color: @AccentColor;
 }
 
 .blackText
 {
-    color: #000000;
+    color: @WindowBackgroundColor;
 }
 
 /*

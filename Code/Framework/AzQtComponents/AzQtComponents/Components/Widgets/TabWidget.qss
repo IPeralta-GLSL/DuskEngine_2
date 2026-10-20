@@ -10,7 +10,7 @@
 QTabWidget,
 QTabBar
 {
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
 }
 
 QTabBar::tab
@@ -20,12 +20,12 @@ QTabBar::tab
 
 AzQtComponents--TabWidget
 {
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
 }
 
 AzQtComponents--TabWidget > QWidget
 {
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
 }
 
 AzQtComponents--TabWidget:pane
@@ -41,15 +41,15 @@ AzQtComponents--TabWidget.Empty:pane
 AzQtComponents--TabBar
 {
     qproperty-drawBase: false; /* Stop the base being visible during tab position change animation */
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
     margin-bottom: 0;
     min-height: 24px;
 }
 
 AzQtComponents--TabBar:tab
 {
-    border: 1px solid #34343A;
-    background-color: #1f1f22;
+    border: 1px solid @BorderColor;
+    background-color: @PanelBackgroundColor;
 
     text-align: left;
     padding: 4px -2px 4px 9px; /* top, right, bottom, left */
@@ -63,13 +63,13 @@ AzQtComponents--TabBar::tab:text
 
 AzQtComponents--TabBar::tab:selected
 {
-    border-bottom: 2px solid #4CAF50;
+    border-bottom: 2px solid @AccentColor;
 }
 
 AzQtComponents--TabBar::tab:selected,
 AzQtComponents--TabBar::tab:hover
 {
-    background-color: #3A3A41;
+    background-color: @HandleColor;
 }
 
 AzQtComponents--TabBar:focus
@@ -82,18 +82,18 @@ AzQtComponents--TabBar:focus
 
 AzQtComponents--TabWidget.Secondary
 {
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
 }
 
 AzQtComponents--TabWidget.Secondary.Bordered
 {
-    border: 1px solid #3A3A41;
+    border: 1px solid @HandleColor;
 }
 
 AzQtComponents--TabWidget.Secondary:pane
 {
     border: 0 none;
-    border-top: 2px solid #3A3A41;
+    border-top: 2px solid @HandleColor;
     padding: 3px;
     padding-top: 0;
 }
@@ -111,18 +111,18 @@ AzQtComponents--TabBar.Secondary
 
 AzQtComponents--TabBar.Secondary.Bordered
 {
-    border-left: 1px solid #3A3A41;
-    border-top: 1px solid #3A3A41;
+    border-left: 1px solid @HandleColor;
+    border-top: 1px solid @HandleColor;
 }
 
 AzQtComponents--TabBar.Secondary::tab
 {
-    background-color: #1f1f22;
+    background-color: @PanelBackgroundColor;
     border: 0 none;
-    border-bottom: 2px solid #1f1f22;
+    border-bottom: 2px solid @PanelBackgroundColor;
     text-align: center;
     padding: 3px 0 3px 10px;
-    color: #8E8E94;
+    color: @SecondaryTextColor;
 }
 
 AzQtComponents--TabBar.Secondary::close-button
@@ -132,19 +132,19 @@ AzQtComponents--TabBar.Secondary::close-button
 
 AzQtComponents--TabBar.Secondary::tab:hover
 {
-    background: rgba(255,255,255,0.08);
-    border-bottom: 2px solid #3A3A41;
-    color: #C9C9CE;
+    background: @HoverOverlayColor;
+    border-bottom: 2px solid @HandleColor;
+    color: @TextColor;
 }
 
 AzQtComponents--TabBar.Secondary.Bordered::tab
 {
-    border-top: 1px solid #3A3A41;
+    border-top: 1px solid @HandleColor;
     padding: 3px 0 3px 10px;
 }
 
 AzQtComponents--TabBar.Secondary::tab:selected
 {
-    border-bottom: 2px solid #4CAF50;
-    color: #C9C9CE;
+    border-bottom: 2px solid @AccentColor;
+    color: @TextColor;
 }

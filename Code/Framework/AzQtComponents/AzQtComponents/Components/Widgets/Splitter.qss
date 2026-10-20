@@ -7,7 +7,7 @@
  */
 
 QSplitter::handle {
-    background-color: #34343A;
+    background-color: @BorderColor;
 }
 
 QSplitter::handle:horizontal {
@@ -20,5 +20,5 @@ QSplitter::handle:vertical {
 
 QSplitter::handle:hover
 {
-    background-color: #5A5A60;
+    background-color: @DisabledTextColor;
 }
