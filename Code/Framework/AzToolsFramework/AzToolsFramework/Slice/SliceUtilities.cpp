@@ -304,7 +304,7 @@ namespace AzToolsFramework
                         &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
 
                     QMessageBox msgBox(mainWindow);
-                    msgBox.setWindowTitle("External Entity References");
+                    msgBox.setWindowTitle("External Prim References");
                     msgBox.setText("The slice contains references to external entities that are not selected.");
                     msgBox.setInformativeText("You can move the referenced entities into this slice or retain the external references.");
                     QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);

@@ -1079,7 +1079,7 @@ namespace AzToolsFramework
             // Generic text for multiple entities selected
             m_gui->m_entityDetailsLabel->setVisible(true);
             m_gui->m_entityDetailsLabel->setText(tr("Common components shown"));
-            m_gui->m_entityNameEditor->setText(tr("%n entities selected", "", static_cast<int>(m_selectedEntityIds.size())));
+            m_gui->m_entityNameEditor->setText(tr("%n prims selected", "", static_cast<int>(m_selectedEntityIds.size())));
             m_gui->m_entityNameEditor->setReadOnly(true);
 
             m_gui->m_entityIdText->setText(tr("multiple selected"));
@@ -1205,11 +1205,11 @@ namespace AzToolsFramework
         QString entityDetailsLabelText("");
         if (IsLockedToSpecificEntities())
         {
-            entityDetailsLabelText = QObject::tr("The entity this inspector was pinned to has been deleted.");
+            entityDetailsLabelText = QObject::tr("The prim this inspector was pinned to has been deleted.");
         }
         else
         {
-            entityDetailsLabelText = QObject::tr("Select an entity to show its properties in the inspector.");
+            entityDetailsLabelText = QObject::tr("Select a prim to show its properties in the inspector.");
         }
 
         if (IsLockedToSpecificEntities())
@@ -1220,12 +1220,12 @@ namespace AzToolsFramework
             }
             else
             {
-                entityDetailsLabelText = tr("The entity this inspector was pinned to has been deleted.");
+                entityDetailsLabelText = tr("The prim this inspector was pinned to has been deleted.");
             }
         }
         else
         {
-            entityDetailsLabelText = tr("Select an entity to show its properties in the inspector.");
+            entityDetailsLabelText = tr("Select a prim to show its properties in the inspector.");
         }
 
         return entityDetailsLabelText;
@@ -3885,7 +3885,7 @@ namespace AzToolsFramework
         QObject::connect(action, &QAction::triggered, this, &EntityPropertyEditor::SetEntityIconToDefault);
 
         action = menu.addAction(QObject::tr("Set custom icon"));
-        action->setToolTip(tr("Choose a custom icon for this entity"));
+        action->setToolTip(tr("Choose a custom icon for this prim"));
         QObject::connect(action, &QAction::triggered, this, &EntityPropertyEditor::PopupAssetBrowserForEntityIcon);
 
         menu.exec(GetWidgetGlobalRect(m_gui->m_entityIcon).bottomLeft());

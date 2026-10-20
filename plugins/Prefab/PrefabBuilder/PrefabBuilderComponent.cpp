@@ -52,7 +52,7 @@ namespace AZ::Prefab
         builderDesc.m_name = "Prefab Builder";
         builderDesc.m_version = PrefabBuilderComponentVersion;
         builderDesc.m_patterns.emplace_back("*.arch", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
-        builderDesc.m_patterns.emplace_back("*.dstage", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
+        builderDesc.m_patterns.emplace_back("*.stage", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
         builderDesc.m_patterns.emplace_back("*.prefab", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
         builderDesc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::External;
         builderDesc.m_busId = m_builderId;

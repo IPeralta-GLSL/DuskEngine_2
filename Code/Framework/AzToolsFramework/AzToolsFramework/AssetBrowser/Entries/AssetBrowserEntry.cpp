@@ -303,7 +303,7 @@ namespace AzToolsFramework
                 return "PhysX Material";
             case ".arch"_hash:
                 return "Archetype";
-            case ".dstage"_hash:
+            case ".stage"_hash:
                 return "Stage";
             case ".prefab"_hash:
                 return "Prefab";

@@ -219,7 +219,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     // Editor Entity Property Editor (Entity Inspector)
     {
         AzToolsFramework::ActionContextProperties contextProperties;
-        contextProperties.m_name = "Dusk Engine Editor - Entity Attributes";
+        contextProperties.m_name = "Dusk Engine Editor - Prim Attributes";
 
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, contextProperties);
@@ -757,7 +757,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.toggleShowingGrid";
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Show Grid";
-        actionProperties.m_description = "Show Grid for entity snapping.";
+        actionProperties.m_description = "Show Grid for prim snapping.";
         actionProperties.m_category = "Edit";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -874,8 +874,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         const AZStd::string_view actionIdentifier = "o3de.action.entityOutliner.findEntity";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Find in Entity Outliner";
-        actionProperties.m_description = "Ensure the current entity is visible in the Entity Outliner.";
+        actionProperties.m_name = "Find in Prim Outliner";
+        actionProperties.m_description = "Ensure the current prim is visible in the Prim Outliner.";
         actionProperties.m_category = "Entity";
 
         m_actionManagerInterface->RegisterAction(
@@ -1156,7 +1156,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.layout.componentEntityLayout";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Component Entity Layout (Default)";
+        actionProperties.m_name = "Prim Layout (Default)";
         actionProperties.m_category = "Layout";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -1808,7 +1808,7 @@ void EditorActionsHandler::OnMenuRegistrationHook()
     // Editor Menus
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Entity Outliner Context Menu";
+        menuProperties.m_name = "Prim Outliner Context Menu";
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, menuProperties);
     }
     {

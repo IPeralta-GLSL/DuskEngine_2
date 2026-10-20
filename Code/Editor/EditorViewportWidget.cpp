@@ -996,7 +996,7 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
 
     if (Camera::EditorCameraSystemRequestBus::HasHandlers())
     {
-        action = menu->addAction(tr("Create camera entity from current view"));
+        action = menu->addAction(tr("Create camera prim from current view"));
         connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView);
 
         const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();

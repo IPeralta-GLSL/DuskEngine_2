@@ -259,7 +259,7 @@ namespace AzToolsFramework
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".arch") ||
-                    AzFramework::StringFunc::Equal(extension.c_str(), ".dstage") ||
+                    AzFramework::StringFunc::Equal(extension.c_str(), ".stage") ||
                     AzFramework::StringFunc::Equal(extension.c_str(), ".prefab"))
                 {
                     return SourceFileDetails("Icons/AssetBrowser/Prefab_80.svg");

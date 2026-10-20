@@ -757,7 +757,7 @@ namespace AzToolsFramework
                     AZStd::string actionIdentifier = "o3de.action.prefabs.revertInstanceOverrides";
                     AzToolsFramework::ActionProperties actionProperties;
                     actionProperties.m_name = "Revert overrides";
-                    actionProperties.m_description = "Revert all overrides on this entity.";
+                    actionProperties.m_description = "Revert all overrides on this prim.";
                     actionProperties.m_category = "Archetypes";
 
                     m_actionManagerInterface->RegisterAction(
@@ -996,13 +996,13 @@ namespace AzToolsFramework
         {
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Inspector Entity Component Context Menu";
+                menuProperties.m_name = "Inspector Prim Component Context Menu";
                 m_menuManagerInterface->RegisterMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, menuProperties);
             }
 
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Inspector Entity Property Context Menu";
+                menuProperties.m_name = "Inspector Prim Property Context Menu";
                 m_menuManagerInterface->RegisterMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, menuProperties);
             }
         }
@@ -1699,7 +1699,7 @@ namespace AzToolsFramework
                         includedEntities.c_str(), referencedEntities.c_str());
 
                     QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
-                    msgBox.setWindowTitle("External Entity References");
+                    msgBox.setWindowTitle("External Prim References");
                     msgBox.setText("The archetype contains references to external entities that are not selected.");
                     msgBox.setInformativeText("You can move the referenced entities into this prefab or retain the external references.");
                     QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);

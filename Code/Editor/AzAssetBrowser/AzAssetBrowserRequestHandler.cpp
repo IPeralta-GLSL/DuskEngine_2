@@ -279,7 +279,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
                     QMessageBox::warning(
                         mainWindow,
                         QObject::tr("Asset Drop Failed"),
-                        QStringLiteral("Could not create entity from selected asset(s)."));
+                        QStringLiteral("Could not create prim from selected asset(s)."));
                     return;
                 }
 

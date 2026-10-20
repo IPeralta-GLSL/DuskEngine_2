@@ -1119,7 +1119,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
 
                         if (!matchingEntities.empty())
                         {
-                            QMessageBox::warning(this, tr("Entity already exists"), QString(tr("Entity named '%1' already exists.\n\nPlease choose another unique name.")).arg(name));
+                            QMessageBox::warning(this, tr("Prim already exists"), QString(tr("Prim named '%1' already exists.\n\nPlease choose another unique name.")).arg(name));
 
                             retryRename = true;
                         }
@@ -1143,8 +1143,8 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             if(!GetNodeRecord(animNode2)) {
                 QMessageBox::warning(
                     this,
-                    tr("Entity does not exist"),
-                    tr("Entity has been deleted.\n\nUnable to rename entity"));
+                    tr("Prim does not exist"),
+                    tr("Prim has been deleted.\n\nUnable to rename prim"));
             }
             else if (!newName.isEmpty())
             {
@@ -1293,7 +1293,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
         if (entityIdx < m_stageEntityIdsForMenu.size())
         {
             AZ::EntityId entityId = m_stageEntityIdsForMenu[entityIdx];
-            AzToolsFramework::ScopedUndoBatch undoBatch("Add Entity to Track View from Stage");
+            AzToolsFramework::ScopedUndoBatch undoBatch("Add Prim to Track View from Stage");
             AZStd::string entityName;
             AzToolsFramework::EditorEntityInfoRequestBus::EventResult(entityName, entityId, &AzToolsFramework::EditorEntityInfoRequests::GetName);
             CTrackViewAnimNode* newNode = groupNode->CreateSubNode(entityName.c_str(), AnimNodeType::AzEntity, entityId);
@@ -1439,7 +1439,7 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
     }
     if (!m_stageEntityIdsForMenu.empty())
     {
-        contextMenu.addEntitySub.setTitle("Add Entity from Stage");
+        contextMenu.addEntitySub.setTitle("Add Prim from Stage");
         contextMenu.main.addMenu(&contextMenu.addEntitySub);
         unsigned int entityIdx = 0;
         for (AZ::EntityId entityId : m_stageEntityIdsForMenu)

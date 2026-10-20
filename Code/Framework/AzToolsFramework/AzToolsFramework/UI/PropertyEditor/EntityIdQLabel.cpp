@@ -41,7 +41,7 @@ namespace AzToolsFramework
         const AZStd::string entityName = AzToolsFramework::GetEntityName(m_entityId, nameOverride);
         if (entityName.empty())
         {
-            setText(tr("(Entity not found)"));
+            setText(tr("(Prim not found)"));
         }
         else
         {

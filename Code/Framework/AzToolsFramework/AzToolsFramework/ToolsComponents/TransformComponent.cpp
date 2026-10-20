@@ -1164,7 +1164,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/transform/")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "Modify this using the Entity Outliner")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent prim", "Modify this using the Stage")->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
                             Attribute(AZ::Edit::Attributes::ShowClearButtonHandler, false)->
                             Attribute(AZ::Edit::Attributes::ShowPickButton, false)->

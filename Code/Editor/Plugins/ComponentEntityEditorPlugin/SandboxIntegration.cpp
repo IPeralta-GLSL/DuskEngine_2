@@ -514,8 +514,8 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
     {
         const AZStd::string_view actionIdentifier = "o3de.action.sandbox.createEntity";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Create entity";
-        actionProperties.m_description = "Creates an entity under the current selection";
+        actionProperties.m_name = "Create Prim";
+        actionProperties.m_description = "Creates a prim under the current selection";
         actionProperties.m_category = "Entity";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
@@ -589,7 +589,7 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
         const AZStd::string_view actionIdentifier = "o3de.action.sandbox.createFolder";
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Create folder";
-        actionProperties.m_description = "Creates a folder entity under the current selection";
+        actionProperties.m_description = "Creates a folder prim under the current selection";
         actionProperties.m_category = "Entity";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
@@ -981,7 +981,7 @@ void SandboxIntegrationManager::OnWidgetActionRegistrationHook()
     }
 
     AzToolsFramework::WidgetActionProperties widgetActionProperties;
-    widgetActionProperties.m_name = "Add Entity Template";
+    widgetActionProperties.m_name = "Add Prim Template";
     widgetActionProperties.m_category = "Entity";
 
     actionManagerInterface->RegisterWidgetAction(
@@ -1012,7 +1012,7 @@ QWidget* SandboxIntegrationManager::CreateAddEntityMenuButton()
 {
     auto* button = new QToolButton();
     button->setIcon(QIcon(":/res/Add.svg"));
-    button->setToolTip(QObject::tr("Add an entity or light to the scene"));
+    button->setToolTip(QObject::tr("Add a prim or light to the scene"));
     button->setPopupMode(QToolButton::InstantPopup);
     button->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
@@ -1021,7 +1021,7 @@ QWidget* SandboxIntegrationManager::CreateAddEntityMenuButton()
     // ─── Basic Shapes ───────────────────────────────────────────────────────
     menu->addSection(QObject::tr("Basic Shapes"));
 
-    auto* emptyAction = menu->addAction(QObject::tr("Empty Entity"));
+    auto* emptyAction = menu->addAction(QObject::tr("Empty Prim"));
     QObject::connect(emptyAction, &QAction::triggered, [this]()
     {
         CreateNewEntityAtPosition(GetWorldPositionAtViewportCenter());
