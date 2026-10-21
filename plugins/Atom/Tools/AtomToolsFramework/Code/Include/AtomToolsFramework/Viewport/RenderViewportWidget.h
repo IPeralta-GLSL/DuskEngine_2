@@ -75,6 +75,8 @@ namespace AtomToolsFramework
         //! Locks the target render resolution of this viewport to a given resolution.
         //! This can be used to ensure a uniform resolution for testing.
         void LockRenderTargetSize(uint32_t width, uint32_t height);
+        void SetFixedRenderHeight(uint32_t height);
+        uint32_t GetFixedRenderHeight() const;
         //! Allows this viewport to be freely resized.
         void UnlockRenderTargetSize();
         //! Gets the underlying ViewportContext associated with this RenderViewportWidget.
@@ -166,6 +168,7 @@ namespace AtomToolsFramework
         // Allow to delay the resize event to prevent freezing the editor on continuous mouse drag
         QTimer m_resizeEventCooldown;
         float m_renderScale = 1.0f;
+        uint32_t m_fixedRenderHeight = 0;
         // Minimum internal render resolution so a small viewport still renders at a usable
         // resolution (supersampled down to the widget), like UE/Unity/Cry do.
         // En 0 = apagado (la res interna sigue al widget). Opt-in porque la UI del editor

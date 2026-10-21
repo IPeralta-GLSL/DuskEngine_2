@@ -484,6 +484,15 @@ namespace AtomToolsFramework
 
         // Escala uniforme que respeta el aspect ratio del widget pero garantiza que la
         // resolucion interna no baje del minimo (supersampling para viewports chicos).
+        if (m_fixedRenderHeight > 0)
+        {
+            float fixedScale = static_cast<float>(m_fixedRenderHeight) / static_cast<float>(clientSize.m_height);
+            return AzFramework::WindowSize{
+                AZStd::max(1u, static_cast<uint32_t>(clientSize.m_width * fixedScale + 0.5f)),
+                m_fixedRenderHeight
+            };
+        }
+
         float scale = m_renderScale;
         scale = AZStd::max(scale, static_cast<float>(m_minRenderWidth) / static_cast<float>(clientSize.m_width));
         scale = AZStd::max(scale, static_cast<float>(m_minRenderHeight) / static_cast<float>(clientSize.m_height));
@@ -492,6 +501,22 @@ namespace AtomToolsFramework
             AZStd::max(1u, static_cast<uint32_t>(clientSize.m_width * scale)),
             AZStd::max(1u, static_cast<uint32_t>(clientSize.m_height * scale))
         };
+    }
+
+    void RenderViewportWidget::SetFixedRenderHeight(uint32_t height)
+    {
+        if (m_fixedRenderHeight == height)
+        {
+            return;
+        }
+
+        m_fixedRenderHeight = height;
+        SendWindowResizeEvent();
+    }
+
+    uint32_t RenderViewportWidget::GetFixedRenderHeight() const
+    {
+        return m_fixedRenderHeight;
     }
 
     void RenderViewportWidget::SetRenderResolution(AzFramework::WindowSize resolution)

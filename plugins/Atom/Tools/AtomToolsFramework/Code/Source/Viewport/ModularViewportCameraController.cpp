@@ -225,7 +225,7 @@ namespace AtomToolsFramework
         {
             AzFramework::WindowSize windowSize;
             AzFramework::WindowRequestBus::EventResult(
-                windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetRenderResolution);
+                windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
             return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, findModifierStatesFn(), windowSize));
         }

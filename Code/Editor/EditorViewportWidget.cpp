@@ -806,6 +806,8 @@ void EditorViewportWidget::SetViewportId(int id)
         return;
     }
 
+    m_renderViewport->SetFixedRenderHeight(aznumeric_cast<uint32_t>(AZStd::max(gSettings.viewports.nRenderResolutionHeight, 0)));
+
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
@@ -987,6 +989,29 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
             aspectRatioAction->setCheckable(true);
             aspectRatioAction->setChecked(m_predefinedAspectRatios.IsCurrent(i));
         }
+    }
+
+    QMenu* renderHeightMenu = menu->addMenu(tr("Render Height"));
+    const AZStd::pair<QString, int> renderHeightOptions[] = {
+        { tr("Free Aspect"), 0 },
+        { tr("1280 x 720"), 720 },
+        { tr("1920 x 1080"), 1080 },
+        { tr("2560 x 1440"), 1440 },
+        { tr("3840 x 2160"), 2160 },
+    };
+
+    for (const auto& renderHeightOption : renderHeightOptions)
+    {
+        QAction* renderHeightAction = renderHeightMenu->addAction(renderHeightOption.first);
+        connect(
+            renderHeightAction, &QAction::triggered, this,
+            [renderHeightOption, this]
+            {
+                gSettings.viewports.nRenderResolutionHeight = renderHeightOption.second;
+                m_renderViewport->SetFixedRenderHeight(aznumeric_cast<uint32_t>(AZStd::max(renderHeightOption.second, 0)));
+            });
+        renderHeightAction->setCheckable(true);
+        renderHeightAction->setChecked(gSettings.viewports.nRenderResolutionHeight == renderHeightOption.second);
     }
 
     // Set ourself as the active viewport so the following actions create a camera from this view

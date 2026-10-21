@@ -120,6 +120,7 @@ struct SViewportsSettings
     bool bSync2DViews;
     //! Camera Aspect Ratio for perspective View.
     float fDefaultAspectRatio;
+    int nRenderResolutionHeight;
     //! To highlight selected geometry.
     bool bHighlightSelectedGeometry;
     //! To highlight selected vegetation.
