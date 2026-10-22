@@ -156,6 +156,28 @@ namespace AZ
             // Initializes ImGui related data in the pass. Called during the pass's initialization phase.
             void InitializeImGui();
 
+            // Updates the size of the space the ImGui UI is laid out in. This is the on-screen size
+            // of the viewport (the client area of its window), which may be different from the
+            // internal render resolution of the viewport.
+            void UpdateDisplaySize();
+
+            // Returns the factor that has to be applied to the geometry of the given draw data to
+            // convert it from the space it was laid out in to the render target space.
+            AZ::Vector2 GetDrawDataScale(const ImDrawData& drawData) const;
+
+            // Builds the font atlas with the glyphs rasterized at the given size and uploads it to
+            // the GPU. The size of the UI in the layout space is not affected by it, only the
+            // sharpness of the rasterized glyphs.
+            void CreateFontAtlas(uint32_t fontSize);
+
+            // Rebuilds the font atlas when the resolution the UI is rendered at changes, so the
+            // text keeps the same sharpness as the rest of the image.
+            void UpdateFontAtlas();
+
+            // Returns the size the font glyphs have to be rasterized at to match the resolution
+            // the UI is rendered at.
+            uint32_t GetRequiredFontSize() const;
+
             ImGuiContext* m_imguiContext = nullptr;
             TickHandlerFrameStart m_tickHandlerFrameStart;
             TickHandlerFrameEnd m_tickHandlerFrameEnd;
@@ -187,6 +209,32 @@ namespace AZ
             
             uint32_t m_viewportWidth = 0;
             uint32_t m_viewportHeight = 0;
+
+            // Size of the space the ImGui UI is laid out in. This matches the on-screen size of the
+            // viewport (the client area of its window) so the UI keeps a constant size on screen
+            // even when the viewport renders internally at a different resolution, for example when
+            // a fixed render height is used.
+            uint32_t m_displayWidth = 0;
+            uint32_t m_displayHeight = 0;
+
+            // Size (in pixels) the font glyphs are rasterized at in the font atlas. It matches the
+            // resolution the text has in the render target so it stays crisp.
+            uint32_t m_fontAtlasFontSize = 0;
+
+            // Font size the UI is laid out with, it is independent of the rasterization size.
+            static constexpr uint32_t BaseFontSize = 13;
+
+            // Maximum ratio between the rasterization size of the glyphs and the layout font size.
+            static constexpr uint32_t MaxFontAtlasScale = 4;
+
+            // Number of frames the required font size has to stay stable before the font atlas is
+            // rebuilt, resizing a viewport would otherwise rebuild it on every frame.
+            static constexpr uint32_t FontAtlasRebuildDelay = 3;
+
+            // Font size the font atlas is going to be rebuilt with and the number of frames it has
+            // been stable for.
+            uint32_t m_pendingFontSize = 0;
+            uint32_t m_pendingFontSizeFrames = 0;
 
             AZStd::unordered_map<Data::Instance<RPI::StreamingImage>, uint32_t> m_userTextures;
             Data::Instance<RPI::Buffer> m_instanceBuffer;

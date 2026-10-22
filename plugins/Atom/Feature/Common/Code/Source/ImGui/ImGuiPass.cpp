@@ -12,8 +12,9 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
+#include <AzFramework/Windowing/WindowBus.h>
 
-#include <AtomCore/Instance/InstanceDatabase.h>
+#include <cmath>
 
 #include <Atom/RHI/CommandList.h>
 
@@ -125,6 +126,11 @@ namespace AZ
         void ImGuiPass::TickHandlerFrameStart::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
         {
             auto imguiContextScope = ImguiContextScope(m_imGuiPass.m_imguiContext);
+
+            // The font atlas has to match the resolution the UI is rendered at, it is rebuilt before
+            // the frame starts so the layout and the rasterized glyphs are always in sync.
+            m_imGuiPass.UpdateFontAtlas();
+
             ImGui::NewFrame();
 
             auto& io = ImGui::GetIO();
@@ -491,40 +497,8 @@ namespace AZ
                 }
             }
 
-            // Find or create font atlas
-            const char* FontAtlasName = "ImGuiFontAtlas";
-            m_fontAtlas = Data::InstanceDatabase<RPI::StreamingImage>::Instance().Find(Data::InstanceId::CreateName(FontAtlasName));
-            if (!m_fontAtlas)
-            {
-                uint8_t* pixels;
-                int32_t width = 0;
-                int32_t height = 0;
-
-                io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-                const uint32_t pixelDataSize = width * height * 4;
-
-                RHI::Size imageSize;
-                imageSize.m_width = aznumeric_cast<uint32_t>(width);
-                imageSize.m_height = aznumeric_cast<uint32_t>(height);
-
-                Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
-
-                // CreateFromCpuData will add the image to the instance database.
-                m_fontAtlas = RPI::StreamingImage::CreateFromCpuData(*streamingImagePool, RHI::ImageDimension::Image2D, imageSize, RHI::Format::R8G8B8A8_UNORM_SRGB, pixels, pixelDataSize, Uuid::CreateName(FontAtlasName));
-                AZ_Error(PassName, m_fontAtlas, "Failed to initialize the ImGui font image!");
-            }
-            else
-            {
-                // GetTexDataAsRGBA32() sets the font default internally, but if a m_fontAtlas already has been retrieved it needs to be done manually.
-                io.Fonts->AddFontDefault();
-                io.Fonts->Build();
-            }
-
-            const uint32_t fontTextureIndex = 0;
-            m_resourceGroup->SetImage(m_texturesIndex, m_fontAtlas, fontTextureIndex);
-            io.Fonts->TexID = reinterpret_cast<ImTextureID>(m_fontAtlas.get());
-            m_imguiFontTexId = io.Fonts->TexID;
+            // Build the font atlas and upload it to the GPU.
+            CreateFontAtlas(BaseFontSize);
 
             // ImGuiPass will support binding 16 textures at most per frame. 
             const uint32_t instanceData[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
@@ -567,9 +541,19 @@ namespace AZ
             m_viewportWidth = static_cast<uint32_t>(params.m_viewportState.m_maxX - params.m_viewportState.m_minX);
             m_viewportHeight = static_cast<uint32_t>(params.m_viewportState.m_maxY - params.m_viewportState.m_minY);
 
+            // The ImGui UI is laid out in the on-screen space of the viewport instead of the
+            // internal render resolution. This keeps the UI at a constant size on screen when the
+            // viewport renders internally at a different resolution, for example when a fixed
+            // render height is used. The resulting geometry is scaled to the render target when
+            // the draw data is uploaded.
+            UpdateDisplaySize();
+
             auto& io = ImGui::GetIO();
-            io.DisplaySize.x = AZStd::max<float>(1.0f, static_cast<float>(m_viewportWidth));
-            io.DisplaySize.y = AZStd::max<float>(1.0f, static_cast<float>(m_viewportHeight));
+            io.DisplaySize.x = AZStd::max<float>(1.0f, static_cast<float>(m_displayWidth));
+            io.DisplaySize.y = AZStd::max<float>(1.0f, static_cast<float>(m_displayHeight));
+            io.DisplayFramebufferScale = ImVec2(
+                static_cast<float>(m_viewportWidth) / AZStd::max<float>(1.0f, static_cast<float>(m_displayWidth)),
+                static_cast<float>(m_viewportHeight) / AZStd::max<float>(1.0f, static_cast<float>(m_displayHeight)));
 
             Matrix4x4 projectionMatrix =
                 Matrix4x4::CreateFromRows(
@@ -583,6 +567,144 @@ namespace AZ
             m_viewportState = params.m_viewportState;
 
             Base::FrameBeginInternal(params);
+        }
+
+        void ImGuiPass::UpdateDisplaySize()
+        {
+            AzFramework::WindowSize clientSize;
+
+            if (const auto* pipeline = GetRenderPipeline())
+            {
+                if (const auto windowHandle = pipeline->GetWindowHandle())
+                {
+                    AzFramework::WindowRequestBus::EventResult(
+                        clientSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                }
+            }
+
+            // Fall back to the render resolution when the on-screen size is not available, in that
+            // case both spaces are the same and no scaling is required.
+            m_displayWidth = (clientSize.m_width > 0) ? clientSize.m_width : m_viewportWidth;
+            m_displayHeight = (clientSize.m_height > 0) ? clientSize.m_height : m_viewportHeight;
+        }
+
+        AZ::Vector2 ImGuiPass::GetDrawDataScale(const ImDrawData& drawData) const
+        {
+            // The geometry of the draw data is expressed in the space it was laid out in, which is
+            // not necessarily the render resolution of the viewport. Convert it to the render
+            // target space.
+            const float scaleX = drawData.DisplaySize.x > 0.0f
+                ? static_cast<float>(m_viewportWidth) / drawData.DisplaySize.x
+                : 1.0f;
+            const float scaleY = drawData.DisplaySize.y > 0.0f
+                ? static_cast<float>(m_viewportHeight) / drawData.DisplaySize.y
+                : 1.0f;
+
+            return AZ::Vector2(scaleX, scaleY);
+        }
+
+        void ImGuiPass::CreateFontAtlas(uint32_t fontSize)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imguiContext);
+            auto& io = ImGui::GetIO();
+
+            // Rasterize the glyphs at the size the text has in the render target, this keeps the
+            // text as sharp as the rest of the image when the viewport renders internally at a
+            // higher resolution than its on-screen size.
+            ImFontConfig fontConfig;
+            fontConfig.SizePixels = static_cast<float>(fontSize);
+
+            io.Fonts->Clear();
+            io.Fonts->AddFontDefault(&fontConfig);
+            io.Fonts->Build();
+
+            // The size of the UI in the layout space is kept constant, only the resolution of the
+            // rasterized glyphs changes.
+            io.FontGlobalScale = static_cast<float>(BaseFontSize) / static_cast<float>(fontSize);
+
+            uint8_t* pixels = nullptr;
+            int32_t width = 0;
+            int32_t height = 0;
+            io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+            const uint32_t pixelDataSize = static_cast<uint32_t>(width) * static_cast<uint32_t>(height) * 4;
+
+            RHI::Size imageSize;
+            imageSize.m_width = aznumeric_cast<uint32_t>(width);
+            imageSize.m_height = aznumeric_cast<uint32_t>(height);
+
+            Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
+
+            // CreateFromCpuData will add the image to the instance database. Every pass owns its own
+            // atlas since the rasterization size depends on the render scale of its viewport.
+            m_fontAtlas = RPI::StreamingImage::CreateFromCpuData(
+                *streamingImagePool,
+                RHI::ImageDimension::Image2D,
+                imageSize,
+                RHI::Format::R8G8B8A8_UNORM_SRGB,
+                pixels,
+                pixelDataSize,
+                Uuid::CreateRandom());
+            AZ_Error(PassName, m_fontAtlas, "Failed to initialize the ImGui font image!");
+
+            if (m_fontAtlas)
+            {
+                const uint32_t fontTextureIndex = 0;
+                m_resourceGroup->SetImage(m_texturesIndex, m_fontAtlas, fontTextureIndex);
+                io.Fonts->TexID = reinterpret_cast<ImTextureID>(m_fontAtlas.get());
+                m_imguiFontTexId = io.Fonts->TexID;
+            }
+
+            m_fontAtlasFontSize = fontSize;
+        }
+
+        uint32_t ImGuiPass::GetRequiredFontSize() const
+        {
+            if (m_displayWidth == 0 || m_viewportWidth == 0)
+            {
+                return BaseFontSize;
+            }
+
+            // The UI is scaled up to the render target, the glyphs have to be rasterized at that
+            // same resolution to end up being pixel accurate.
+            const float scaleX = static_cast<float>(m_viewportWidth) / static_cast<float>(m_displayWidth);
+            const float scaleY = static_cast<float>(m_viewportHeight) / static_cast<float>(m_displayHeight);
+            const float scale = AZStd::max(scaleX, scaleY);
+            const uint32_t fontSize = aznumeric_cast<uint32_t>(std::lround(static_cast<float>(BaseFontSize) * scale));
+
+            return AZStd::clamp(fontSize, BaseFontSize, BaseFontSize * MaxFontAtlasScale);
+        }
+
+        void ImGuiPass::UpdateFontAtlas()
+        {
+            if (!m_imguiContext || !m_resourceGroup)
+            {
+                return;
+            }
+
+            const uint32_t requiredFontSize = GetRequiredFontSize();
+            if (requiredFontSize == m_fontAtlasFontSize)
+            {
+                m_pendingFontSize = 0;
+                return;
+            }
+
+            // Wait for the required size to stabilize before rebuilding the atlas, resizing a
+            // viewport would otherwise rebuild it on every frame.
+            if (m_pendingFontSize != requiredFontSize)
+            {
+                m_pendingFontSize = requiredFontSize;
+                m_pendingFontSizeFrames = 0;
+                return;
+            }
+
+            if (++m_pendingFontSizeFrames < FontAtlasRebuildDelay)
+            {
+                return;
+            }
+
+            m_pendingFontSize = 0;
+            CreateFontAtlas(requiredFontSize);
         }
 
         void ImGuiPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -607,19 +729,25 @@ namespace AZ
             m_userTextures.clear();
             for (ImDrawData& drawData : m_drawData)
             {
+                // The clip rects are expressed in the space the draw data was laid out in, convert
+                // them to the render target space.
+                const AZ::Vector2 scale = GetDrawDataScale(drawData);
+
                 for (int32_t cmdListIdx = 0; cmdListIdx < drawData.CmdListsCount; cmdListIdx++)
                 {
                     const ImDrawList* drawList = drawData.CmdLists[cmdListIdx];
                     for (const ImDrawCmd& drawCmd : drawList->CmdBuffer)
                     {
                         AZ_Assert(drawCmd.UserCallback == nullptr, "ImGui UserCallbacks are not supported by the ImGui Pass");
-                        uint32_t scissorMaxX = static_cast<uint32_t>(drawCmd.ClipRect.z);
-                        uint32_t scissorMaxY = static_cast<uint32_t>(drawCmd.ClipRect.w);
-                        
+                        int32_t scissorMinX = static_cast<int32_t>(drawCmd.ClipRect.x * scale.GetX());
+                        int32_t scissorMinY = static_cast<int32_t>(drawCmd.ClipRect.y * scale.GetY());
+                        int32_t scissorMaxX = static_cast<int32_t>(drawCmd.ClipRect.z * scale.GetX());
+                        int32_t scissorMaxY = static_cast<int32_t>(drawCmd.ClipRect.w * scale.GetY());
+
                         //scissorMaxX/scissorMaxY can be a frame stale from imgui (ImGui::NewFrame runs after this) hence we clamp it to viewport bounds
                         //otherwise it is possible to have a frame where scissor bounds can be bigger than window's bounds if we resize the window
-                        scissorMaxX = AZStd::min(scissorMaxX, m_viewportWidth);
-                        scissorMaxY = AZStd::min(scissorMaxY, m_viewportHeight);
+                        scissorMaxX = AZStd::min(scissorMaxX, static_cast<int32_t>(m_viewportWidth));
+                        scissorMaxY = AZStd::min(scissorMaxY, static_cast<int32_t>(m_viewportHeight));
 
                         // check if texture id needs to be bound to the srg
                         uint32_t index = 0;
@@ -649,10 +777,10 @@ namespace AZ
                                 RHI::DrawInstanceArguments(1, index),
                                 geometryView,
                                 RHI::Scissor(
-                                    static_cast<int32_t>(drawCmd.ClipRect.x),
-                                    static_cast<int32_t>(drawCmd.ClipRect.y),
-                                             scissorMaxX,
-                                             scissorMaxY
+                                    scissorMinX,
+                                    scissorMinY,
+                                    scissorMaxX,
+                                    scissorMaxY
                                 )
                             }
                         );
@@ -741,6 +869,10 @@ namespace AZ
 
             for (ImDrawData& drawData : m_drawData)
             {
+                // The positions are expressed in the space the draw data was laid out in, convert
+                // them to the render target space.
+                const AZ::Vector2 scale = GetDrawDataScale(drawData);
+
                 for (int32_t cmdListIndex = 0; cmdListIndex < drawData.CmdListsCount; cmdListIndex++)
                 {
                     const ImDrawList* drawList = drawData.CmdLists[cmdListIndex];
@@ -755,7 +887,17 @@ namespace AZ
                     const uint32_t vertexBufferByteSize = drawList->VtxBuffer.size() * vertexSize;
                     for(auto [deviceIndex, vertexBufferData] : vertexBufferDataAddress)
                     {
-                        memcpy(static_cast<ImDrawVert*>(vertexBufferData) + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
+                        ImDrawVert* vertices = static_cast<ImDrawVert*>(vertexBufferData) + vertexBufferOffset;
+                        memcpy(vertices, drawList->VtxBuffer.Data, vertexBufferByteSize);
+
+                        if (scale != AZ::Vector2::CreateOne())
+                        {
+                            for (uint32_t vertexIndex = 0; vertexIndex < drawList->VtxBuffer.size(); ++vertexIndex)
+                            {
+                                vertices[vertexIndex].pos.x *= scale.GetX();
+                                vertices[vertexIndex].pos.y *= scale.GetY();
+                            }
+                        }
                     }
                     vertexBufferOffset += drawList->VtxBuffer.size();
 

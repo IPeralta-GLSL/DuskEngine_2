@@ -98,9 +98,30 @@ namespace AZ
         void ImguiAtomSystemComponent::OnViewportSizeChanged([[maybe_unused]] AzFramework::WindowSize size)
         {
 #if defined(IMGUI_ENABLED)
-            ImGui::ImGuiManagerBus::Broadcast([this, size](ImGui::ImGuiManagerBus::Events* imgui)
+            // The ImGui UI is laid out in the on-screen space of the viewport (the client area of
+            // its window) instead of the internal render resolution. This keeps the UI at a
+            // constant size on screen when the viewport renders internally at a different
+            // resolution, for example when a fixed render height is used.
+            AzFramework::WindowSize displaySize = size;
+
+            auto atomViewportRequests = AZ::RPI::ViewportContextRequests::Get();
+            if (auto defaultViewportContext = atomViewportRequests->GetDefaultViewportContext())
             {
-                imgui->OverrideRenderWindowSize(size.m_width, size.m_height);
+                AzFramework::WindowSize clientSize;
+                AzFramework::WindowRequestBus::EventResult(
+                    clientSize,
+                    defaultViewportContext->GetWindowHandle(),
+                    &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+
+                if (clientSize.m_width > 0 && clientSize.m_height > 0)
+                {
+                    displaySize = clientSize;
+                }
+            }
+
+            ImGui::ImGuiManagerBus::Broadcast([this, displaySize](ImGui::ImGuiManagerBus::Events* imgui)
+            {
+                imgui->OverrideRenderWindowSize(displaySize.m_width, displaySize.m_height);
                 // ImGuiManagerListenerBus may not have been connected when this system component is activated
                 // as ImGuiManager is not part of a system component we can  require and instead just listens for ESYSTEM_EVENT_GAME_POST_INIT.
                 // Let our ImguiAtomSystemComponent know once we successfully connect and update the viewport size.
