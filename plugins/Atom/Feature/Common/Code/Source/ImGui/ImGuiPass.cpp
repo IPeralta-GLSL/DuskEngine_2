@@ -669,10 +669,23 @@ namespace AZ
             }
 
             // The UI is scaled up to the render target, the glyphs have to be rasterized at that
-            // same resolution to end up being pixel accurate.
+            // same resolution to end up being pixel accurate. The scale of the display has to be
+            // taken into account too, the UI is laid out in device pixels so dpi scaled text ends up
+            // being bigger in the render target.
             const float scaleX = static_cast<float>(m_viewportWidth) / static_cast<float>(m_displayWidth);
             const float scaleY = static_cast<float>(m_viewportHeight) / static_cast<float>(m_displayHeight);
-            const float scale = AZStd::max(scaleX, scaleY);
+
+            float dpiScale = 1.0f;
+            if (const auto* pipeline = GetRenderPipeline())
+            {
+                if (const auto windowHandle = pipeline->GetWindowHandle())
+                {
+                    AzFramework::WindowRequestBus::EventResult(
+                        dpiScale, windowHandle, &AzFramework::WindowRequestBus::Events::GetDpiScaleFactor);
+                }
+            }
+
+            const float scale = AZStd::max(scaleX, scaleY) * dpiScale;
             const uint32_t fontSize = aznumeric_cast<uint32_t>(std::lround(static_cast<float>(BaseFontSize) * scale));
 
             return AZStd::clamp(fontSize, BaseFontSize, BaseFontSize * MaxFontAtlasScale);

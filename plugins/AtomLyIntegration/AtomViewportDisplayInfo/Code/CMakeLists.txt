@@ -23,6 +23,7 @@ ly_add_target(
             Legacy::CryCommon
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Public
+            Gem::Atom_Feature_Common.Public
 )
 
 # Inject the gem name into the Module source file

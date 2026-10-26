@@ -14,22 +14,24 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Transform.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Windowing/WindowBus.h>
+#include <Atom/Feature/ImGui/ImGuiPass.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
-#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI.Reflect/MemoryUsage.h>
 
-#include <CryCommon/ISystem.h>
-#include <CryCommon/IConsole.h>
+#include <imgui/imgui.h>
 
 namespace AZ::Render
 {
@@ -48,10 +50,6 @@ namespace AZ::Render
     AZ_CVAR(float, r_fpsCalcInterval, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The time period over which to calculate the framerate for r_displayInfo."
     );
-
-    AZ_CVAR(
-        AZ::Vector2, r_topRightBorderPadding, AZ::Vector2(-40.0f, 22.0f), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "The top right border padding for the viewport debug display text");
 
     void AtomViewportDisplayInfoSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -81,7 +79,7 @@ namespace AZ::Render
         incompatible.push_back(AZ_CRC_CE("ViewportDisplayInfoService"));
     }
 
-    void AtomViewportDisplayInfoSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void AtomViewportDisplayInfoSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("RPISystem"));
     }
@@ -98,122 +96,105 @@ namespace AZ::Render
             m_rendererDescription = AZStd::string::format("%s", apiName.GetCStr());
         }
 
-        AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
-            AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
+        AZ::TickBus::Handler::BusConnect();
+        AZ::Render::ImGuiSystemNotificationBus::Handler::BusConnect();
         AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler::BusConnect();
     }
 
     void AtomViewportDisplayInfoSystemComponent::Deactivate()
     {
         AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler::BusDisconnect();
-        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+        AZ::Render::ImGuiSystemNotificationBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
-    AZ::RPI::ViewportContextPtr AtomViewportDisplayInfoSystemComponent::GetViewportContext() const
+    void AtomViewportDisplayInfoSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
     {
-        return AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
-    }
-
-    void AtomViewportDisplayInfoSystemComponent::DrawLine(AZStd::string_view line, AZ::Color color)
-    {
-        m_drawParams.m_color = color;
-        AZ::Vector2 textSize = m_fontDrawInterface->GetTextSize(m_drawParams, line);
-        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, line);
-        m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() + textSize.GetY() + m_lineSpacing);
-    }
-
-    void AtomViewportDisplayInfoSystemComponent::OnRenderTick()
-    {
-        if (!m_fontDrawInterface)
-        {
-            auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
-            if (!fontQueryInterface)
-            {
-                return;
-            }
-            m_fontDrawInterface =
-                fontQueryInterface->GetDefaultFontDrawInterface();
-        }
-        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-
-        if (!m_fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene() ||
-            !AZ::Interface<AzFramework::FontQueryInterface>::Get())
-        {
-            return;
-        }
-
-        m_fpsInterval = AZStd::chrono::seconds(static_cast<AZStd::sys_time_t>(r_fpsCalcInterval));
-
         UpdateFramerate();
+    }
 
+    void AtomViewportDisplayInfoSystemComponent::ActiveImGuiContextChanged([[maybe_unused]] ImGuiContext* context)
+    {
+    }
+
+    void AtomViewportDisplayInfoSystemComponent::OnImGuiPassFrame(ImGuiPass* imguiPass)
+    {
         const AtomBridge::ViewportInfoDisplayState displayLevel = GetDisplayState();
-        if (displayLevel == AtomBridge::ViewportInfoDisplayState::NoInfo)
+        if (displayLevel == AtomBridge::ViewportInfoDisplayState::NoInfo || imguiPass == nullptr)
         {
             return;
+        }
+
+        RPI::RenderPipeline* pipeline = imguiPass->GetRenderPipeline();
+        if (pipeline == nullptr)
+        {
+            return;
+        }
+
+        // The overlay is laid out in the on-screen space of the viewport (the client area of its
+        // window), so it keeps the same size on screen whatever the internal render resolution is.
+        AzFramework::WindowSize renderSize;
+        float dpiScalingFactor = 1.0f;
+        if (const AzFramework::NativeWindowHandle windowHandle = pipeline->GetWindowHandle())
+        {
+            AzFramework::WindowRequestBus::EventResult(
+                renderSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetRenderResolution);
+            AzFramework::WindowRequestBus::EventResult(
+                dpiScalingFactor, windowHandle, &AzFramework::WindowRequestBus::Events::GetDpiScaleFactor);
         }
 
         if (m_updateRootPassQuery)
         {
-            if (auto currentPipeline = viewportContext->GetCurrentPipeline())
+            if (auto rootPass = pipeline->GetRootPass())
             {
-                if (auto rootPass = currentPipeline->GetRootPass())
-                {
-                    rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
-                    m_updateRootPassQuery = false;
-                }
+                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
+                m_updateRootPassQuery = false;
             }
         }
 
-        m_drawParams.m_drawViewportId = viewportContext->GetId();
+        // The overlay is drawn directly with the ImGui primitives of the pass, without any window, so
+        // it looks like a plain HUD on top of the image instead of a movable window.
+        m_drawList = ImGui::GetBackgroundDrawList();
+        m_font = ImGui::GetFont();
 
-        m_drawParams.m_position = AZ::Vector3(10.0f, 22.0f, 1.0f) * viewportContext->GetDpiScalingFactor();
+        // The size of the UI in the layout space of the pass. It is computed from the font instead of
+        // ImGui::GetFontSize(), which is only valid while an ImGui window is being built.
+        m_fontSize = ImGui::GetIO().FontGlobalScale * m_font->FontSize * m_font->Scale * dpiScalingFactor;
+        m_lineSpacing = m_fontSize * 0.5f;
+        m_lineAdvance = m_fontSize + m_lineSpacing;
+        m_bgPad = 4.0f * dpiScalingFactor;
+        m_bgX = 10.0f * dpiScalingFactor - m_bgPad;
+        m_bgW = 260.0f * dpiScalingFactor;
+        m_positionY = 22.0f * dpiScalingFactor;
 
-        m_drawParams.m_color = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
-        m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
-        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Left;
-        m_drawParams.m_monospace = false;
-        m_drawParams.m_depthTest = false;
-        m_drawParams.m_virtual800x600ScreenSize = false;
-        m_drawParams.m_scaleWithWindow = false;
-        m_drawParams.m_multiline = true;
-        m_drawParams.m_lineSpacing = 0.5f;
+        AZStd::vector<Line> lines;
 
-        // Calculate line spacing based on the font's actual line height
-        const float lineHeight = m_fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
-        m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
+        DrawFramerate(lines);
+        DrawSection(lines, AZ::Color(0.0f, 0.15f, 0.2f, 0.9f));
 
-        DrawFramerate();
+        lines.clear();
+        DrawMemoryInfo(lines);
+        DrawSection(lines, AZ::Color(0.0f, 0.05f, 0.18f, 0.85f));
 
-        constexpr float bgPad = 4.f;
-        const float bgX = 10.0f * viewportContext->GetDpiScalingFactor() - bgPad;
-        const float bgW = 260.0f * viewportContext->GetDpiScalingFactor();
-
-        {
-            const float y0 = m_drawParams.m_position.GetY();
-            DrawMemoryInfo();
-            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
-            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.0f, 0.05f, 0.18f, 0.85f));
-        }
         if (displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo)
         {
-            const float y0 = m_drawParams.m_position.GetY();
-            DrawPassInfo();
-            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
-            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.1f, 0.0f, 0.18f, 0.85f));
+            lines.clear();
+            DrawPassInfo(lines);
+            DrawSection(lines, AZ::Color(0.1f, 0.0f, 0.18f, 0.85f));
         }
-        {
-            const float y0 = m_drawParams.m_position.GetY();
-            DrawRendererInfo();
-            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
-            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.15f, 0.07f, 0.0f, 0.85f));
-        }
+
+        lines.clear();
+        DrawRendererInfo(lines, renderSize, pipeline);
+        DrawSection(lines, AZ::Color(0.15f, 0.07f, 0.0f, 0.85f));
+
         if (displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo)
         {
-            const float y0 = m_drawParams.m_position.GetY();
-            DrawCameraInfo();
-            const float sectionH = m_drawParams.m_position.GetY() - y0 - m_lineSpacing + bgPad * 2.f;
-            DrawBackground(bgX, y0 - bgPad, bgW, sectionH, AZ::Color(0.0f, 0.14f, 0.07f, 0.85f));
+            lines.clear();
+            DrawCameraInfo(lines, pipeline);
+            DrawSection(lines, AZ::Color(0.0f, 0.14f, 0.07f, 0.85f));
         }
+
+        m_drawList = nullptr;
     }
 
     AtomBridge::ViewportInfoDisplayState AtomViewportDisplayInfoSystemComponent::GetDisplayState() const
@@ -224,106 +205,44 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::SetDisplayState(AtomBridge::ViewportInfoDisplayState state)
     {
         r_displayInfo = aznumeric_cast<int>(state);
+        m_updateRootPassQuery = true;
         AtomBridge::AtomViewportInfoDisplayNotificationBus::Broadcast(
             &AtomBridge::AtomViewportInfoDisplayNotificationBus::Events::OnViewportInfoDisplayStateChanged,
             state);
-        m_updateRootPassQuery = true;
     }
 
-    void AtomViewportDisplayInfoSystemComponent::DrawRendererInfo()
+    void AtomViewportDisplayInfoSystemComponent::AddLine(AZStd::vector<Line>& lines, AZStd::string text, const AZ::Color& color)
     {
-        const AZ::Color rendColor(1.0f, 0.8f, 0.3f, 1.0f);
-        DrawLine(m_rendererDescription, rendColor);
-
-        // resolution and MSAA state
-        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
-
-        AZ::RPI::ScenePtr pScene = viewportContext->GetRenderScene();
-
-        AZStd::string defaultAA = "MSAA";
-        bool hasAAMethod = false;
-        if (pScene != nullptr)
-        {
-            AZ::RPI::RenderPipelinePtr pPipeline = pScene->GetDefaultRenderPipeline();
-
-            AZ::RPI::AntiAliasingMode defaultAAMethod = pPipeline->GetActiveAAMethod();
-            defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
-            hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
-        }
-        auto resolutionStr =
-            AZStd::string::format(
-                "%dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
-        auto msaaStr =
-            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("CMAA2");
-
-        if (hasAAMethod)
-        {
-            if (multisampleState.m_samples > 1)
-            {
-                DrawLine(AZStd::string::format("%s  %s + %s", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()), rendColor);
-            }
-            else
-            {
-                DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), defaultAA.c_str()), rendColor);
-            }
-        }
-        else
-        {
-            DrawLine(AZStd::string::format("%s  %s", resolutionStr.c_str(), msaaStr.c_str()), rendColor);
-        }
-
-        if(viewportContext->GetCurrentPipeline())
-        {
-            DrawLine(AZStd::string::format("Pipeline  %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()), rendColor);
-        }
+        lines.push_back(Line{ AZStd::move(text), color });
     }
 
-    void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()
+    void AtomViewportDisplayInfoSystemComponent::DrawSection(const AZStd::vector<Line>& lines, const AZ::Color& backgroundColor)
     {
-        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        AZ::RPI::ViewPtr currentView = viewportContext->GetDefaultView();
-        if (currentView == nullptr)
+        if (lines.empty())
         {
             return;
         }
 
-        AzFramework::CameraState cameraState;
-        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
-        const AZ::Transform transform = currentView->GetCameraTransform();
-        const AZ::Vector3 translation = transform.GetTranslation();
-        const AZ::Vector3 rotation = transform.GetEulerDegrees();
-        const AZ::Color camColor(0.4f, 1.0f, 0.65f, 1.0f);
-        DrawLine(AZStd::string::format(
-            "CamPos=%.2f %.2f %.2f",
-            translation.GetX(), translation.GetY(), translation.GetZ()
-        ), camColor);
-        DrawLine(AZStd::string::format(
-            "Angl=%3.0f %3.0f %4.0f ZN=%.2f ZF=%.0f",
-            rotation.GetX(), rotation.GetY(), rotation.GetZ(),
-            cameraState.m_nearClip, cameraState.m_farClip
-        ), camColor);
-    }
+        const ImU32 background = ImGui::ColorConvertFloat4ToU32(
+            ImVec4(backgroundColor.GetR(), backgroundColor.GetG(), backgroundColor.GetB(), backgroundColor.GetA()));
 
-    void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
-    {
-        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        if (!viewportContext->GetCurrentPipeline())
+        // The background of the section is drawn behind the text of the section.
+        const float sectionHeight = lines.size() * m_lineAdvance - m_lineSpacing + m_bgPad * 2.0f;
+        m_drawList->AddRectFilled(
+            ImVec2(m_bgX, m_positionY - m_bgPad),
+            ImVec2(m_bgX + m_bgW, m_positionY - m_bgPad + sectionHeight),
+            background);
+
+        for (const Line& line : lines)
         {
-            return;
+            const ImU32 color = ImGui::ColorConvertFloat4ToU32(
+                ImVec4(line.m_color.GetR(), line.m_color.GetG(), line.m_color.GetB(), line.m_color.GetA()));
+
+            const char* textBegin = line.m_text.c_str();
+            m_drawList->AddText(
+                m_font, m_fontSize, ImVec2(m_bgX + m_bgPad, m_positionY), color, textBegin, textBegin + line.m_text.size());
+            m_positionY += m_lineAdvance;
         }
-
-        RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
-
-        DrawLine(AZStd::string::format(
-            "Passes  %d",
-            passSystemFrameStatistics.m_numRenderPassesExecuted
-        ), AZ::Color(0.75f, 0.5f, 1.0f, 1.0f));
-        DrawLine(AZStd::string::format(
-            "Draw Calls  %d  |  Max  %d",
-            passSystemFrameStatistics.m_totalDrawItemsRendered,
-            passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass
-        ), AZ::Color(0.75f, 0.5f, 1.0f, 1.0f));
     }
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
@@ -336,7 +255,52 @@ namespace AZ::Render
         m_fpsHistory.push_back(currentTime);
     }
 
-    void AtomViewportDisplayInfoSystemComponent::DrawMemoryInfo()
+    void AtomViewportDisplayInfoSystemComponent::DrawFramerate(AZStd::vector<Line>& lines) const
+    {
+        AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
+        double minFPS = DBL_MAX;
+        double maxFPS = 0;
+        AZStd::chrono::duration<double> deltaTime;
+        for (const auto& time : m_fpsHistory)
+        {
+            if (lastTime.has_value())
+            {
+                deltaTime = time - lastTime.value();
+                double fps = AZStd::chrono::seconds(1) / deltaTime;
+                minFPS = AZStd::min(minFPS, fps);
+                maxFPS = AZStd::max(maxFPS, fps);
+            }
+            lastTime = time;
+        }
+
+        double averageFPS = 0;
+        double averageFrameMs = 0;
+        if (m_fpsHistory.size() > 1)
+        {
+            deltaTime = m_fpsHistory.back() - m_fpsHistory.front();
+            averageFPS = AZStd::chrono::seconds(m_fpsHistory.size()) / deltaTime;
+            averageFrameMs = 1000.0f / averageFPS;
+        }
+
+        auto ClampedFloatDisplay = [](double value, const char* format) -> AZStd::string
+        {
+            constexpr float upperLimit = 10000.0f;
+            return value > upperLimit ? "inf" : AZStd::string::format(format, value);
+        };
+
+        AddLine(lines,
+            AZStd::string::format("FPS  %s", ClampedFloatDisplay(averageFPS, "%.1f").c_str()),
+            AZ::Colors::White);
+        AddLine(lines,
+            AZStd::string::format(
+                "Frame  %s ms  [%s .. %s]",
+                ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
+                ClampedFloatDisplay(minFPS, "%.0f").c_str(),
+                ClampedFloatDisplay(maxFPS, "%.0f").c_str()),
+            AZ::Colors::White);
+    }
+
+    void AtomViewportDisplayInfoSystemComponent::DrawMemoryInfo(AZStd::vector<Line>& lines) const
     {
         RHI::RHISystemInterface* rhi = RHI::RHISystemInterface::Get();
         if (!rhi)
@@ -364,7 +328,7 @@ namespace AZ::Render
         {
             if (heap.m_heapMemoryType == RHI::HeapMemoryLevel::Device)
             {
-                deviceResident += heap.m_memoryUsage.m_usedResidentInBytes;                
+                deviceResident += heap.m_memoryUsage.m_usedResidentInBytes;
                 deviceReserved += heap.m_memoryUsage.m_totalResidentInBytes;
             }
         }
@@ -407,9 +371,8 @@ namespace AZ::Render
                 deviceMemoryColor = AZ::Colors::Red;
             }
         }
-        DrawLine(
-            AZStd::string::format(
-                "VRAM  %.0f / %.0f MiB", deviceResidentMB, availableDeviceMemoryMB),
+        AddLine(lines,
+            AZStd::string::format("VRAM  %.0f / %.0f MiB", deviceResidentMB, availableDeviceMemoryMB),
             deviceMemoryColor);
 
         // RPI default StreamingImagePool usage
@@ -424,111 +387,89 @@ namespace AZ::Render
             fontColor = AZ::Colors::Red;
         }
 
-        DrawLine(
+        AddLine(lines,
             AZStd::string::format("Textures  %.0f / %.0f MiB", imagePoolUsedAllocatedMB, imagePoolBudgetMB),
-            fontColor
-        );
+            fontColor);
     }
 
-    void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
+    void AtomViewportDisplayInfoSystemComponent::DrawPassInfo(AZStd::vector<Line>& lines) const
     {
-        AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
-        double minFPS = DBL_MAX;
-        double maxFPS = 0;
-        AZStd::chrono::duration<double> deltaTime;
-        for (const auto& time : m_fpsHistory)
+        RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
+
+        AddLine(lines,
+            AZStd::string::format("Passes  %d", passSystemFrameStatistics.m_numRenderPassesExecuted),
+            AZ::Color(0.75f, 0.5f, 1.0f, 1.0f));
+        AddLine(lines,
+            AZStd::string::format(
+                "Draw Calls  %d  |  Max  %d",
+                passSystemFrameStatistics.m_totalDrawItemsRendered,
+                passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass),
+            AZ::Color(0.75f, 0.5f, 1.0f, 1.0f));
+    }
+
+    void AtomViewportDisplayInfoSystemComponent::DrawRendererInfo(
+        AZStd::vector<Line>& lines, const AzFramework::WindowSize& renderSize, RPI::RenderPipeline* pipeline) const
+    {
+        const AZ::Color rendColor(1.0f, 0.8f, 0.3f, 1.0f);
+        AddLine(lines, m_rendererDescription, rendColor);
+
+        // resolution and MSAA state
+        const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+
+        AZStd::string defaultAA = "MSAA";
+        bool hasAAMethod = false;
+        AZ::RPI::AntiAliasingMode defaultAAMethod = pipeline->GetActiveAAMethod();
+        defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
+        hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
+
+        auto resolutionStr = AZStd::string::format("%dx%d", renderSize.m_width, renderSize.m_height);
+        auto msaaStr =
+            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("CMAA2");
+
+        if (hasAAMethod)
         {
-            if (lastTime.has_value())
+            if (multisampleState.m_samples > 1)
             {
-                deltaTime = time - lastTime.value();
-                double fps = AZStd::chrono::seconds(1) / deltaTime;
-                minFPS = AZStd::min(minFPS, fps);
-                maxFPS = AZStd::max(maxFPS, fps);
+                AddLine(lines, AZStd::string::format("%s  %s + %s", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()), rendColor);
             }
-            lastTime = time;
+            else
+            {
+                AddLine(lines, AZStd::string::format("%s  %s", resolutionStr.c_str(), defaultAA.c_str()), rendColor);
+            }
+        }
+        else
+        {
+            AddLine(lines, AZStd::string::format("%s  %s", resolutionStr.c_str(), msaaStr.c_str()), rendColor);
         }
 
-        double averageFPS = 0;
-        double averageFrameMs = 0;
-        if (m_fpsHistory.size() > 1)
-        {
-            deltaTime = m_fpsHistory.back() - m_fpsHistory.front();
-            averageFPS = AZStd::chrono::seconds(m_fpsHistory.size()) / deltaTime;
-            averageFrameMs = 1000.0f/averageFPS;
-        }
-
-        auto ClampedFloatDisplay = [](double value, const char* format) -> AZStd::string
-        {
-            constexpr float upperLimit = 10000.0f;
-            return value > upperLimit ? "inf" : AZStd::string::format(format, value);
-        };
-
-        const AZStd::string fpsStr = AZStd::string::format("FPS  %s", ClampedFloatDisplay(averageFPS, "%.1f").c_str());
-        const AZStd::string frameStr = AZStd::string::format(
-            "Frame  %s ms  [%s .. %s]",
-            ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
-            ClampedFloatDisplay(minFPS, "%.0f").c_str(),
-            ClampedFloatDisplay(maxFPS, "%.0f").c_str());
-
-        const float lineH1 = m_fontDrawInterface->GetTextSize(m_drawParams, fpsStr).GetY();
-        const float lineH2 = m_fontDrawInterface->GetTextSize(m_drawParams, frameStr).GetY();
-        const float blockH = lineH1 + m_lineSpacing + lineH2;
-        constexpr float bgPad = 4.f;
-        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        const float bgW = 260.0f * (viewportContext ? viewportContext->GetDpiScalingFactor() : 1.0f);
-        DrawBackground(
-            m_drawParams.m_position.GetX() - bgPad,
-            m_drawParams.m_position.GetY() - bgPad,
-            bgW,
-            blockH + bgPad * 2.f,
-            AZ::Color(0.0f, 0.15f, 0.2f, 0.9f));
-
-        DrawLine(fpsStr, AZ::Colors::White);
-        DrawLine(frameStr, AZ::Colors::White);
+        AddLine(lines, AZStd::string::format("Pipeline  %s", pipeline->GetId().GetCStr()), rendColor);
     }
 
-    void AtomViewportDisplayInfoSystemComponent::DrawBackground(
-        float pixelX, float pixelY, float pixelW, float pixelH, AZ::Color color)
+    void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo(AZStd::vector<Line>& lines, RPI::RenderPipeline* pipeline) const
     {
-        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        if (!viewportContext)
-        {
-            return;
-        }
-        AZ::RPI::AuxGeomDrawPtr auxGeom =
-            AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(viewportContext->GetRenderScene());
-        if (!auxGeom)
+        AZ::RPI::ViewPtr currentView = pipeline->GetDefaultView();
+        if (currentView == nullptr)
         {
             return;
         }
 
-        auto vpSize = viewportContext->GetViewportSize();
-        const float vw = static_cast<float>(vpSize.m_width);
-        const float vh = static_cast<float>(vpSize.m_height);
+        AzFramework::CameraState cameraState;
+        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
+        const AZ::Transform transform = currentView->GetCameraTransform();
+        const AZ::Vector3 translation = transform.GetTranslation();
+        const AZ::Vector3 rotation = transform.GetEulerDegrees();
+        const AZ::Color camColor(0.4f, 1.0f, 0.65f, 1.0f);
 
-        const float x1 = pixelX / vw;
-        const float x2 = (pixelX + pixelW) / vw;
-        const float y1 = pixelY / vh;
-        const float y2 = (pixelY + pixelH) / vh;
-        constexpr float z = 0.5f;
-
-        const int32_t viewProjIdx = auxGeom->GetOrAdd2DViewProjOverride();
-
-        AZ::Vector3 verts[6] = {
-            {x1, y1, z}, {x2, y1, z}, {x2, y2, z},
-            {x2, y2, z}, {x1, y2, z}, {x1, y1, z}
-        };
-        AZ::Color colors[6] = { color, color, color, color, color, color };
-
-        AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments args;
-        args.m_verts      = verts;
-        args.m_vertCount  = 6;
-        args.m_colors     = colors;
-        args.m_colorCount = 6;
-        args.m_opacityType   = AZ::RPI::AuxGeomDraw::OpacityType::Translucent;
-        args.m_depthTest     = AZ::RPI::AuxGeomDraw::DepthTest::Off;
-        args.m_depthWrite    = AZ::RPI::AuxGeomDraw::DepthWrite::Off;
-        args.m_viewProjectionOverrideIndex = viewProjIdx;
-        auxGeom->DrawTriangles(args);
+        AddLine(lines,
+            AZStd::string::format(
+                "CamPos=%.2f %.2f %.2f",
+                translation.GetX(), translation.GetY(), translation.GetZ()),
+            camColor);
+        AddLine(lines,
+            AZStd::string::format(
+                "Angl=%3.0f %3.0f %4.0f ZN=%.2f ZF=%.0f",
+                rotation.GetX(), rotation.GetY(), rotation.GetZ(),
+                cameraState.m_nearClip, cameraState.m_farClip),
+            camColor);
     }
 } // namespace AZ::Render

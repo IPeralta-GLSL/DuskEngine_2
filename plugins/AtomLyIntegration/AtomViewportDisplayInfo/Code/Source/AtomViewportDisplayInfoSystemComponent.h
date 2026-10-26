@@ -8,24 +8,38 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-
-#include <CryCommon/CrySystemBus.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Script/ScriptTimePoint.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Font/FontInterface.h>
+#include <AzFramework/Windowing/WindowBus.h>
 #include <Atom/RPI.Public/Base.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/Feature/ImGui/SystemBus.h>
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+
+struct ImDrawList;
+struct ImFont;
 
 namespace AZ
 {
-    class TickRequests;
+    namespace RPI
+    {
+        class RenderPipeline;
+    } // namespace RPI
 
     namespace Render
     {
+        //! Draws the information overlay on top of the viewports (frame rate, memory usage, pass and
+        //! renderer statistics and camera state).
+        //! The overlay is drawn with ImGui inside the ImGui pass of each viewport, so it keeps the
+        //! same size on screen whatever the internal render resolution of the viewport is, and the
+        //! text is rasterized at the resolution it is rendered at. It is drawn without any window
+        //! decoration, so it looks like a plain HUD on top of the image.
+        //! Which sections are shown is controlled by the Viewport Debug Information actions of the
+        //! viewport (r_displayInfo).
         class AtomViewportDisplayInfoSystemComponent
             : public AZ::Component
-            , public AZ::RPI::ViewportContextNotificationBus::Handler
+            , public AZ::TickBus::Handler
+            , public AZ::Render::ImGuiSystemNotificationBus::Handler
             , public AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler
         {
         public:
@@ -43,36 +57,54 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
 
-            // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
-            void OnRenderTick() override;
+            // AZ::TickBus::Handler overrides...
+            void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
+
+            // AZ::Render::ImGuiSystemNotificationBus::Handler overrides...
+            void ActiveImGuiContextChanged(ImGuiContext* context) override;
+            void OnImGuiPassFrame(ImGuiPass* imguiPass) override;
 
             // AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler overrides...
             AtomBridge::ViewportInfoDisplayState GetDisplayState() const override;
             void SetDisplayState(AtomBridge::ViewportInfoDisplayState state) override;
 
         private:
-            AZ::RPI::ViewportContextPtr GetViewportContext() const;
-            void DrawLine(AZStd::string_view line, AZ::Color color = AZ::Colors::White);
+            //! A single line of the overlay.
+            struct Line
+            {
+                AZStd::string m_text;
+                AZ::Color m_color;
+            };
 
             void UpdateFramerate();
 
-            void DrawRendererInfo();
-            void DrawCameraInfo();
-            void DrawPassInfo();
-            void DrawMemoryInfo();
-            void DrawFramerate();
-            void DrawBackground(float pixelX, float pixelY, float pixelW, float pixelH, AZ::Color color);
+            void DrawFramerate(AZStd::vector<Line>& lines) const;
+            void DrawMemoryInfo(AZStd::vector<Line>& lines) const;
+            void DrawPassInfo(AZStd::vector<Line>& lines) const;
+            void DrawRendererInfo(AZStd::vector<Line>& lines, const AzFramework::WindowSize& renderSize, RPI::RenderPipeline* pipeline) const;
+            void DrawCameraInfo(AZStd::vector<Line>& lines, RPI::RenderPipeline* pipeline) const;
 
-            static constexpr float BaseFontSize = 0.7f;
+            //! Draws the given lines with the given background color behind them.
+            void DrawSection(const AZStd::vector<Line>& lines, const AZ::Color& backgroundColor);
+
+            //! Pushes a line to the current section.
+            static void AddLine(AZStd::vector<Line>& lines, AZStd::string text, const AZ::Color& color);
 
             AZStd::string m_rendererDescription;
-            AzFramework::TextDrawParameters m_drawParams;
-            AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
-            float m_lineSpacing;
             AZStd::chrono::duration<double> m_fpsInterval = AZStd::chrono::seconds(1);
             AZStd::deque<AZStd::chrono::steady_clock::time_point> m_fpsHistory;
-            AZStd::optional<AZStd::chrono::steady_clock::time_point> m_lastMemoryUpdate;
             bool m_updateRootPassQuery = true;
+
+            // Drawing state of the frame currently being built.
+            ImDrawList* m_drawList = nullptr;
+            ImFont* m_font = nullptr;
+            float m_fontSize = 0.0f;
+            float m_lineAdvance = 0.0f;
+            float m_lineSpacing = 0.0f;
+            float m_bgX = 0.0f;
+            float m_bgW = 0.0f;
+            float m_bgPad = 0.0f;
+            float m_positionY = 0.0f;
         };
     } // namespace Render
 } // namespace AZ

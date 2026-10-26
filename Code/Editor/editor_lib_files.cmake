@@ -603,8 +603,6 @@ set(FILES
     EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    ViewportInfoOverlay.cpp
-    ViewportInfoOverlay.h
     ViewManager.cpp
     ViewManager.h
     ViewPane.cpp
