@@ -68,6 +68,13 @@ namespace AZ
 
             //! Sent when the active context changes so that listeners can prepare the active context
             virtual void ActiveImGuiContextChanged(ImGuiContext* context) = 0;
+
+            //! Sent every frame right after an ImGui pass has started its ImGui frame and before the
+            //! frame is rendered. The ImGui context of the pass is the current one while this
+            //! notification is delivered, so listeners can draw into the pass using the regular
+            //! ImGui API. It is sent once per ImGui pass, so overlays are drawn on every viewport
+            //! that has an ImGui pass.
+            virtual void OnImGuiPassFrame([[maybe_unused]] ImGuiPass* imguiPass) {}
         };
 
         using ImGuiSystemNotificationBus = AZ::EBus<ImGuiSystemNotifications>;

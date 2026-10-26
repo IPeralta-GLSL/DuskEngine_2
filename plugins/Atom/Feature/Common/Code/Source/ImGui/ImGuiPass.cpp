@@ -133,6 +133,9 @@ namespace AZ
 
             ImGui::NewFrame();
 
+            // Let listeners draw into this pass's context before the frame is rendered.
+            ImGuiSystemNotificationBus::Broadcast(&ImGuiSystemNotifications::OnImGuiPassFrame, &m_imGuiPass);
+
             auto& io = ImGui::GetIO();
             io.DeltaTime = deltaTime;
         }

@@ -26,6 +26,7 @@
 #include "GameEngine.h"
 #include "PythonEditorFuncs.h"
 #include "TrackView/TrackViewPythonFuncs.h"
+#include "ViewportInfoOverlay.h"
 
 namespace EditorInternal
 {
@@ -76,6 +77,7 @@ namespace EditorInternal
         RegisterComponentDescriptor(AzToolsFramework::TrackViewFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::ViewPanePythonFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::ViewportTitleDlgPythonFuncsHandler::CreateDescriptor());
+        RegisterComponentDescriptor(SandboxEditor::ViewportInfoOverlay::CreateDescriptor());
     }
 
     AZ::ComponentTypeList EditorToolsApplication::GetRequiredSystemComponents() const
@@ -89,6 +91,7 @@ namespace EditorInternal
         components.emplace_back(azrtti_typeid<AzToolsFramework::DisplaySettingsComponent>());
         components.emplace_back(azrtti_typeid<AzToolsFramework::PythonEditorComponent>());
         components.emplace_back(azrtti_typeid<AzToolsFramework::TrackViewComponent>());
+        components.emplace_back(azrtti_typeid<SandboxEditor::ViewportInfoOverlay>());
 
         return components;
     }
